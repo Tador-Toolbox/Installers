@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A0D14;--bg2:#111623;--bg3:#181F2E;--border:#232C3F;
+  --gold:#C9963A;--gold2:#E8B04B;
+  --white:#E8EDF8;--muted:#6B7A99;
+  --red:#E53935;--green:#2ECC71;--blue:#3B82F6;--yellow:#F59E0B;
+  --radius:12px;
+}
+body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--white);direction:rtl;min-height:100vh;display:flex}
+
+/* ── Login ──────────────────────────────────────────────────── */
+#loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:48px;width:100%;max-width:380px;text-align:center}
+.login-logo{font-size:1.8rem;font-weight:900;color:var(--white);margin-bottom:4px}
+.login-logo span{color:var(--gold)}
+.login-sub{color:var(--muted);font-size:0.88rem;margin-bottom:28px}
+.login-input{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--white);font-size:0.95rem;font-family:'Heebo',sans-serif;outline:none;direction:rtl;margin-bottom:12px;transition:border-color 0.2s}
+.login-input:focus{border-color:var(--gold)}
+.login-btn{width:100%;padding:13px;border-radius:10px;background:var(--gold);color:#0A0D14;font-weight:800;font-size:1rem;border:none;cursor:pointer;transition:all 0.2s}
+.login-btn:hover{background:var(--gold2)}
+.login-err{color:var(--red);font-size:0.85rem;margin-top:10px;min-height:18px}
+
+/* ── Layout ─────────────────────────────────────────────────── */
+.sidebar{width:230px;min-height:100vh;background:var(--bg2);border-left:1px solid var(--border);padding:0;display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;right:0;height:100vh;overflow-y:auto;z-index:10}
+.sidebar-logo{padding:24px 20px;border-bottom:1px solid var(--border);font-size:1.1rem;font-weight:800;color:var(--white)}
+.sidebar-logo span{color:var(--gold)}
+.sidebar-tag{font-size:0.73rem;color:var(--muted);font-weight:500;margin-top:2px}
+.nav-items{padding:12px 0;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;color:var(--muted);font-size:0.9rem;cursor:pointer;transition:all 0.15s;border-right:3px solid transparent}
+.nav-item:hover{color:var(--white);background:var(--bg3)}
+.nav-item.active{color:var(--gold);border-right-color:var(--gold);background:rgba(201,150,58,0.06)}
+.nav-badge{margin-right:auto;background:var(--red);color:#fff;font-size:0.68rem;font-weight:700;padding:2px 6px;border-radius:50px}
+.sidebar-bottom{padding:16px 20px;border-top:1px solid var(--border)}
+.logout-btn{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:0.88rem;cursor:pointer;background:none;border:none;font-family:'Heebo',sans-serif;padding:0;transition:color 0.2s}
+.logout-btn:hover{color:var(--red)}
+
+.main{margin-right:230px;padding:28px;width:calc(100% - 230px);min-height:100vh}
+.page-title{font-size:1.4rem;font-weight:800;margin-bottom:4px}
+.page-sub{color:var(--muted);font-size:0.88rem;margin-bottom:24px}
+
+/* ── Components ─────────────────────────────────────────────── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:20px}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.card-title{font-size:1rem;font-weight:700;color:var(--white)}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+.stat-num{font-size:1.8rem;font-weight:900;color:var(--gold)}
+.stat-label{font-size:0.8rem;color:var(--muted);margin-top:3px}
+
+.btn{padding:9px 20px;border-radius:9px;font-weight:700;font-size:0.88rem;cursor:pointer;border:none;transition:all 0.2s;font-family:'Heebo',sans-serif;display:inline-flex;align-items:center;gap:6px}
+.btn-gold{background:var(--gold);color:#0A0D14}.btn-gold:hover{background:var(--gold2)}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--muted)}.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-red{background:rgba(229,57,53,0.15);color:var(--red);border:1px solid rgba(229,57,53,0.3)}.btn-red:hover{background:rgba(229,57,53,0.25)}
+.btn-green{background:rgba(46,204,113,0.15);color:var(--green);border:1px solid rgba(46,204,113,0.3)}.btn-green:hover{background:rgba(46,204,113,0.2)}
+.btn-blue{background:rgba(59,130,246,0.15);color:var(--blue);border:1px solid rgba(59,130,246,0.3)}.btn-blue:hover{background:rgba(59,130,246,0.2)}
+.btn-sm{padding:6px 14px;font-size:0.82rem}
+
+input,select,textarea{background:var(--bg3);border:1.5px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--white);font-size:0.9rem;font-family:'Heebo',sans-serif;outline:none;direction:rtl;width:100%;transition:border-color 0.2s}
+input:focus,select:focus{border-color:var(--gold)}
+select option{background:#181F2E}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+label{font-size:0.82rem;font-weight:600;color:var(--muted)}
+
+/* ── Table ──────────────────────────────────────────────────── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:right;padding:9px 14px;font-size:0.78rem;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:12px 14px;font-size:0.87rem;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+
+/* ── Installer row ──────────────────────────────────────────── */
+.installer-row-info{display:flex;flex-direction:column;gap:2px}
+.installer-name{font-weight:700;color:var(--white)}
+.installer-slug{font-size:0.78rem;color:var(--gold);font-family:monospace}
+.status-pill{padding:3px 10px;border-radius:50px;font-size:0.75rem;font-weight:700;display:inline-block}
+.status-pill.active{background:rgba(46,204,113,0.15);color:var(--green);border:1px solid rgba(46,204,113,0.3)}
+.status-pill.inactive{background:rgba(229,57,53,0.15);color:var(--red);border:1px solid rgba(229,57,53,0.3)}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ── Portfolio approval ─────────────────────────────────────── */
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.photo-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.photo-card img{width:100%;aspect-ratio:4/3;object-fit:cover}
+.photo-card-info{padding:12px}
+.photo-installer{font-size:0.8rem;color:var(--muted);margin-bottom:8px}
+.photo-btns{display:flex;gap:8px}
+
+/* ── Modal ──────────────────────────────────────────────────── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;display:none;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:480px}
+.modal-title{font-size:1.1rem;font-weight:800;margin-bottom:20px}
+.modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+
+/* ── Notification modal ─────────────────────────────────────── */
+.notify-list{max-height:300px;overflow-y:auto;margin-top:16px}
+.notify-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:8px;cursor:pointer;transition:all 0.15s}
+.notify-item:hover{border-color:var(--gold)}
+.notify-item.selected{border-color:var(--gold);background:rgba(201,150,58,0.06)}
+
+/* ── QR Modal ────────────────────────────────────────────────── */
+.qr-modal-body{display:flex;flex-direction:column;align-items:center;gap:20px}
+.qr-box{
+  background:#fff;border-radius:16px;padding:20px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 24px rgba(0,0,0,0.3);
+}
+.qr-installer-name{font-size:1.1rem;font-weight:800;color:var(--white);text-align:center}
+.qr-url{font-family:monospace;font-size:0.82rem;color:var(--gold);text-align:center;word-break:break-all}
+.qr-btns{display:flex;gap:10px;width:100%}
+.qr-btns .btn{flex:1;justify-content:center}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 22px;font-size:0.9rem;font-weight:600;z-index:200;transition:transform 0.3s;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:var(--green);color:var(--green)}
+.toast.error{border-color:var(--red);color:var(--red)}
+
+.empty{text-align:center;padding:36px;color:var(--muted);font-size:0.9rem}
+.empty-icon{font-size:2rem;margin-bottom:8px}
+
+/* ── Click Analytics ─────────────────────────────────────────── */
+.click-strip{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;
+}
+.click-stat{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px;display:flex;align-items:center;gap:16px;
+}
+.click-icon{font-size:1.8rem;flex-shrink:0}
+.click-num{font-size:1.8rem;font-weight:900;color:var(--gold);line-height:1}
+.click-label{font-size:0.8rem;color:var(--white);font-weight:600;margin-top:3px}
+.click-month{font-size:0.75rem;color:var(--muted);margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">מתקין<span>Pro</span></div>
+    <div class="login-sub">Admin Panel</div>
+    <input class="login-input" id="aUser" type="text" placeholder="שם משתמש"/>
+    <input class="login-input" id="aPass" type="password" placeholder="סיסמה"/>
+    <button class="login-btn" onclick="doLogin()">כניסה</button>
+    <div class="login-err" id="aErr"></div>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar" style="display:none">
+  <div class="sidebar-logo">מתקין<span>Pro</span><div class="sidebar-tag">Admin Panel</div></div>
+  <div class="nav-items">
+    <div class="nav-item active" onclick="showPage('overview')" data-page="overview">📊 סקירה כללית</div>
+    <div class="nav-item" onclick="showPage('installers')" data-page="installers">👷 מתקינים</div>
+    <div class="nav-item" onclick="showPage('create')" data-page="create">➕ הוסף מתקין</div>
+    <div class="nav-item" onclick="showPage('photos')" data-page="photos">
+      🖼️ אישור תמונות <span class="nav-badge" id="photoBadge" style="display:none">0</span>
+    </div>
+    <div class="nav-item" onclick="showPage('leads')" data-page="leads">📨 כל הלידים</div>
+    <div class="nav-item" onclick="showPage('notify')" data-page="notify">🔔 שליחת הודעה</div>
+  </div>
+  <div class="sidebar-bottom">
+    <button class="logout-btn" onclick="doLogout()">🚪 התנתקות</button>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main" id="mainContent" style="display:none">
+
+  <!-- Overview -->
+  <div id="page-overview" class="page">
+    <div class="page-title">סקירה כללית</div>
+    <div class="page-sub">מצב המערכת בזמן אמת</div>
+    <div class="stat-grid" id="statsGrid"></div>
+
+    <!-- Click Analytics -->
+    <div class="click-strip" id="clickStats"></div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">📊 לחיצות לפי מתקין</div>
+      <div id="clicksByInstaller"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+      <div class="card">
+        <div class="card-title">🏆 מתקינים עם הכי הרבה לידים</div>
+        <div id="topInstallers"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔐 פעילות כניסה אחרונה</div>
+        <div id="loginActivity"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Installers -->
+  <div id="page-installers" class="page" style="display:none">
+    <div class="page-title">ניהול מתקינים</div>
+    <div class="page-sub">כל המתקינים הרשומים במערכת</div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>מתקין</th><th>לידים</th><th>כניסות</th><th>כניסה אחרונה</th><th>סטטוס</th><th>פעולות</th></tr></thead>
+          <tbody id="installersBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Installer -->
+  <div id="page-create" class="page" style="display:none">
+    <div class="page-title">הוסף מתקין חדש</div>
+    <div class="page-sub">יצירת חשבון חדש לטכנאי</div>
+    <div class="card" style="max-width:520px">
+      <div class="form-row">
+        <div class="form-group"><label>שם מלא *</label><input id="cName" placeholder="ישראל כהן"/></div>
+        <div class="form-group"><label>שם משתמש *</label><input id="cUser" placeholder="israel.cohen"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Slug (URL) *</label><input id="cSlug" placeholder="israel-cohen" onkeyup="slugify(this)"/></div>
+        <div class="form-group"><label>סיסמה *</label><input id="cPass" type="password" placeholder="לפחות 8 תווים"/></div>
+      </div>
+      <div style="margin-bottom:16px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:12px 16px;font-size:0.85rem">
+        <span style="color:var(--muted)">הדף הציבורי: </span>
+        <span style="color:var(--gold);font-family:monospace" id="slugPreview">yoursite.com/<em>slug</em></span>
+      </div>
+      <button class="btn btn-gold" onclick="createInstaller()">✅ צור חשבון</button>
+    </div>
+  </div>
+
+  <!-- Photo Approval -->
+  <div id="page-photos" class="page" style="display:none">
+    <div class="page-title">אישור תמונות</div>
+    <div class="page-sub">תמונות שהועלו על ידי מתקינים וממתינות לאישורך</div>
+    <div class="photo-grid" id="photoGrid"></div>
+  </div>
+
+  <!-- All Leads -->
+  <div id="page-leads" class="page" style="display:none">
+    <div class="page-title">כל הלידים</div>
+    <div class="page-sub">כל הפניות שהגיעו מדפי הנחיתה</div>
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <select id="installerFilter" onchange="loadLeads()" style="width:auto;padding:8px 14px">
+            <option value="">כל המתקינים</option>
+          </select>
+        </div>
+        <div style="color:var(--muted);font-size:0.85rem" id="leadsCount"></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>שם</th><th>טלפון</th><th>מתקין</th><th>שירות</th><th>הודעה</th><th>תאריך</th></tr></thead>
+          <tbody id="allLeadsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Send Notification -->
+  <div id="page-notify" class="page" style="display:none">
+    <div class="page-title">שליחת הודעה למתקין</div>
+    <div class="page-sub">ההודעה תופיע בפאנל של המתקין</div>
+    <div class="card" style="max-width:540px">
+      <div class="form-group" style="margin-bottom:14px">
+        <label>בחר מתקין</label>
+        <select id="notifyInstaller"></select>
+      </div>
+      <div class="form-group" style="margin-bottom:18px">
+        <label>תוכן ההודעה</label>
+        <textarea id="notifyMessage" rows="4" placeholder="כתוב את ההודעה כאן..."></textarea>
+      </div>
+      <button class="btn btn-gold" onclick="sendNotification()">📤 שלח הודעה</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Reset Password Modal -->
+<div class="modal-bg" id="resetModal">
+  <div class="modal">
+    <div class="modal-title">🔐 איפוס סיסמה</div>
+    <input type="hidden" id="resetId"/>
+    <div class="form-group"><label>סיסמה חדשה</label><input type="password" id="resetPass" placeholder="לפחות 6 תווים"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('resetModal')">ביטול</button>
+      <button class="btn btn-gold" onclick="doResetPassword()">אפס סיסמה</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR Code Modal -->
+<div class="modal-bg" id="qrModal" onclick="handleQRBackdrop(event)">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-title">◻ QR Code</div>
+    <div class="qr-modal-body">
+      <div class="qr-installer-name" id="qrInstallerName"></div>
+      <div class="qr-box"><div id="qrCanvas"></div></div>
+      <div class="qr-url" id="qrUrl"></div>
+      <div class="qr-btns">
+        <button class="btn btn-gold" onclick="downloadQR()">⬇ הורד PNG</button>
+        <button class="btn btn-outline" onclick="closeModal('qrModal')">סגור</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+let allInstallers = [];
+
+/* ── Toast ─────────────────────────────────────────────────── */
+function toast(msg, type='success'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+/* ── Login ─────────────────────────────────────────────────── */
+async function doLogin(){
+  const username = document.getElementById('aUser').value.trim();
+  const password = document.getElementById('aPass').value;
+  const r = await fetch('/api/auth/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
+  if(r.ok){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('sidebar').style.display='flex';
+    document.getElementById('mainContent').style.display='block';
+    initAdmin();
+  } else {
+    const d = await r.json();
+    document.getElementById('aErr').textContent = d.error || 'שגיאה';
+  }
+}
+document.getElementById('aPass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+
+async function doLogout(){
+  await fetch('/api/auth/admin/logout',{method:'POST'});
+  location.reload();
+}
+
+/* ── Session ────────────────────────────────────────────────── */
+async function checkSession(){
+  const r = await fetch('/api/auth/me');
+  const d = await r.json();
+  if(d.role==='admin'){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('sidebar').style.display='flex';
+    document.getElementById('mainContent').style.display='block';
+    initAdmin();
+  }
+}
+
+async function initAdmin(){
+  await loadInstallers();
+  loadOverview();
+  loadPhotoBadge();
+}
+
+/* ── Navigation ─────────────────────────────────────────────── */
+function showPage(page){
+  document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+  document.getElementById('page-'+page).style.display='block';
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelector(`[data-page="${page}"]`)?.classList.add('active');
+  if(page==='overview')    loadOverview();
+  if(page==='installers')  renderInstallersTable();
+  if(page==='photos')      loadPhotos();
+  if(page==='leads')       { loadLeads(); populateInstallerFilter(); }
+  if(page==='notify')      populateNotifySelect();
+}
+
+/* ── Load Installers ────────────────────────────────────────── */
+async function loadInstallers(){
+  const r = await fetch('/api/admin/installers');
+  allInstallers = await r.json();
+}
+
+/* ── Overview ───────────────────────────────────────────────── */
+async function loadOverview(){
+  const r = await fetch('/api/admin/analytics');
+  const d = await r.json();
+  const c = d.clicks || {};
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${d.totalInstallers}</div><div class="stat-label">סך מתקינים</div></div>
+    <div class="stat-card"><div class="stat-num">${d.activeInstallers}</div><div class="stat-label">מתקינים פעילים</div></div>
+    <div class="stat-card"><div class="stat-num">${d.totalLeads}</div><div class="stat-label">סך לידים</div></div>
+    <div class="stat-card"><div class="stat-num">${d.leadsThisMonth}</div><div class="stat-label">לידים החודש</div></div>
+    <div class="stat-card"><div class="stat-num">${d.pendingPhotos}</div><div class="stat-label">תמונות ממתינות</div></div>
+  `;
+
+  // Click analytics strip
+  document.getElementById('clickStats').innerHTML = `
+    <div class="click-stat">
+      <div class="click-icon">📞</div>
+      <div>
+        <div class="click-num">${c.call||0}</div>
+        <div class="click-label">לחיצות טלפון</div>
+        <div class="click-month">+${c.callThisMonth||0} החודש</div>
+      </div>
+    </div>
+    <div class="click-stat">
+      <div class="click-icon">💬</div>
+      <div>
+        <div class="click-num">${c.whatsapp||0}</div>
+        <div class="click-label">לחיצות WhatsApp</div>
+        <div class="click-month">+${c.whatsappThisMonth||0} החודש</div>
+      </div>
+    </div>
+    <div class="click-stat">
+      <div class="click-icon">📋</div>
+      <div>
+        <div class="click-num">${c.quote||0}</div>
+        <div class="click-label">לחיצות הצעת מחיר</div>
+        <div class="click-month">סך הכל</div>
+      </div>
+    </div>
+  `;
+
+  // Clicks per installer table
+  const byInst = c.byInstaller || [];
+  document.getElementById('clicksByInstaller').innerHTML = byInst.length ? `
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        <th style="text-align:right;padding:7px 10px;font-size:0.78rem;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border)">מתקין</th>
+        <th style="text-align:center;padding:7px 10px;font-size:0.78rem;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border)">📞 טלפון</th>
+        <th style="text-align:center;padding:7px 10px;font-size:0.78rem;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border)">💬 WA</th>
+        <th style="text-align:center;padding:7px 10px;font-size:0.78rem;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border)">📋 הצעה</th>
+        <th style="text-align:center;padding:7px 10px;font-size:0.78rem;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border)">סה"כ</th>
+      </tr></thead>
+      <tbody>
+        ${byInst.map(row=>{
+          const get = type => (row.clicks.find(c=>c.type===type)||{}).count||0;
+          return `<tr>
+            <td style="padding:9px 10px;font-size:0.85rem;border-bottom:1px solid var(--border);font-family:monospace;color:var(--gold)">/${row._id}</td>
+            <td style="text-align:center;padding:9px 10px;font-size:0.85rem;border-bottom:1px solid var(--border)">${get('call')}</td>
+            <td style="text-align:center;padding:9px 10px;font-size:0.85rem;border-bottom:1px solid var(--border)">${get('whatsapp')}</td>
+            <td style="text-align:center;padding:9px 10px;font-size:0.85rem;border-bottom:1px solid var(--border)">${get('quote')}</td>
+            <td style="text-align:center;padding:9px 10px;font-size:0.85rem;border-bottom:1px solid var(--border);font-weight:700;color:var(--white)">${row.total}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  ` : '<div class="empty">אין נתוני לחיצות עדיין</div>';
+
+  document.getElementById('topInstallers').innerHTML = d.topInstallers.length
+    ? d.topInstallers.map(i=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-family:monospace;font-size:0.85rem;color:var(--gold)">${i._id}</span><span class="status-pill active">${i.leads} לידים</span></div>`).join('')
+    : '<div class="empty">אין נתונים</div>';
+  document.getElementById('loginActivity').innerHTML = d.loginActivity.map(i=>`
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.85rem">
+      <div><div style="font-weight:600">${i.name}</div><div style="color:var(--muted);font-size:0.78rem">${i.lastLogin ? new Date(i.lastLogin).toLocaleString('he-IL') : 'מעולם לא'}</div></div>
+      <div style="color:var(--muted)">${i.loginCount} כניסות</div>
+    </div>
+  `).join('');
+}
+
+/* ── Installers Table ───────────────────────────────────────── */
+function renderInstallersTable(){
+  const body = document.getElementById('installersBody');
+  if(!allInstallers.length){ body.innerHTML='<tr><td colspan="6"><div class="empty">אין מתקינים</div></td></tr>'; return; }
+  body.innerHTML = allInstallers.map(inst=>`
+    <tr>
+      <td>
+        <div class="installer-row-info">
+          <div class="installer-name">${inst.name}</div>
+          <div class="installer-slug">/${inst.slug}</div>
+        </div>
+      </td>
+      <td>${inst.totalLeads || 0}</td>
+      <td>${inst.loginCount || 0}</td>
+      <td style="color:var(--muted);font-size:0.8rem;white-space:nowrap">${inst.lastLogin ? new Date(inst.lastLogin).toLocaleDateString('he-IL') : '—'}</td>
+      <td><span class="status-pill ${inst.isActive?'active':'inactive'}">${inst.isActive?'פעיל':'מושהה'}</span></td>
+      <td>
+        <div class="actions">
+          <a href="/${inst.slug}" target="_blank" class="btn btn-outline btn-sm">👁️</a>
+          <button class="btn btn-blue btn-sm" onclick="openResetModal('${inst._id}')">🔐</button>
+          <button class="btn btn-outline btn-sm" onclick="openQRModal('${inst.slug}','${inst.name}')" title="צור QR Code">◻ QR</button>
+          <button class="btn ${inst.isActive?'btn-red':'btn-green'} btn-sm" onclick="toggleInstaller('${inst._id}')">
+            ${inst.isActive?'⏸ הקפא':'▶ הפעל'}
+          </button>
+          <button class="btn btn-red btn-sm" onclick="deleteInstaller('${inst._id}', '${inst.name}')">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+/* ── Create Installer ───────────────────────────────────────── */
+function slugify(el){
+  el.value = el.value.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  document.getElementById('slugPreview').textContent = window.location.origin + '/' + el.value;
+}
+
+async function createInstaller(){
+  const name     = document.getElementById('cName').value.trim();
+  const username = document.getElementById('cUser').value.trim();
+  const slug     = document.getElementById('cSlug').value.trim();
+  const password = document.getElementById('cPass').value;
+  if(!name || !username || !slug || !password) return toast('מלא את כל השדות','error');
+  const r = await fetch('/api/admin/installers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,username,slug,password})});
+  if(r.ok){
+    const d = await r.json();
+    toast(`✅ מתקין נוצר! /${d.slug}`);
+    document.getElementById('cName').value=''; document.getElementById('cUser').value='';
+    document.getElementById('cSlug').value=''; document.getElementById('cPass').value='';
+    document.getElementById('slugPreview').textContent='yoursite.com/slug';
+    await loadInstallers();
+  } else {
+    const d=await r.json(); toast(d.error||'שגיאה','error');
+  }
+}
+
+/* ── Toggle / Delete ────────────────────────────────────────── */
+async function toggleInstaller(id){
+  const r = await fetch(`/api/admin/installers/${id}/toggle`,{method:'PUT'});
+  if(r.ok){ await loadInstallers(); renderInstallersTable(); toast('✅ סטטוס עודכן'); }
+}
+
+async function deleteInstaller(id, name){
+  if(!confirm(`למחוק את ${name}? פעולה זו אינה הפיכה.`)) return;
+  const r = await fetch(`/api/admin/installers/${id}`,{method:'DELETE'});
+  if(r.ok){ await loadInstallers(); renderInstallersTable(); toast('✅ מתקין נמחק'); }
+}
+
+/* ── Reset Password Modal ───────────────────────────────────── */
+function openResetModal(id){
+  document.getElementById('resetId').value = id;
+  document.getElementById('resetPass').value = '';
+  document.getElementById('resetModal').classList.add('open');
+}
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+async function doResetPassword(){
+  const id = document.getElementById('resetId').value;
+  const newPassword = document.getElementById('resetPass').value;
+  if(newPassword.length < 6) return toast('סיסמה קצרה מדי','error');
+  const r = await fetch(`/api/admin/installers/${id}/password`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({newPassword})});
+  if(r.ok){ closeModal('resetModal'); toast('✅ סיסמה אופסה'); }
+  else toast('שגיאה','error');
+}
+
+/* ── Photo Approval ─────────────────────────────────────────── */
+async function loadPhotoBadge(){
+  const r = await fetch('/api/admin/portfolio/pending');
+  const d = await r.json();
+  const badge = document.getElementById('photoBadge');
+  if(d.length > 0){ badge.textContent=d.length; badge.style.display='inline'; }
+  else badge.style.display='none';
+}
+
+async function loadPhotos(){
+  const r = await fetch('/api/admin/portfolio/pending');
+  const photos = await r.json();
+  const grid = document.getElementById('photoGrid');
+  if(!photos.length){ grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">✅</div>אין תמונות הממתינות לאישור</div>'; return; }
+  grid.innerHTML = photos.map(p=>`
+    <div class="photo-card" id="pc-${p.image._id}">
+      <img src="${p.image.url}" alt="" loading="lazy"/>
+      <div class="photo-card-info">
+        <div class="photo-installer">👷 ${p.installerName} (/${p.installerSlug})</div>
+        <div class="photo-btns">
+          <button class="btn btn-green btn-sm" onclick="reviewPhoto('${p.installerId}','${p.image._id}','approved')">✅ אשר</button>
+          <button class="btn btn-red btn-sm" onclick="reviewPhoto('${p.installerId}','${p.image._id}','rejected')">❌ דחה</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  loadPhotoBadge();
+}
+
+async function reviewPhoto(installerId, imgId, status){
+  const r = await fetch(`/api/admin/portfolio/${installerId}/${imgId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});
+  if(r.ok){
+    document.getElementById('pc-'+imgId)?.remove();
+    toast(status==='approved' ? '✅ תמונה אושרה' : '🗑️ תמונה נדחתה');
+    loadPhotoBadge();
+    // If no more photos left, show empty state
+    if(!document.querySelector('.photo-card')){
+      document.getElementById('photoGrid').innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">✅</div>אין תמונות הממתינות לאישור</div>';
+    }
+  }
+}
+
+/* ── All Leads ──────────────────────────────────────────────── */
+function populateInstallerFilter(){
+  const sel = document.getElementById('installerFilter');
+  const existing = [...sel.options].map(o=>o.value);
+  allInstallers.forEach(inst=>{
+    if(!existing.includes(inst._id)){
+      const o=document.createElement('option');
+      o.value=inst._id; o.textContent=inst.name;
+      sel.appendChild(o);
+    }
+  });
+}
+
+async function loadLeads(){
+  const installerId = document.getElementById('installerFilter').value;
+  const url = '/api/admin/leads' + (installerId ? `?installerId=${installerId}` : '');
+  const r = await fetch(url);
+  const leads = await r.json();
+  document.getElementById('leadsCount').textContent = `${leads.length} תוצאות`;
+  const body = document.getElementById('allLeadsBody');
+  if(!leads.length){ body.innerHTML='<tr><td colspan="6"><div class="empty">אין לידים</div></td></tr>'; return; }
+  body.innerHTML = leads.map(l=>`
+    <tr>
+      <td><strong>${l.name}</strong></td>
+      <td><a href="tel:${l.phone}" style="color:var(--gold)">${l.phone}</a></td>
+      <td style="color:var(--muted);font-family:monospace;font-size:0.8rem">/${l.installerSlug}</td>
+      <td>${l.serviceType||'—'}</td>
+      <td style="max-width:180px;color:var(--muted);font-size:0.82rem">${l.message||'—'}</td>
+      <td style="color:var(--muted);font-size:0.8rem;white-space:nowrap">${new Date(l.createdAt).toLocaleString('he-IL')}</td>
+    </tr>
+  `).join('');
+}
+
+/* ── Send Notification ──────────────────────────────────────── */
+function populateNotifySelect(){
+  const sel = document.getElementById('notifyInstaller');
+  sel.innerHTML = allInstallers.map(i=>`<option value="${i._id}">${i.name} (/${i.slug})</option>`).join('');
+}
+
+async function sendNotification(){
+  const installerId = document.getElementById('notifyInstaller').value;
+  const message     = document.getElementById('notifyMessage').value.trim();
+  if(!message) return toast('כתוב הודעה תחילה','error');
+  const r = await fetch(`/api/admin/notify/${installerId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message})});
+  if(r.ok){ document.getElementById('notifyMessage').value=''; toast('✅ הודעה נשלחה'); }
+  else toast('שגיאה','error');
+}
+
+// Close modal on backdrop click
+document.getElementById('resetModal').addEventListener('click',function(e){
+  if(e.target===this) closeModal('resetModal');
+});
+
+/* ── QR Code ─────────────────────────────────────────────────── */
+let _qrInstance = null;
+
+function openQRModal(slug, name){
+  const url = window.location.origin + '/' + slug;
+
+  document.getElementById('qrInstallerName').textContent = name;
+  document.getElementById('qrUrl').textContent = url;
+
+  // Clear previous QR
+  const canvas = document.getElementById('qrCanvas');
+  canvas.innerHTML = '';
+  _qrInstance = null;
+
+  // Generate new QR (240×240, high error correction so logo could overlay)
+  _qrInstance = new QRCode(canvas, {
+    text:           url,
+    width:          220,
+    height:         220,
+    colorDark:      '#0D1B2A',
+    colorLight:     '#FFFFFF',
+    correctLevel:   QRCode.CorrectLevel.H
+  });
+
+  document.getElementById('qrModal').classList.add('open');
+}
+
+function handleQRBackdrop(e){
+  if(e.target === document.getElementById('qrModal')) closeModal('qrModal');
+}
+
+function downloadQR(){
+  // QRCode.js renders both a canvas and an img — grab the canvas
+  const canvas = document.querySelector('#qrCanvas canvas');
+  if(!canvas){ toast('שגיאה בייצוא','error'); return; }
+
+  const slug = document.getElementById('qrUrl').textContent.split('/').pop();
+  const installerName = document.getElementById('qrInstallerName').textContent;
+
+  // Create a larger canvas with padding + label for a polished download
+  const SIZE   = 280;
+  const PAD    = 20;
+  const LABEL  = 36;
+  const out    = document.createElement('canvas');
+  out.width    = SIZE + PAD*2;
+  out.height   = SIZE + PAD*2 + LABEL;
+  const ctx    = out.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#FFFFFF';
+  ctx.roundRect(0, 0, out.width, out.height, 16);
+  ctx.fill();
+
+  // Gold top bar
+  ctx.fillStyle = '#B8832A';
+  ctx.fillRect(0, 0, out.width, 5);
+
+  // QR image centered
+  ctx.drawImage(canvas, PAD, PAD + 8, SIZE, SIZE);
+
+  // Installer name label at bottom
+  ctx.fillStyle = '#0D1B2A';
+  ctx.font      = 'bold 15px Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(installerName, out.width/2, SIZE + PAD + 18 + 16);
+
+  // URL in small text
+  const url = document.getElementById('qrUrl').textContent;
+  ctx.fillStyle = '#64748B';
+  ctx.font      = '11px Arial, sans-serif';
+  ctx.fillText(url, out.width/2, SIZE + PAD + 18 + 34);
+
+  // Download
+  const link    = document.createElement('a');
+  link.download = `qr-${slug}.png`;
+  link.href     = out.toDataURL('image/png');
+  link.click();
+  toast('✅ QR Code הורד בהצלחה');
+}
+
+checkSession();
+</script>
+</body>
+</html>

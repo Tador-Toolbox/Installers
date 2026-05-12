@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title><%= installer.businessName || installer.name %> | מומחה אינטרקום ובקרת כניסה</title>
+<meta name="description" content="<%= installer.tagline || installer.name + ' - שירותי התקנה מקצועיים' %>"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0D1B2A;--navy-lt:#1E3354;
+  --gold:#B8832A;--gold2:#D4A043;--gold-lt:#FDF4E7;
+  --off:#F8F9FB;--light:#F0F3F7;--border:#E2E8F0;
+  --text:#0D1B2A;--muted:#64748B;--radius:12px;
+  --shadow:0 2px 12px rgba(13,27,42,0.08);
+  --shadow-md:0 6px 28px rgba(13,27,42,0.12);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Heebo',sans-serif;color:var(--text);background:#fff;direction:rtl;text-align:right;line-height:1.6}
+img{max-width:100%;display:block}
+a{text-decoration:none;color:inherit}
+
+/* NAV */
+.nav{position:fixed;top:0;right:0;left:0;z-index:100;background:rgba(255,255,255,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-size:1.05rem;font-weight:900;color:var(--navy)}
+.nav-logo em{font-style:normal;color:var(--gold)}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-link{font-size:0.88rem;font-weight:600;color:var(--muted);cursor:pointer;transition:color .15s}
+.nav-link:hover{color:var(--navy)}
+.nav-cta{background:var(--navy);color:#fff;font-size:0.88rem;font-weight:700;padding:9px 22px;border-radius:50px;border:none;cursor:pointer;transition:background .2s}
+.nav-cta:hover{background:var(--navy-lt)}
+
+/* HERO */
+.hero{padding-top:64px;min-height:100svh;background:#fff;display:flex;align-items:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-120px;left:-120px;width:480px;height:480px;border-radius:50%;background:radial-gradient(circle,#FDF4E7 0%,transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-80px;right:-80px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,#EEF3FA 0%,transparent 70%);pointer-events:none}
+.hero-inner{max-width:1100px;margin:0 auto;padding:60px 32px;display:grid;grid-template-columns:1fr 400px;gap:60px;align-items:center;position:relative;z-index:1;width:100%}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--gold-lt);border:1px solid rgba(184,131,42,0.25);color:var(--gold);font-size:0.78rem;font-weight:700;padding:5px 14px;border-radius:50px;margin-bottom:20px}
+h1.hero-name{font-size:clamp(2.2rem,5vw,3.6rem);font-weight:900;color:var(--navy);line-height:1.1;letter-spacing:-1px;margin-bottom:10px}
+.hero-business{font-size:clamp(1rem,2.2vw,1.3rem);color:var(--gold);font-weight:700;margin-bottom:18px}
+.hero-tagline{font-size:1rem;color:var(--muted);line-height:1.8;margin-bottom:36px;max-width:440px}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:44px}
+.btn-primary{display:inline-flex;align-items:center;gap:10px;background:var(--navy);color:#fff;font-weight:800;font-size:0.95rem;padding:15px 30px;border-radius:50px;border:none;cursor:pointer;transition:all .2s}
+.btn-primary:hover{background:var(--navy-lt);transform:translateY(-1px)}
+.btn-wa{display:inline-flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--border);color:var(--navy);font-weight:700;font-size:0.95rem;padding:13px 24px;border-radius:50px;cursor:pointer;transition:all .2s}
+.btn-wa:hover{border-color:var(--navy);transform:translateY(-1px)}
+.wa-dot{width:22px;height:22px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.wa-dot svg{width:13px;height:13px;fill:#fff}
+.trust-bar{display:flex;gap:24px;padding-top:28px;border-top:1px solid var(--border)}
+.trust-item{display:flex;align-items:center;gap:8px;font-size:0.82rem;font-weight:600;color:var(--muted)}
+
+/* Hero Card */
+.hero-card{background:#fff;border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:var(--shadow-md);position:relative}
+.hero-card::before{content:'';position:absolute;top:0;right:0;left:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2))}
+.hero-card-img{width:100%;height:380px;object-fit:cover;display:block}
+.hero-card-ph{width:100%;height:380px;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:6rem}
+.hero-card-body{padding:20px 22px}
+.hero-card-name{font-weight:800;font-size:1.05rem;color:var(--navy);margin-bottom:10px}
+.areas{display:flex;flex-wrap:wrap;gap:6px}
+.area-pill{background:var(--gold-lt);border:1px solid rgba(184,131,42,0.2);color:var(--gold);font-size:0.75rem;font-weight:700;padding:3px 12px;border-radius:50px}
+
+/* SECTIONS */
+.section{padding:80px 32px}
+.section-inner{max-width:1100px;margin:0 auto}
+.sec-ey{font-size:0.75rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px}
+.sec-title{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:900;color:var(--navy);letter-spacing:-0.4px;margin-bottom:8px}
+.sec-sub{color:var(--muted);font-size:0.95rem;margin-bottom:48px}
+.bg-off{background:var(--off)}
+
+/* SERVICES */
+.svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.svc-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px 14px;transition:all .2s;cursor:default;display:flex;align-items:center;gap:12px}
+.svc-card:hover{border-color:var(--gold);box-shadow:0 4px 16px rgba(184,131,42,0.10);transform:translateY(-2px)}
+.svc-icon{font-size:1.4rem;flex-shrink:0}
+.svc-name{font-weight:700;font-size:0.85rem;color:var(--navy);line-height:1.3}
+@media(max-width:700px){
+  .svc-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .svc-card{padding:12px 10px;gap:8px}
+  .svc-icon{font-size:1.2rem}
+  .svc-name{font-size:0.78rem}
+}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:420px 1fr;gap:64px;align-items:center}
+.about-img-wrap{position:relative}
+.about-img-wrap::before{content:'';position:absolute;bottom:-16px;left:-16px;right:16px;top:16px;border:2px solid var(--gold);border-radius:20px;opacity:0.3;pointer-events:none;z-index:0}
+.about-img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:20px;display:block;position:relative;z-index:1}
+.about-ph{width:100%;aspect-ratio:4/5;border-radius:20px;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:7rem;position:relative;z-index:1}
+.about-text{font-size:1rem;color:var(--muted);line-height:1.85;margin-bottom:28px}
+.check-list{list-style:none;display:flex;flex-direction:column;gap:14px}
+.check-list li{display:flex;align-items:flex-start;gap:12px;font-size:0.92rem;color:var(--text)}
+.chk{width:22px;height:22px;border-radius:50%;flex-shrink:0;margin-top:1px;background:var(--gold-lt);border:1.5px solid rgba(184,131,42,0.3);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:0.72rem;font-weight:900}
+
+/* PORTFOLIO CAROUSEL */
+.carousel-outer{position:relative;padding:0 32px}
+.carousel-win{overflow:hidden;border-radius:var(--radius)}
+.carousel-track{display:flex;gap:16px;transition:transform .45s cubic-bezier(.25,.1,.25,1);will-change:transform}
+.c-slide{flex:0 0 calc((100% - 32px) / 3);aspect-ratio:4/3;border-radius:var(--radius);overflow:hidden;position:relative;cursor:pointer;border:1px solid var(--border)}
+.c-slide img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.c-slide:hover img{transform:scale(1.05)}
+.c-slide-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,27,42,0.5) 0%,transparent 55%);opacity:0;transition:opacity .3s;display:flex;align-items:flex-end;padding:16px}
+.c-slide:hover .c-slide-ov{opacity:1}
+.c-slide-ov span{color:#fff;font-size:0.82rem;font-weight:600}
+.c-arrow{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;background:#fff;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;box-shadow:var(--shadow);transition:all .2s}
+.c-arrow:hover{background:var(--navy);border-color:var(--navy)}
+.c-arrow:hover svg{stroke:#fff}
+.c-arrow svg{width:18px;height:18px;stroke:var(--navy);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s}
+.c-arrow.prev{right:-8px}
+.c-arrow.next{left:-8px}
+.c-arrow.off{opacity:.3;pointer-events:none}
+.c-dots{display:flex;justify-content:center;gap:6px;margin-top:20px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--border);border:none;cursor:pointer;transition:all .2s;padding:0}
+.dot.on{background:var(--gold);width:22px;border-radius:50px}
+
+/* TESTIMONIALS */
+.test-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+.test-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:28px;position:relative;transition:box-shadow .2s}
+.test-card:hover{box-shadow:var(--shadow-md)}
+.test-q{font-size:3.5rem;color:var(--gold);opacity:.15;position:absolute;top:16px;right:22px;font-family:Georgia,serif;line-height:1}
+.stars{display:flex;gap:3px;margin-bottom:14px}
+.star{font-size:.95rem;color:var(--gold)}
+.star.empty{color:var(--border)}
+.test-text{font-size:.92rem;color:var(--muted);line-height:1.8;margin-bottom:16px}
+.test-author{font-weight:700;font-size:.88rem;color:var(--navy);display:flex;align-items:center;gap:8px}
+.test-author::before{content:'';width:20px;height:2px;background:var(--gold);border-radius:2px}
+
+/* LEAD FORM */
+.lead-section{background:var(--navy);padding:88px 32px;position:relative;overflow:hidden}
+.lead-section::before{content:'';position:absolute;top:-200px;left:-200px;width:500px;height:500px;border-radius:50%;background:rgba(184,131,42,.06);pointer-events:none}
+.lead-inner{max-width:660px;margin:0 auto;position:relative;z-index:1}
+.lead-ey{display:inline-flex;align-items:center;gap:8px;background:rgba(184,131,42,.15);border:1px solid rgba(184,131,42,.3);color:var(--gold2);font-size:0.75rem;font-weight:700;padding:5px 14px;border-radius:50px;margin-bottom:16px}
+.lead-title{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:900;color:#fff;margin-bottom:8px}
+.lead-sub{color:rgba(255,255,255,.5);font-size:.92rem;margin-bottom:36px}
+.lead-form{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:36px}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.f-grp{display:flex;flex-direction:column;gap:7px}
+.f-grp label{font-size:0.82rem;font-weight:600;color:rgba(255,255,255,.55)}
+.f-grp input,.f-grp select,.f-grp textarea{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 16px;color:#fff;font-size:0.93rem;font-family:'Heebo',sans-serif;width:100%;outline:none;direction:rtl;transition:border-color .2s}
+.f-grp input:focus,.f-grp select:focus,.f-grp textarea:focus{border-color:rgba(184,131,42,.6)}
+.f-grp select option{background:#152236;color:#fff}
+.f-grp textarea{resize:vertical;min-height:90px}
+.f-grp.full{grid-column:1/-1}
+.f-submit{width:100%;padding:17px;border-radius:50px;background:var(--gold);color:var(--navy);font-weight:900;font-size:1rem;border:none;cursor:pointer;transition:all .2s;margin-top:4px;font-family:'Heebo',sans-serif}
+.f-submit:hover{background:var(--gold2);transform:translateY(-1px)}
+.f-success{display:none;margin-top:16px;padding:16px;border-radius:10px;background:rgba(27,140,90,.15);border:1px solid rgba(27,140,90,.35);color:#4ade80;font-weight:600;text-align:center;font-size:.93rem}
+
+/* FOOTER */
+footer{background:var(--navy);border-top:1px solid rgba(255,255,255,.06);padding:32px}
+.foot-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px}
+.foot-phone a{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.65);font-size:.93rem;font-weight:600;transition:color .2s}
+.foot-phone a:hover{color:var(--gold2)}
+.foot-socs{display:flex;gap:10px}
+.soc{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.6);transition:all .2s}
+.soc:hover{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+.foot-copy{width:100%;border-top:1px solid rgba(255,255,255,.06);padding-top:16px;margin-top:8px;text-align:center;color:rgba(255,255,255,.25);font-size:.78rem}
+
+/* FLOAT WA */
+.float-wa{position:fixed;bottom:28px;left:28px;z-index:90;width:56px;height:56px;border-radius:50%;background:#25D366;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,.45);transition:transform .2s}
+.float-wa:hover{transform:scale(1.1)}
+.float-wa svg{width:28px;height:28px;fill:#fff}
+
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center}
+.lightbox.open{display:flex}
+.lightbox img{max-width:90vw;max-height:90vh;border-radius:10px;object-fit:contain}
+.lb-close{position:fixed;top:20px;left:20px;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.12);border:none;color:#fff;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}
+.reveal.visible{opacity:1;transform:none}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .hero-inner{grid-template-columns:1fr;gap:32px;padding:40px 20px 60px}
+  .hero-card{order:-1}.hero-card-img,.hero-card-ph{height:240px}
+  .about-grid{grid-template-columns:1fr;gap:36px}.about-img-wrap::before{display:none}
+  .c-slide{flex:0 0 calc((100% - 16px) / 2)}
+  .c-arrow.prev{right:-14px}.c-arrow.next{left:-14px}
+  .section,.lead-section{padding:56px 20px}
+  .f-row{grid-template-columns:1fr}
+  .nav-links{display:none}
+}
+@media(max-width:580px){
+  .hero-btns{flex-direction:column}.btn-primary,.btn-wa{justify-content:center;width:100%}
+  .c-slide{flex:0 0 100%}.c-arrow{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo"><%= installer.businessName || installer.name %><em>.</em></div>
+  <div class="nav-links">
+    <% if(installer.services && installer.services.length){ %><span class="nav-link" onclick="ss('services')">שירותים</span><% } %>
+    <% if(installer.about){ %><span class="nav-link" onclick="ss('about')">אודות</span><% } %>
+    <% if(installer.portfolioImages && installer.portfolioImages.length){ %><span class="nav-link" onclick="ss('portfolio')">עבודות</span><% } %>
+  </div>
+  <button class="nav-cta" onclick="ss('lead-form')">קבל הצעת מחיר</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="reveal">
+      <div class="eyebrow">✦ מומחה מוסמך ומנוסה</div>
+      <h1 class="hero-name"><%= installer.name %></h1>
+      <% if(installer.businessName){ %><div class="hero-business"><%= installer.businessName %></div><% } %>
+      <p class="hero-tagline"><%= installer.tagline || 'מומחה להתקנת מערכות אינטרקום, בקרת כניסה ואבטחה לבניינים, משרדים ובתים פרטיים.' %></p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="ss('lead-form')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          קבל הצעת מחיר
+        </button>
+        <% if(installer.whatsapp){ %>
+        <a class="btn-wa" href="https://wa.me/<%= installer.whatsapp.replace(/\D/g,'') %>?text=שלום,+אני+מעוניין+בשירות" target="_blank">
+          <span class="wa-dot"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg></span>
+          WhatsApp
+        </a>
+        <% } %>
+      </div>
+      <div class="trust-bar">
+        <div class="trust-item">⚡ שירות מהיר</div>
+        <div class="trust-item">🛡️ אחריות מלאה</div>
+        <div class="trust-item">✅ מוסמך ומנוסה</div>
+      </div>
+    </div>
+    <div class="hero-card reveal">
+      <% if(installer.profileImage && installer.profileImage.url){ %>
+        <img class="hero-card-img" src="<%= installer.profileImage.url %>" alt="<%= installer.name %>"/>
+      <% } else { %>
+        <div class="hero-card-ph">👷</div>
+      <% } %>
+      <div class="hero-card-body">
+        <div class="hero-card-name"><%= installer.name %></div>
+        <% if(installer.areas && installer.areas.length){ %>
+        <div class="areas"><% installer.areas.slice(0,4).forEach(a=>{ %><span class="area-pill"><%= a %></span><% }) %></div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<% if(installer.services && installer.services.length){ %>
+<section class="section bg-off" id="services">
+  <div class="section-inner">
+    <div class="sec-ey reveal">תחומי מומחיות</div>
+    <h2 class="sec-title reveal">השירותים שלנו</h2>
+    <p class="sec-sub reveal">פתרונות מקצועיים מותאמים לכל סוג נכס</p>
+    <div class="svc-grid">
+      <% const ICONS=['🔔','🔐','📷','🎛️','🔑','📡','🛡️','⚡','🔧','🏗️']; %>
+      <% installer.services.forEach((s,i)=>{ %>
+      <div class="svc-card reveal"><div class="svc-icon"><%= ICONS[i%ICONS.length] %></div><div class="svc-name"><%= s %></div></div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<!-- ABOUT -->
+<% if(installer.about){ %>
+<section class="section" id="about">
+  <div class="section-inner">
+    <div class="about-grid">
+      <div class="about-img-wrap reveal">
+        <% if(installer.heroImage && installer.heroImage.url){ %>
+          <img class="about-img" src="<%= installer.heroImage.url %>" alt="עבודה בשטח"/>
+        <% } else if(installer.profileImage && installer.profileImage.url){ %>
+          <img class="about-img" src="<%= installer.profileImage.url %>" alt="<%= installer.name %>"/>
+        <% } else { %>
+          <div class="about-ph">🔧</div>
+        <% } %>
+      </div>
+      <div>
+        <div class="sec-ey reveal">אודות</div>
+        <h2 class="sec-title reveal">למה לבחור בי?</h2>
+        <p class="about-text reveal"><%= installer.about %></p>
+        <ul class="check-list">
+          <li class="reveal"><span class="chk">✓</span>ניסיון רב שנים בתחום האינטרקום והאבטחה</li>
+          <li class="reveal"><span class="chk">✓</span>שירות מהיר ואמין עד הבית</li>
+          <li class="reveal"><span class="chk">✓</span>אחריות מלאה על כל עבודה שבוצעה</li>
+          <li class="reveal"><span class="chk">✓</span>מחירים הוגנים ושקיפות מלאה</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<!-- PORTFOLIO CAROUSEL -->
+<% if(installer.portfolioImages && installer.portfolioImages.length){ %>
+<section class="section bg-off" id="portfolio">
+  <div class="section-inner">
+    <div class="sec-ey reveal">עבודות שביצענו</div>
+    <h2 class="sec-title reveal">תיק עבודות</h2>
+    <p class="sec-sub reveal">לחצו על החצים לצפייה בעוד עבודות</p>
+    <div class="carousel-outer reveal">
+      <button class="c-arrow prev off" id="prevBtn" aria-label="הקודם">
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <div class="carousel-win">
+        <div class="carousel-track" id="cTrack">
+          <% installer.portfolioImages.forEach((img,i)=>{ %>
+          <div class="c-slide" onclick="openLightbox('<%= img.url %>')">
+            <img src="<%= img.url %>" alt="עבודה <%= i+1 %>" loading="lazy"/>
+            <div class="c-slide-ov"><span>הגדל ↗</span></div>
+          </div>
+          <% }) %>
+        </div>
+      </div>
+      <button class="c-arrow next" id="nextBtn" aria-label="הבא">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+    </div>
+    <div class="c-dots" id="cDots"></div>
+  </div>
+</section>
+<% } %>
+
+<!-- TESTIMONIALS -->
+<% if(installer.testimonials && installer.testimonials.length){ %>
+<section class="section" id="testimonials">
+  <div class="section-inner">
+    <div class="sec-ey reveal">לקוחות מרוצים</div>
+    <h2 class="sec-title reveal">מה אומרים עלינו</h2>
+    <p class="sec-sub reveal">חוות דעת אמיתיות מלקוחות שעבדו איתנו</p>
+    <div class="test-grid">
+      <% installer.testimonials.forEach(t=>{ %>
+      <div class="test-card reveal">
+        <div class="test-q">"</div>
+        <div class="stars"><% for(let i=0;i<5;i++){ %><span class="star <%= i<t.rating?'':'empty' %>">★</span><% } %></div>
+        <p class="test-text"><%= t.text %></p>
+        <div class="test-author"><%= t.clientName %></div>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<!-- LEAD FORM -->
+<section class="lead-section" id="lead-form">
+  <div class="lead-inner">
+    <div class="lead-ey">✦ צור קשר</div>
+    <h2 class="lead-title">קבל הצעת מחיר</h2>
+    <p class="lead-sub">מלא את הפרטים ואחזור אליך בהקדם</p>
+    <form class="lead-form" id="contactForm">
+      <div class="f-row">
+        <div class="f-grp"><label>שם מלא *</label><input type="text" name="name" placeholder="ישראל ישראלי" required/></div>
+        <div class="f-grp"><label>טלפון *</label><input type="tel" name="phone" placeholder="05X-XXXXXXX" required/></div>
+      </div>
+      <div class="f-row">
+        <div class="f-grp full"><label>סוג השירות</label>
+          <select name="serviceType">
+            <option value="">בחר שירות...</option>
+            <% if(installer.services && installer.services.length){ %>
+              <% installer.services.forEach(s=>{ %><option value="<%= s %>"><%= s %></option><% }) %>
+            <% } else { %>
+              <option>התקנת אינטרקום לבניין</option>
+              <option>בקרת כניסה</option>
+              <option>מצלמות אבטחה</option>
+              <option>אחר</option>
+            <% } %>
+          </select>
+        </div>
+      </div>
+      <div class="f-row">
+        <div class="f-grp full"><label>הודעה (אופציונלי)</label><textarea name="message" placeholder="ספר לנו בקצרה על הצורך שלך..."></textarea></div>
+      </div>
+      <button type="submit" class="f-submit" id="submitBtn">שלח בקשה ←</button>
+      <div class="f-success" id="formSuccess">✓ תודה! קיבלנו את פנייתך ונחזור אליך בהקדם.</div>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-inner">
+    <div class="foot-phone">
+      <% if(installer.phone){ %>
+      <a href="tel:<%= installer.phone.replace(/\D/g,'') %>">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.42 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.53 2.68l3-.01a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.09a16 16 0 0 0 5.99 5.99l1.39-1.39a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <%= installer.phone %>
+      </a>
+      <% } %>
+    </div>
+    <div class="foot-socs">
+      <% if(installer.whatsapp){ %><a class="soc" href="https://wa.me/<%= installer.whatsapp.replace(/\D/g,'') %>" target="_blank"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg></a><% } %>
+      <% if(installer.facebook){ %><a class="soc" href="<%= installer.facebook %>" target="_blank" style="font-weight:700;font-size:0.9rem">f</a><% } %>
+      <% if(installer.instagram){ %><a class="soc" href="<%= installer.instagram %>" target="_blank" style="font-size:0.8rem">📸</a><% } %>
+    </div>
+  </div>
+  <div class="foot-copy">© <%= new Date().getFullYear() %> <%= installer.name %>. כל הזכויות שמורות.</div>
+</footer>
+
+<% if(installer.whatsapp){ %>
+<a class="float-wa" href="https://wa.me/<%= installer.whatsapp.replace(/\D/g,'') %>?text=שלום,+אני+מעוניין+בשירות" target="_blank" aria-label="WhatsApp">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+</a>
+<% } %>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lb-close">✕</button>
+  <img id="lbImg" src="" alt=""/>
+</div>
+
+<script>
+const SLUG = '<%= installer.slug %>';
+function ss(id){ document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); }
+
+// Lead form
+document.getElementById('contactForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn  = document.getElementById('submitBtn');
+  const data = Object.fromEntries(new FormData(e.target));
+  data.installerSlug = SLUG;
+  btn.textContent = 'שולח...'; btn.disabled = true;
+  try {
+    const r = await fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    if(r.ok){ e.target.reset(); document.getElementById('formSuccess').style.display='block'; btn.textContent='✓ נשלח!'; }
+    else { btn.textContent='שגיאה, נסה שוב'; btn.disabled=false; }
+  } catch { btn.textContent='שגיאה, נסה שוב'; btn.disabled=false; }
+});
+
+// Lightbox
+function openLightbox(url){ document.getElementById('lbImg').src=url; document.getElementById('lightbox').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeLightbox(){ document.getElementById('lightbox').classList.remove('open'); document.body.style.overflow=''; }
+
+// Carousel
+(function(){
+  const track=document.getElementById('cTrack');
+  const prev=document.getElementById('prevBtn');
+  const next=document.getElementById('nextBtn');
+  const dotsEl=document.getElementById('cDots');
+  if(!track) return;
+  const total=track.children.length;
+  let VISIBLE=3, cur=0;
+  function getV(){ const w=track.parentElement.offsetWidth; if(w<500)return 1; if(w<760)return 2; return 3; }
+  function max(){ return Math.max(0,total-VISIBLE); }
+  function sw(){ const G=16; return (track.parentElement.offsetWidth-G*(VISIBLE-1))/VISIBLE+G; }
+  function render(){
+    VISIBLE=getV(); cur=Math.min(cur,max());
+    track.style.transform=`translateX(${cur*sw()}px)`;
+    prev.classList.toggle('off',cur<=0);
+    next.classList.toggle('off',cur>=max());
+    dotsEl.innerHTML='';
+    for(let i=0;i<=max();i++){
+      const d=document.createElement('button');
+      d.className='dot'+(i===cur?' on':'');
+      d.onclick=()=>go(i); dotsEl.appendChild(d);
+    }
+  }
+  function go(n){ cur=Math.max(0,Math.min(n,max())); render(); }
+  prev.onclick=()=>go(cur-1);
+  next.onclick=()=>go(cur+1);
+  let ts=0;
+  track.addEventListener('touchstart',e=>ts=e.touches[0].clientX);
+  track.addEventListener('touchend',e=>{ const d=ts-e.changedTouches[0].clientX; if(Math.abs(d)>40){ d>0?go(cur+1):go(cur-1); } });
+  window.addEventListener('resize',render);
+  render();
+})();
+
+// Click tracking — fire and forget
+function track(type){
+  fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({installerSlug:SLUG,type})}).catch(()=>{});
+}
+document.querySelectorAll('a[href^="tel:"]').forEach(el=>el.addEventListener('click',()=>track('call')));
+document.querySelectorAll('a[href*="wa.me"]').forEach(el=>el.addEventListener('click',()=>track('whatsapp')));
+document.querySelectorAll('.nav-cta,.btn-primary').forEach(el=>el.addEventListener('click',()=>track('quote')));
+
+// Reveal on scroll
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
