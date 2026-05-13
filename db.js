@@ -44,10 +44,15 @@ const InstallerSchema = new mongoose.Schema({
   // Images
   profileImage: { url: String, publicId: String },
   heroImage:    { url: String, publicId: String },
+  logo:         { url: String, publicId: String },
 
   // Social
   facebook:     { type: String, default: '' },
   instagram:    { type: String, default: '' },
+
+  // Custom content
+  badge:          { type: String, default: 'מומחה מוסמך ומנוסה' },
+  checklistItems: [{ type: String }],
 
   // Content
   portfolioImages: [PortfolioImageSchema],
