@@ -321,6 +321,7 @@ tr:last-child td{border-bottom:none}
         <div class="form-group"><label>טלפון</label><input id="pPhone" type="tel" placeholder="050-1234567"/></div>
         <div class="form-group"><label>WhatsApp (קידומת מדינה)</label><input id="pWA" type="tel" placeholder="972501234567"/></div>
         <div class="form-group full"><label>כותרת / סלוגן</label><input id="pTagline" type="text" placeholder="מומחה אינטרקום ובקרת כניסה — שירות מהיר ואמין"/></div>
+        <div class="form-group full"><label>טקסט ה-Badge (הכיתוב הקטן בראש הדף)</label><input id="pBadge" type="text" placeholder="מומחה מוסמך ומנוסה"/></div>
         <div class="form-group full"><label>אודות (תיאור עצמי)</label><textarea id="pAbout" placeholder="ספר ללקוחות על הניסיון שלך..."></textarea></div>
         <div class="form-group"><label>פייסבוק (URL)</label><input id="pFB" type="url" placeholder="https://facebook.com/..."/></div>
         <div class="form-group"><label>אינסטגרם (URL)</label><input id="pIG" type="url" placeholder="https://instagram.com/..."/></div>
@@ -336,6 +337,13 @@ tr:last-child td{border-bottom:none}
             <input class="tag-input" id="areaInput" placeholder="הקלד אזור ולחץ Enter..." onkeydown="addTag(event,'areas')"/>
           </div>
         </div>
+        <div class="form-group full">
+          <label>✓ רשימת יתרונות (בסעיף "למה לבחור בי")</label>
+          <div class="tags-input-wrap" id="checklistWrap">
+            <input class="tag-input" id="checklistInput" placeholder="הקלד יתרון ולחץ Enter (למשל: שירות מהיר ואמין)" onkeydown="addTag(event,'checklist')"/>
+          </div>
+          <div style="font-size:0.78rem;color:var(--muted);margin-top:6px">אם ריק — יוצגו ברירות המחדל</div>
+        </div>
       </div>
       <button class="btn btn-gold" onclick="saveProfile()">💾 שמור שינויים</button>
     </div>
@@ -345,7 +353,16 @@ tr:last-child td{border-bottom:none}
   <div id="page-images" class="page" style="display:none">
     <div class="page-title">תמונות פרופיל</div>
     <div class="page-sub">תמונות אלו יוצגו בדף הנחיתה שלך מיידית</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
+      <div class="card">
+        <div class="card-title">🏷️ לוגו העסק</div>
+        <img id="logoPreview" src="" style="display:none;width:100%;max-height:120px;object-fit:contain;border-radius:10px;margin-bottom:14px;background:var(--bg3);padding:10px"/>
+        <div class="upload-zone" onclick="document.getElementById('logoInput').click()">
+          <input type="file" id="logoInput" accept="image/*" style="display:none" onchange="uploadImage('logo', this)"/>
+          <div class="upload-icon">🏷️</div>
+          <div class="upload-text"><strong>העלה לוגו</strong> — PNG שקוף מומלץ</div>
+        </div>
+      </div>
       <div class="card">
         <div class="card-title">📸 תמונת פרופיל</div>
         <img id="profileImgPreview" src="" style="display:none;width:100%;max-height:220px;object-fit:cover;border-radius:10px;margin-bottom:14px"/>
@@ -445,6 +462,7 @@ tr:last-child td{border-bottom:none}
 let profile = null;
 let servicesArr = [];
 let areasArr = [];
+let checklistArr = [];
 
 /* ── Toast ─────────────────────────────────────────────────── */
 function toast(msg, type='success'){
@@ -512,22 +530,22 @@ async function loadProfile(){
   const r = await fetch('/api/installer/profile');
   profile = await r.json();
   document.getElementById('sidebarName').textContent = profile.name;
-  // Populate form
   document.getElementById('pName').value      = profile.name || '';
   document.getElementById('pBusiness').value  = profile.businessName || '';
   document.getElementById('pPhone').value     = profile.phone || '';
   document.getElementById('pWA').value        = profile.whatsapp || '';
   document.getElementById('pTagline').value   = profile.tagline || '';
+  document.getElementById('pBadge').value     = profile.badge || '';
   document.getElementById('pAbout').value     = profile.about || '';
   document.getElementById('pFB').value        = profile.facebook || '';
   document.getElementById('pIG').value        = profile.instagram || '';
-  servicesArr = profile.services || [];
-  areasArr    = profile.areas || [];
-  renderTags('services'); renderTags('areas');
-  // Images
+  servicesArr  = profile.services || [];
+  areasArr     = profile.areas || [];
+  checklistArr = profile.checklistItems || [];
+  renderTags('services'); renderTags('areas'); renderTags('checklist');
+  if(profile.logo?.url){ const img=document.getElementById('logoPreview'); img.src=profile.logo.url; img.style.display='block'; }
   if(profile.profileImage?.url){ const img=document.getElementById('profileImgPreview'); img.src=profile.profileImage.url; img.style.display='block'; }
   if(profile.heroImage?.url){ const img=document.getElementById('heroImgPreview'); img.src=profile.heroImage.url; img.style.display='block'; }
-  // Public URL
   const url = window.location.origin + '/' + profile.slug;
   document.getElementById('publicUrlDisplay').textContent = url;
   document.getElementById('publicUrlLink').href = url;
@@ -537,25 +555,31 @@ async function loadProfile(){
 function addTag(e, type){
   if(e.key !== 'Enter') return;
   e.preventDefault();
-  const inp = document.getElementById(type==='services'?'serviceInput':'areaInput');
+  const inputId = type==='services'?'serviceInput':type==='areas'?'areaInput':'checklistInput';
+  const inp = document.getElementById(inputId);
   const val = inp.value.trim();
   if(!val) return;
   if(type==='services') servicesArr.push(val);
-  else areasArr.push(val);
+  else if(type==='areas') areasArr.push(val);
+  else checklistArr.push(val);
   inp.value = '';
   renderTags(type);
 }
 
 function removeTag(type, i){
   if(type==='services') servicesArr.splice(i,1);
-  else areasArr.splice(i,1);
+  else if(type==='areas') areasArr.splice(i,1);
+  else checklistArr.splice(i,1);
   renderTags(type);
 }
 
 function renderTags(type){
-  const arr  = type==='services' ? servicesArr : areasArr;
-  const wrap = document.getElementById(type==='services'?'servicesWrap':'areasWrap');
-  const inp  = document.getElementById(type==='services'?'serviceInput':'areaInput');
+  const arr  = type==='services' ? servicesArr : type==='areas' ? areasArr : checklistArr;
+  const wrapId = type==='services'?'servicesWrap':type==='areas'?'areasWrap':'checklistWrap';
+  const inpId  = type==='services'?'serviceInput':type==='areas'?'areaInput':'checklistInput';
+  const wrap = document.getElementById(wrapId);
+  const inp  = document.getElementById(inpId);
+  if(!wrap) return;
   [...wrap.querySelectorAll('.tag')].forEach(t=>t.remove());
   arr.forEach((t,i)=>{
     const el = document.createElement('div');
@@ -573,11 +597,13 @@ async function saveProfile(){
     phone: document.getElementById('pPhone').value,
     whatsapp: document.getElementById('pWA').value,
     tagline: document.getElementById('pTagline').value,
+    badge: document.getElementById('pBadge').value,
     about: document.getElementById('pAbout').value,
     facebook: document.getElementById('pFB').value,
     instagram: document.getElementById('pIG').value,
     services: servicesArr,
-    areas: areasArr
+    areas: areasArr,
+    checklistItems: checklistArr
   };
   const r = await fetch('/api/installer/profile',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   if(r.ok){ toast('✅ הפרופיל עודכן בהצלחה'); profile = await r.json(); }
@@ -590,12 +616,12 @@ async function uploadImage(type, input){
   if(!file) return;
   const fd = new FormData();
   fd.append('image', file);
-  const endpoint = type==='profile' ? '/api/installer/profile-image' : '/api/installer/hero-image';
-  const r = await fetch(endpoint, {method:'POST', body: fd});
+  const endpoints = { profile: '/api/installer/profile-image', hero: '/api/installer/hero-image', logo: '/api/installer/logo' };
+  const previews  = { profile: 'profileImgPreview', hero: 'heroImgPreview', logo: 'logoPreview' };
+  const r = await fetch(endpoints[type], {method:'POST', body: fd});
   if(r.ok){
     const d = await r.json();
-    const id = type==='profile' ? 'profileImgPreview' : 'heroImgPreview';
-    const img = document.getElementById(id);
+    const img = document.getElementById(previews[type]);
     img.src = d.url; img.style.display='block';
     toast('✅ תמונה הועלתה בהצלחה');
   } else toast('❌ שגיאה בהעלאה','error');
