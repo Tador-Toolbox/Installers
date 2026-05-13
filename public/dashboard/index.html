@@ -216,7 +216,15 @@ tr:last-child td{border-bottom:none}
 .toast.success{border-color:var(--green);color:var(--green)}
 .toast.error{border-color:var(--red);color:var(--red)}
 
-/* ── Empty states ──────────────────────────────────────────── */
+/* ── Icon Picker ───────────────────────────────────────────── */
+.icon-grid{display:flex;flex-wrap:wrap;gap:6px}
+.icon-btn{
+  width:38px;height:38px;border-radius:8px;border:1.5px solid var(--border);
+  background:var(--bg);font-size:1.2rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all 0.15s;
+}
+.icon-btn:hover{border-color:var(--gold);background:rgba(201,150,58,0.1)}
+.icon-btn.selected{border-color:var(--gold);background:rgba(201,150,58,0.2)}
 .empty{text-align:center;padding:40px;color:var(--muted);font-size:0.95rem}
 .empty .empty-icon{font-size:2.5rem;margin-bottom:12px}
 
@@ -327,9 +335,16 @@ tr:last-child td{border-bottom:none}
         <div class="form-group"><label>אינסטגרם (URL)</label><input id="pIG" type="url" placeholder="https://instagram.com/..."/></div>
         <div class="form-group full">
           <label>שירותים</label>
-          <div class="tags-input-wrap" id="servicesWrap">
-            <input class="tag-input" id="serviceInput" placeholder="הקלד שירות ולחץ Enter..." onkeydown="addTag(event,'services')"/>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+            <div style="font-size:0.82rem;color:var(--muted);margin-bottom:10px">בחר אייקון ושם שירות:</div>
+            <div class="icon-grid" id="iconGrid"></div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <div style="font-size:1.4rem;min-width:42px;height:42px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center" id="selectedIcon">🔔</div>
+              <input class="tag-input" id="serviceInput" placeholder="שם השירות..." style="flex:1;border:1.5px solid var(--border)!important;border-radius:8px!important;" onkeydown="addServiceTag(event)"/>
+              <button class="btn btn-gold" onclick="addServiceManual()" style="padding:0 14px">+ הוסף</button>
+            </div>
           </div>
+          <div class="tags-input-wrap" id="servicesWrap" style="border:none;padding:0;background:transparent"></div>
         </div>
         <div class="form-group full">
           <label>אזורי פעילות</label>
@@ -809,6 +824,68 @@ async function changePassword(){
 function copyPublicUrl(){
   navigator.clipboard.writeText(document.getElementById('publicUrlDisplay').textContent);
   toast('✅ קישור הועתק');
+}
+
+/* ── Icon Picker ───────────────────────────────────────────── */
+const SECURITY_ICONS = [
+  '🔔','📷','🔐','🔑','📡','🛡️','🔧','🏠','🏢','📺',
+  '🚪','🎛️','📱','🌐','💡','🔊','🎥','⚡','🖥️','📹',
+  '🔗','🔲','📶','🏗️','🔩','🛠️','💼','🏪','🏬','🔭'
+];
+
+let selectedServiceIcon = '🔔';
+
+function initIconPicker(){
+  const grid = document.getElementById('iconGrid');
+  if(!grid) return;
+  grid.innerHTML = SECURITY_ICONS.map(icon=>`
+    <button class="icon-btn ${icon===selectedServiceIcon?'selected':''}"
+      onclick="selectIcon('${icon}')" title="${icon}">${icon}</button>
+  `).join('');
+}
+
+function selectIcon(icon){
+  selectedServiceIcon = icon;
+  document.getElementById('selectedIcon').textContent = icon;
+  document.querySelectorAll('.icon-btn').forEach(b=>{
+    b.classList.toggle('selected', b.textContent===icon);
+  });
+}
+
+function addServiceManual(){
+  const inp = document.getElementById('serviceInput');
+  const val = inp.value.trim();
+  if(!val) return;
+  servicesArr.push(`${selectedServiceIcon}|${val}`);
+  inp.value = '';
+  renderTags('services');
+}
+
+function addServiceTag(e){
+  if(e.key === 'Enter'){ e.preventDefault(); addServiceManual(); }
+}
+
+// Override renderTags for services to show icon+name
+const _origRenderTags = renderTags;
+function renderTags(type){
+  if(type !== 'services'){ _origRenderTags(type); return; }
+  const wrap = document.getElementById('servicesWrap');
+  if(!wrap) return;
+  [...wrap.querySelectorAll('.tag')].forEach(t=>t.remove());
+  servicesArr.forEach((t,i)=>{
+    const parts = t.includes('|') ? t.split('|') : ['🔔', t];
+    const el = document.createElement('div');
+    el.className='tag';
+    el.innerHTML = `${parts[0]} ${parts[1]}<button onclick="removeTag('services',${i})">✕</button>`;
+    wrap.appendChild(el);
+  });
+}
+
+// Init icon picker when profile page shown
+const _origShowPage = showPage;
+function showPage(page){
+  _origShowPage(page);
+  if(page==='profile') setTimeout(initIconPicker, 50);
 }
 
 // Init
