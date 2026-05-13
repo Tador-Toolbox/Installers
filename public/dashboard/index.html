@@ -284,6 +284,7 @@ tr:last-child td{border-bottom:none}
     <div class="nav-item" onclick="showPage('profile')" data-page="profile"><span class="ni">✏️</span>עריכת פרופיל</div>
     <div class="nav-item" onclick="showPage('images')" data-page="images"><span class="ni">🖼️</span>תמונות</div>
     <div class="nav-item" onclick="showPage('portfolio')" data-page="portfolio"><span class="ni">📁</span>תיק עבודות</div>
+    <div class="nav-item" onclick="showPage('popup')" data-page="popup"><span class="ni">🔔</span>Popup</div>
     <div class="nav-item" onclick="showPage('testimonials')" data-page="testimonials"><span class="ni">⭐</span>המלצות</div>
     <div class="nav-item" onclick="showPage('leads')" data-page="leads"><span class="ni">📨</span>לידים <span class="badge" id="leadsBadge" style="display:none">0</span></div>
     <div class="nav-item" onclick="showPage('notifications')" data-page="notifications"><span class="ni">🔔</span>הודעות <span class="badge" id="notifBadge" style="display:none">0</span></div>
@@ -488,6 +489,66 @@ tr:last-child td{border-bottom:none}
     </div>
   </div>
 
+  <!-- Popup -->
+  <div id="page-popup" class="page" style="display:none">
+    <div class="page-title">🔔 Popup</div>
+    <div class="page-sub">חלון קופץ שמופיע לגולש כשנכנס לדף שלך</div>
+    <div class="card" style="max-width:560px">
+
+      <div class="form-group" style="margin-bottom:18px">
+        <label>הפעל Popup</label>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--white);font-size:0.95rem;font-weight:600">
+            <input type="checkbox" id="popupActive" style="width:18px;height:18px;accent-color:var(--gold)"/>
+            מופעל — הגולש יראה את ה-Popup
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px">
+        <label>כותרת ה-Popup</label>
+        <input id="popupTitle" type="text" placeholder="🔥 מבצע מיוחד לחודש זה!"/>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px">
+        <label>טקסט</label>
+        <textarea id="popupText" placeholder="כתוב כאן את ההודעה שתופיע בחלון..." style="min-height:80px"></textarea>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px">
+        <label>טקסט כפתור</label>
+        <input id="popupBtn" type="text" placeholder="קבל הצעת מחיר"/>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px">
+        <label>זמן המתנה לפני הופעה (שניות)</label>
+        <input id="popupDelay" type="number" min="0" max="30" value="3" style="width:120px"/>
+      </div>
+
+      <div class="form-group" style="margin-bottom:18px">
+        <label>תמונה ל-Popup (אופציונלי)</label>
+        <div style="display:flex;gap:12px;align-items:flex-start;margin-top:8px">
+          <div style="flex:1">
+            <img id="popupImgPreview" src="" style="display:none;width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-bottom:8px"/>
+            <div class="upload-zone" onclick="document.getElementById('popupImgInput').click()" style="padding:18px">
+              <input type="file" id="popupImgInput" accept="image/*" style="display:none" onchange="uploadPopupImage(this)"/>
+              <div class="upload-icon" style="font-size:1.4rem">🖼️</div>
+              <div class="upload-text" style="font-size:0.82rem"><strong>העלה תמונה</strong></div>
+            </div>
+          </div>
+          <button id="popupImgDeleteBtn" class="btn btn-red" style="display:none;margin-top:4px" onclick="deletePopupImage()">✕ מחק</button>
+        </div>
+      </div>
+
+      <button class="btn btn-gold" onclick="savePopup()" style="width:100%">💾 שמור Popup</button>
+
+      <div style="margin-top:20px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px">
+        <div style="font-size:0.82rem;font-weight:700;color:var(--muted);margin-bottom:8px">תצוגה מקדימה:</div>
+        <div id="popupPreview" style="background:rgba(255,255,255,0.05);border-radius:8px;padding:14px;text-align:center;font-size:0.88rem;color:var(--muted)">מלא את הפרטים לצפייה</div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Toast -->
@@ -562,6 +623,7 @@ function showPage(page){
   if(page==='leads') loadLeads();
   if(page==='notifications') loadNotifications();
   if(page==='profile') setTimeout(()=>{ renderServicesOnly(); selectTemplate(_pendingTemplate||'white'); }, 50);
+  if(page==='popup') loadPopupPage();
 }
 
 /* ── Load Profile ──────────────────────────────────────────── */
@@ -863,6 +925,77 @@ function selectTemplate(tpl){
   ['white','dark','red'].forEach(t=>{
     document.getElementById('tpl-'+t)?.classList.toggle('selected', t===tpl);
   });
+}
+
+/* ── Popup ─────────────────────────────────────────────────── */
+function loadPopupPage(){
+  if(!profile) return;
+  const p = profile.popup || {};
+  document.getElementById('popupActive').checked = !!p.active;
+  document.getElementById('popupTitle').value    = p.title || '';
+  document.getElementById('popupText').value     = p.text  || '';
+  document.getElementById('popupBtn').value      = p.btnText || 'קבל הצעת מחיר';
+  document.getElementById('popupDelay').value    = p.delay ?? 3;
+  if(p.image?.url){
+    const img = document.getElementById('popupImgPreview');
+    img.src = p.image.url; img.style.display='block';
+    document.getElementById('popupImgDeleteBtn').style.display='flex';
+  }
+  updatePopupPreview();
+}
+
+function updatePopupPreview(){
+  const title = document.getElementById('popupTitle').value;
+  const text  = document.getElementById('popupText').value;
+  const btn   = document.getElementById('popupBtn').value;
+  const prev  = document.getElementById('popupPreview');
+  if(!title && !text){ prev.innerHTML='<span style="color:var(--muted)">מלא כותרת וטקסט לצפייה</span>'; return; }
+  prev.innerHTML = `
+    <div style="font-weight:800;font-size:1rem;color:var(--white);margin-bottom:6px">${title}</div>
+    <div style="font-size:0.85rem;color:var(--muted);margin-bottom:12px">${text}</div>
+    <div style="background:var(--gold);color:#0F1117;font-weight:700;font-size:0.85rem;padding:8px 20px;border-radius:50px;display:inline-block">${btn||'קבל הצעת מחיר'}</div>
+  `;
+}
+['popupTitle','popupText','popupBtn'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('input', updatePopupPreview);
+});
+
+async function savePopup(){
+  const popup = {
+    active:  document.getElementById('popupActive').checked,
+    title:   document.getElementById('popupTitle').value.trim(),
+    text:    document.getElementById('popupText').value.trim(),
+    btnText: document.getElementById('popupBtn').value.trim() || 'קבל הצעת מחיר',
+    delay:   parseInt(document.getElementById('popupDelay').value) || 3
+  };
+  const r = await fetch('/api/installer/profile',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({popup})});
+  if(r.ok){ profile = await r.json(); toast('✅ Popup נשמר'); }
+  else toast('❌ שגיאה','error');
+}
+
+async function uploadPopupImage(input){
+  const file = input.files[0];
+  if(!file) return;
+  const fd = new FormData();
+  fd.append('image', file);
+  const r = await fetch('/api/installer/popup-image',{method:'POST',body:fd});
+  if(r.ok){
+    const d = await r.json();
+    const img = document.getElementById('popupImgPreview');
+    img.src=d.url; img.style.display='block';
+    document.getElementById('popupImgDeleteBtn').style.display='flex';
+    toast('✅ תמונה הועלתה');
+  } else toast('❌ שגיאה','error');
+}
+
+async function deletePopupImage(){
+  const r = await fetch('/api/installer/image/popup',{method:'DELETE'});
+  if(r.ok){
+    const img = document.getElementById('popupImgPreview');
+    img.src=''; img.style.display='none';
+    document.getElementById('popupImgDeleteBtn').style.display='none';
+    toast('✅ תמונה נמחקה');
+  }
 }
 
 /* ── Copy URL ──────────────────────────────────────────────── */
