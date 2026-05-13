@@ -162,8 +162,25 @@ router.put('/installer/profile', requireInstaller, async (req, res) => {
   }
 });
 
-// Upload logo
-router.post('/installer/logo', requireInstaller, memUpload.single('image'), async (req, res) => {
+// Delete a profile image (profile / hero / logo)
+router.delete('/installer/image/:type', requireInstaller, async (req, res) => {
+  try {
+    const { type } = req.params;
+    const fieldMap = { profile: 'profileImage', hero: 'heroImage', logo: 'logo' };
+    const field = fieldMap[type];
+    if(!field) return res.status(400).json({ error: 'Invalid type' });
+    const inst = await Installer.findById(req.session.installerId);
+    if(inst[field]?.publicId){
+      await cloudinary.uploader.destroy(inst[field].publicId).catch(()=>{});
+    }
+    inst[field] = undefined;
+    await inst.save();
+    res.json({ success: true });
+  } catch(e){
+    console.error('❌ Delete image error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+}); requireInstaller, memUpload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file' });
     const inst = await Installer.findById(req.session.installerId);
