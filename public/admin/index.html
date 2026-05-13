@@ -228,13 +228,45 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       </div>
       <div class="form-row">
         <div class="form-group"><label>Slug (URL) *</label><input id="cSlug" placeholder="israel-cohen" onkeyup="slugify(this)"/></div>
-        <div class="form-group"><label>סיסמה *</label><input id="cPass" type="password" placeholder="לפחות 8 תווים"/></div>
+        <div class="form-group"><label>סיסמה *</label><input id="cPass" type="text" placeholder="לפחות 8 תווים"/></div>
       </div>
       <div style="margin-bottom:16px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:12px 16px;font-size:0.85rem">
         <span style="color:var(--muted)">הדף הציבורי: </span>
         <span style="color:var(--gold);font-family:monospace" id="slugPreview">yoursite.com/<em>slug</em></span>
       </div>
       <button class="btn btn-gold" onclick="createInstaller()">✅ צור חשבון</button>
+    </div>
+
+    <!-- Success box shown after creation -->
+    <div id="createSuccessBox" style="display:none;max-width:520px;margin-top:16px">
+      <div class="card" style="border-color:rgba(46,204,113,0.4);background:rgba(46,204,113,0.06)">
+        <div style="font-size:1rem;font-weight:700;color:var(--green);margin-bottom:16px">✅ המתקין נוצר בהצלחה!</div>
+        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:8px">שלח למתקין את הפרטים הבאים:</div>
+
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px">
+          <div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">🌐 דף נחיתה ציבורי</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <span style="font-family:monospace;font-size:0.85rem;color:var(--gold)" id="newPublicUrl"></span>
+            <button class="btn btn-outline btn-sm" onclick="copyText('newPublicUrl')">📋 העתק</button>
+          </div>
+        </div>
+
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px">
+          <div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">🔐 קישור לפאנל ניהול</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <span style="font-family:monospace;font-size:0.85rem;color:var(--white)" id="newDashUrl"></span>
+            <button class="btn btn-outline btn-sm" onclick="copyText('newDashUrl')">📋 העתק</button>
+          </div>
+        </div>
+
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px">
+          <div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">👤 פרטי כניסה</div>
+          <div style="font-size:0.85rem;color:var(--white)">שם משתמש: <span id="newUsername" style="color:var(--gold);font-family:monospace"></span></div>
+          <div style="font-size:0.85rem;color:var(--white);margin-top:4px">סיסמה: <span id="newPassword" style="color:var(--gold);font-family:monospace"></span></div>
+        </div>
+
+        <button class="btn btn-outline" style="margin-top:14px;width:100%" onclick="copyAllDetails()">📋 העתק הכל</button>
+      </div>
     </div>
   </div>
 
@@ -485,7 +517,8 @@ function renderInstallersTable(){
       <td><span class="status-pill ${inst.isActive?'active':'inactive'}">${inst.isActive?'פעיל':'מושהה'}</span></td>
       <td>
         <div class="actions">
-          <a href="/${inst.slug}" target="_blank" class="btn btn-outline btn-sm">👁️</a>
+          <a href="/${inst.slug}" target="_blank" class="btn btn-outline btn-sm" title="דף ציבורי">👁️</a>
+          <a href="/dashboard" target="_blank" class="btn btn-outline btn-sm" title="פאנל מתקין">🖥️</a>
           <button class="btn btn-blue btn-sm" onclick="openResetModal('${inst._id}')">🔐</button>
           <button class="btn btn-outline btn-sm" onclick="openQRModal('${inst.slug}','${inst.name}')" title="צור QR Code">◻ QR</button>
           <button class="btn ${inst.isActive?'btn-red':'btn-green'} btn-sm" onclick="toggleInstaller('${inst._id}')">
@@ -513,14 +546,38 @@ async function createInstaller(){
   const r = await fetch('/api/admin/installers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,username,slug,password})});
   if(r.ok){
     const d = await r.json();
-    toast(`✅ מתקין נוצר! /${d.slug}`);
+    const base = window.location.origin;
+    // Show success box with all details
+    document.getElementById('newPublicUrl').textContent  = `${base}/${d.slug}`;
+    document.getElementById('newDashUrl').textContent    = `${base}/dashboard`;
+    document.getElementById('newUsername').textContent   = username;
+    document.getElementById('newPassword').textContent   = password;
+    document.getElementById('createSuccessBox').style.display = 'block';
+    // Clear form
     document.getElementById('cName').value=''; document.getElementById('cUser').value='';
     document.getElementById('cSlug').value=''; document.getElementById('cPass').value='';
     document.getElementById('slugPreview').textContent='yoursite.com/slug';
+    toast(`✅ מתקין נוצר! /${d.slug}`);
     await loadInstallers();
   } else {
     const d=await r.json(); toast(d.error||'שגיאה','error');
   }
+}
+
+function copyText(id){
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text);
+  toast('✅ הועתק');
+}
+
+function copyAllDetails(){
+  const pub  = document.getElementById('newPublicUrl').textContent;
+  const dash = document.getElementById('newDashUrl').textContent;
+  const user = document.getElementById('newUsername').textContent;
+  const pass = document.getElementById('newPassword').textContent;
+  const text = `דף נחיתה: ${pub}\nפאנל ניהול: ${dash}\nשם משתמש: ${user}\nסיסמה: ${pass}`;
+  navigator.clipboard.writeText(text);
+  toast('✅ כל הפרטים הועתקו');
 }
 
 /* ── Toggle / Delete ────────────────────────────────────────── */
