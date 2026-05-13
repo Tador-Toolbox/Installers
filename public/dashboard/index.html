@@ -344,6 +344,13 @@ tr:last-child td{border-bottom:none}
           </div>
           <div style="font-size:0.78rem;color:var(--muted);margin-top:6px">אם ריק — יוצגו ברירות המחדל</div>
         </div>
+        <div class="form-group full">
+          <label>⚡ פסי אמון (הכיתובים הקטנים מתחת לכפתורים בהירו)</label>
+          <div class="tags-input-wrap" id="trustWrap">
+            <input class="tag-input" id="trustInput" placeholder="לדוגמה: ⚡ שירות מהיר — לחץ Enter להוספה" onkeydown="addTag(event,'trust')"/>
+          </div>
+          <div style="font-size:0.78rem;color:var(--muted);margin-top:6px">אם ריק — יוצגו: שירות מהיר / אחריות מלאה / מוסמך ומנוסה</div>
+        </div>
       </div>
       <button class="btn btn-gold" onclick="saveProfile()">💾 שמור שינויים</button>
     </div>
@@ -463,6 +470,7 @@ let profile = null;
 let servicesArr = [];
 let areasArr = [];
 let checklistArr = [];
+let trustArr = [];
 
 /* ── Toast ─────────────────────────────────────────────────── */
 function toast(msg, type='success'){
@@ -542,7 +550,8 @@ async function loadProfile(){
   servicesArr  = profile.services || [];
   areasArr     = profile.areas || [];
   checklistArr = profile.checklistItems || [];
-  renderTags('services'); renderTags('areas'); renderTags('checklist');
+  trustArr     = profile.trustItems || [];
+  renderTags('services'); renderTags('areas'); renderTags('checklist'); renderTags('trust');
   if(profile.logo?.url){ const img=document.getElementById('logoPreview'); img.src=profile.logo.url; img.style.display='block'; }
   if(profile.profileImage?.url){ const img=document.getElementById('profileImgPreview'); img.src=profile.profileImage.url; img.style.display='block'; }
   if(profile.heroImage?.url){ const img=document.getElementById('heroImgPreview'); img.src=profile.heroImage.url; img.style.display='block'; }
@@ -555,13 +564,14 @@ async function loadProfile(){
 function addTag(e, type){
   if(e.key !== 'Enter') return;
   e.preventDefault();
-  const inputId = type==='services'?'serviceInput':type==='areas'?'areaInput':'checklistInput';
+  const inputId = {services:'serviceInput',areas:'areaInput',checklist:'checklistInput',trust:'trustInput'}[type];
   const inp = document.getElementById(inputId);
   const val = inp.value.trim();
   if(!val) return;
   if(type==='services') servicesArr.push(val);
   else if(type==='areas') areasArr.push(val);
-  else checklistArr.push(val);
+  else if(type==='checklist') checklistArr.push(val);
+  else if(type==='trust') trustArr.push(val);
   inp.value = '';
   renderTags(type);
 }
@@ -569,17 +579,19 @@ function addTag(e, type){
 function removeTag(type, i){
   if(type==='services') servicesArr.splice(i,1);
   else if(type==='areas') areasArr.splice(i,1);
-  else checklistArr.splice(i,1);
+  else if(type==='checklist') checklistArr.splice(i,1);
+  else if(type==='trust') trustArr.splice(i,1);
   renderTags(type);
 }
 
 function renderTags(type){
-  const arr  = type==='services' ? servicesArr : type==='areas' ? areasArr : checklistArr;
-  const wrapId = type==='services'?'servicesWrap':type==='areas'?'areasWrap':'checklistWrap';
-  const inpId  = type==='services'?'serviceInput':type==='areas'?'areaInput':'checklistInput';
-  const wrap = document.getElementById(wrapId);
-  const inp  = document.getElementById(inpId);
-  if(!wrap) return;
+  const arrs  = {services:servicesArr,areas:areasArr,checklist:checklistArr,trust:trustArr};
+  const wraps = {services:'servicesWrap',areas:'areasWrap',checklist:'checklistWrap',trust:'trustWrap'};
+  const inps  = {services:'serviceInput',areas:'areaInput',checklist:'checklistInput',trust:'trustInput'};
+  const arr  = arrs[type];
+  const wrap = document.getElementById(wraps[type]);
+  const inp  = document.getElementById(inps[type]);
+  if(!wrap || !inp) return;
   [...wrap.querySelectorAll('.tag')].forEach(t=>t.remove());
   arr.forEach((t,i)=>{
     const el = document.createElement('div');
@@ -603,7 +615,8 @@ async function saveProfile(){
     instagram: document.getElementById('pIG').value,
     services: servicesArr,
     areas: areasArr,
-    checklistItems: checklistArr
+    checklistItems: checklistArr,
+    trustItems: trustArr
   };
   const r = await fetch('/api/installer/profile',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   if(r.ok){ toast('✅ הפרופיל עודכן בהצלחה'); profile = await r.json(); }
