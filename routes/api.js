@@ -391,6 +391,16 @@ router.post('/admin/installers', requireAdmin, async (req, res) => {
   }
 });
 
+// Set installer template (admin only)
+router.put('/admin/installers/:id/template', requireAdmin, async (req, res) => {
+  try {
+    const { template } = req.body;
+    if(!['white','dark','red'].includes(template)) return res.status(400).json({ error: 'Invalid template' });
+    await Installer.findByIdAndUpdate(req.params.id, { template });
+    res.json({ success: true });
+  } catch(e){ res.status(500).json({ error: e.message }); }
+});
+
 // Toggle installer active
 router.put('/admin/installers/:id/toggle', requireAdmin, async (req, res) => {
   try {
