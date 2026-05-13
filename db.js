@@ -53,6 +53,7 @@ const InstallerSchema = new mongoose.Schema({
   // Custom content
   badge:          { type: String, default: 'מומחה מוסמך ומנוסה' },
   checklistItems: [{ type: String }],
+  trustItems:     [{ type: String }],
 
   // Content
   portfolioImages: [PortfolioImageSchema],
