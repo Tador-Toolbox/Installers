@@ -150,7 +150,7 @@ router.get('/installer/profile', requireInstaller, async (req, res) => {
 // Update profile (text fields)
 router.put('/installer/profile', requireInstaller, async (req, res) => {
   try {
-    const allowed = ['name','businessName','phone','whatsapp','tagline','about','services','areas','facebook','instagram','badge','checklistItems','trustItems','template'];
+    const allowed = ['name','businessName','phone','whatsapp','tagline','about','services','areas','facebook','instagram','badge','checklistItems','trustItems','template','popup'];
     const updates = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined) updates[key] = req.body[key];
@@ -166,7 +166,7 @@ router.put('/installer/profile', requireInstaller, async (req, res) => {
 router.delete('/installer/image/:type', requireInstaller, async (req, res) => {
   try {
     const { type } = req.params;
-    const fieldMap = { profile: 'profileImage', hero: 'heroImage', logo: 'logo' };
+    const fieldMap = { profile: 'profileImage', hero: 'heroImage', logo: 'logo', popup: 'popup.image' };
     const field = fieldMap[type];
     if(!field) return res.status(400).json({ error: 'Invalid type' });
     const inst = await Installer.findById(req.session.installerId);
@@ -178,6 +178,26 @@ router.delete('/installer/image/:type', requireInstaller, async (req, res) => {
     res.json({ success: true });
   } catch(e){
     console.error('❌ Delete image error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Upload popup image
+router.post('/installer/popup-image', requireInstaller, memUpload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file' });
+    const inst = await Installer.findById(req.session.installerId);
+    if (inst.popup?.image?.publicId) {
+      await cloudinary.uploader.destroy(inst.popup.image.publicId).catch(() => {});
+    }
+    const result = await uploadToCloudinary(req.file.buffer, 'installer_popups');
+    if (!inst.popup) inst.popup = {};
+    inst.popup.image = { url: result.secure_url, publicId: result.public_id };
+    inst.markModified('popup');
+    await inst.save();
+    res.json({ url: result.secure_url });
+  } catch (e) {
+    console.error('❌ Popup image error:', e.message);
     res.status(500).json({ error: e.message });
   }
 });
