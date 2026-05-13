@@ -11,15 +11,15 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --red:   #C41230;
-  --red2:  #A50E28;
-  --red-lt:#FFF1F4;
-  --dark:  #1A0A0F;
+  --red:   #8B0000;
+  --red2:  #720000;
+  --red-lt:#FFF0F0;
+  --dark:  #0F0000;
   --white: #FFFFFF;
   --off:   #FAFAFA;
-  --border:#F0E0E4;
-  --text:  #1A0A0F;
-  --muted: #6B5058;
+  --border:#E8D0D0;
+  --text:  #1A0000;
+  --muted: #6B4040;
   --radius:12px;
 }
 html{scroll-behavior:smooth}
@@ -139,9 +139,9 @@ h1{
 
 /* ── SECTIONS ── */
 .section{padding:80px 32px}
-.section-inner{max-width:1100px;margin:0 auto}
-.sec-ey{font-size:0.72rem;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:2.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.sec-ey::before{content:'';width:20px;height:2px;background:var(--red);border-radius:2px}
+.section-inner{max-width:1100px;margin:0 auto;text-align:center}
+.sec-ey{font-size:0.72rem;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:2.5px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:10px}
+.sec-ey::before,.sec-ey::after{content:'';flex:1;max-width:50px;height:1px;background:var(--red);opacity:0.4}
 .sec-title{font-size:clamp(1.8rem,3.5vw,2.4rem);font-weight:900;color:var(--dark);letter-spacing:-0.5px;margin-bottom:8px}
 .sec-sub{color:var(--muted);font-size:0.95rem;margin-bottom:48px}
 .bg-off{background:var(--off)}

@@ -64,8 +64,9 @@ h1.hero-name{font-size:clamp(2.2rem,5vw,3.6rem);font-weight:900;color:var(--navy
 
 /* SECTIONS */
 .section{padding:80px 32px}
-.section-inner{max-width:1100px;margin:0 auto}
-.sec-ey{font-size:0.75rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px}
+.section-inner{max-width:1100px;margin:0 auto;text-align:center}
+.sec-ey{font-size:0.75rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px}
+.sec-ey::before,.sec-ey::after{content:'';flex:1;max-width:60px;height:1px;background:var(--gold);opacity:0.4}
 .sec-title{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:900;color:var(--navy);letter-spacing:-0.4px;margin-bottom:8px}
 .sec-sub{color:var(--muted);font-size:0.95rem;margin-bottom:48px}
 .bg-off{background:var(--off)}
@@ -275,14 +276,17 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,.06);padding
   <div class="section-inner">
     <div class="sec-ey reveal">אודות</div>
     <h2 class="sec-title reveal">למה לבחור בי?</h2>
-    <p class="about-text reveal" style="max-width:700px"><%= installer.about %></p>
-    <ul class="check-list">
+    <p class="about-text reveal" style="max-width:680px;margin:0 auto 36px;text-align:center"><%= installer.about %></p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;text-align:right;max-width:800px;margin:0 auto">
       <% const defaultChecks = ['ניסיון רב שנים בתחום האינטרקום והאבטחה','שירות מהיר ואמין עד הבית','אחריות מלאה על כל עבודה שבוצעה','מחירים הוגנים ושקיפות מלאה']; %>
       <% const checks = (installer.checklistItems && installer.checklistItems.length) ? installer.checklistItems : defaultChecks; %>
       <% checks.forEach(item=>{ %>
-      <li class="reveal"><span class="chk">✓</span><%= item %></li>
+      <div class="reveal" style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:18px 16px;display:flex;align-items:flex-start;gap:12px">
+        <span class="chk" style="flex-shrink:0;margin-top:2px">✓</span>
+        <span style="font-size:0.9rem;font-weight:600;color:var(--navy)"><%= item %></span>
+      </div>
       <% }) %>
-    </ul>
+    </div>
   </div>
 </section>
 <% } %>
