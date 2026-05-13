@@ -210,7 +210,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <div class="card">
       <div class="table-wrap">
         <table>
-          <thead><tr><th>מתקין</th><th>לידים</th><th>כניסות</th><th>כניסה אחרונה</th><th>סטטוס</th><th>פעולות</th></tr></thead>
+          <thead><tr><th>מתקין</th><th>שם משתמש</th><th>סיסמה</th><th>לידים</th><th>כניסות</th><th>כניסה אחרונה</th><th>סטטוס</th><th>פעולות</th></tr></thead>
           <tbody id="installersBody"></tbody>
         </table>
       </div>
@@ -509,7 +509,7 @@ async function loadOverview(){
 /* ── Installers Table ───────────────────────────────────────── */
 function renderInstallersTable(){
   const body = document.getElementById('installersBody');
-  if(!allInstallers.length){ body.innerHTML='<tr><td colspan="6"><div class="empty">אין מתקינים</div></td></tr>'; return; }
+  if(!allInstallers.length){ body.innerHTML='<tr><td colspan="8"><div class="empty">אין מתקינים</div></td></tr>'; return; }
   body.innerHTML = allInstallers.map(inst=>`
     <tr>
       <td>
@@ -517,6 +517,13 @@ function renderInstallersTable(){
           <div class="installer-name">${inst.name}</div>
           <div class="installer-slug">/${inst.slug}</div>
         </div>
+      </td>
+      <td>
+        <span style="font-family:monospace;font-size:0.85rem;color:var(--white)">${inst.username}</span>
+      </td>
+      <td>
+        <span style="font-size:0.78rem;color:var(--muted)">מוצפנת •</span>
+        <button class="btn btn-outline btn-sm" style="font-size:0.75rem;padding:3px 8px" onclick="openResetModal('${inst._id}')">אפס</button>
       </td>
       <td>${inst.totalLeads || 0}</td>
       <td>${inst.loginCount || 0}</td>
@@ -526,7 +533,6 @@ function renderInstallersTable(){
         <div class="actions">
           <a href="/${inst.slug}" target="_blank" class="btn btn-outline btn-sm" title="דף ציבורי">👁️</a>
           <a href="/dashboard" target="_blank" class="btn btn-outline btn-sm" title="פאנל מתקין">🖥️</a>
-          <button class="btn btn-blue btn-sm" onclick="openResetModal('${inst._id}')">🔐</button>
           <button class="btn btn-outline btn-sm" onclick="openQRModal('${inst.slug}','${inst.name}')" title="צור QR Code">◻ QR</button>
           <button class="btn ${inst.isActive?'btn-red':'btn-green'} btn-sm" onclick="toggleInstaller('${inst._id}')">
             ${inst.isActive?'⏸ הקפא':'▶ הפעל'}
