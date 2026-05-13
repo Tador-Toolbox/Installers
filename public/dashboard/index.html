@@ -335,14 +335,10 @@ tr:last-child td{border-bottom:none}
         <div class="form-group"><label>אינסטגרם (URL)</label><input id="pIG" type="url" placeholder="https://instagram.com/..."/></div>
         <div class="form-group full">
           <label>שירותים</label>
-          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
-            <div style="font-size:0.82rem;color:var(--muted);margin-bottom:10px">בחר אייקון ושם שירות:</div>
-            <div class="icon-grid" id="iconGrid"></div>
-            <div style="display:flex;gap:8px;margin-top:12px">
-              <div style="font-size:1.4rem;min-width:42px;height:42px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center" id="selectedIcon">🔔</div>
-              <input class="tag-input" id="serviceInput" placeholder="שם השירות..." style="flex:1;border:1.5px solid var(--border)!important;border-radius:8px!important;" onkeydown="addServiceTag(event)"/>
-              <button class="btn btn-gold" onclick="addServiceManual()" style="padding:0 14px">+ הוסף</button>
-            </div>
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <input class="tag-input" id="serviceInput" placeholder="הקלד שירות ולחץ Enter — אייקון יתאים אוטומטית..." style="flex:1;border:1.5px solid var(--border)!important;border-radius:8px!important;" onkeydown="addServiceTag(event)" oninput="previewServiceIcon(this.value)"/>
+            <div style="font-size:1.6rem;min-width:44px;height:44px;background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center" id="serviceIconPreview">🔔</div>
+            <button class="btn btn-gold" onclick="addServiceManual()" style="padding:0 16px">+ הוסף</button>
           </div>
           <div class="tags-input-wrap" id="servicesWrap" style="border:none;padding:0;background:transparent"></div>
         </div>
@@ -546,7 +542,7 @@ function showPage(page){
   if(page==='testimonials') renderTestimonials();
   if(page==='leads') loadLeads();
   if(page==='notifications') loadNotifications();
-  if(page==='profile') setTimeout(initIconPicker, 50);
+  if(page==='profile') setTimeout(()=>renderServicesOnly(), 50);
 }
 
 /* ── Load Profile ──────────────────────────────────────────── */
@@ -829,36 +825,51 @@ function copyPublicUrl(){
 }
 
 /* ── Icon Picker ───────────────────────────────────────────── */
-const SECURITY_ICONS = [
-  '🔔','📷','🔐','🔑','📡','🛡️','🔧','🏠','🏢','📺',
-  '🚪','🎛️','📱','🌐','💡','🔊','🎥','⚡','🖥️','📹',
-  '🔗','🔲','📶','🏗️','🔩','🛠️','💼','🏪','🏬','🔭'
+/* ── Auto Icon Matcher ─────────────────────────────────────── */
+const ICON_MAP = [
+  { keys:['אינטרקום','intercom','פעמון','כניסה'],    icon:'🔔' },
+  { keys:['מצלמ','camera','cctv','אבטחה','surveillance'], icon:'📷' },
+  { keys:['מנעול','נעילה','lock','בקרה','access'],   icon:'🔐' },
+  { keys:['מפתח','key','קוד','code','קודן'],          icon:'🔑' },
+  { keys:['רשת','network','wifi','אנטנה','ip'],       icon:'📡' },
+  { keys:['מגן','shield','הגנה','אזעק'],             icon:'🛡️' },
+  { keys:['תיקון','תחזוקה','repair','maintain','שירות'], icon:'🔧' },
+  { keys:['בית','home','דירה','פרטי'],               icon:'🏠' },
+  { keys:['משרד','בניין','office','building'],        icon:'🏢' },
+  { keys:['מסך','monitor','screen','display'],        icon:'📺' },
+  { keys:['דלת','gate','שער','door'],                icon:'🚪' },
+  { keys:['לוח','panel','ממשק','control'],           icon:'🎛️' },
+  { keys:['אפליקציה','app','סלולר','mobile','טלפון'], icon:'📱' },
+  { keys:['ענן','cloud','אינטרנט','smart','חכם'],    icon:'🌐' },
+  { keys:['תאורה','אור','light','led'],              icon:'💡' },
+  { keys:['אזעקה','alarm','סירנה','sound'],          icon:'🔊' },
+  { keys:['וידאו','video','הקלטה','dvr','nvr'],      icon:'🎥' },
+  { keys:['חשמל','electric','כוח','power','ups'],    icon:'⚡' },
+  { keys:['מחשב','computer','server','ממשק'],        icon:'🖥️' },
+  { keys:['התקנ','install','הרכב','חיבור','setup'],  icon:'🛠️' },
 ];
-let selectedServiceIcon = '🔔';
 
-function initIconPicker(){
-  const grid = document.getElementById('iconGrid');
-  if(!grid) return;
-  grid.innerHTML = SECURITY_ICONS.map(icon=>`
-    <button class="icon-btn ${icon===selectedServiceIcon?'selected':''}"
-      onclick="selectIcon('${icon}')">${icon}</button>
-  `).join('');
+function getAutoIcon(text){
+  const lower = text.toLowerCase();
+  for(const entry of ICON_MAP){
+    if(entry.keys.some(k => lower.includes(k.toLowerCase()))) return entry.icon;
+  }
+  return '🔔'; // default
 }
 
-function selectIcon(icon){
-  selectedServiceIcon = icon;
-  document.getElementById('selectedIcon').textContent = icon;
-  document.querySelectorAll('.icon-btn').forEach(b=>{
-    b.classList.toggle('selected', b.textContent.trim()===icon);
-  });
+function previewServiceIcon(val){
+  const icon = getAutoIcon(val);
+  document.getElementById('serviceIconPreview').textContent = icon;
 }
 
 function addServiceManual(){
   const inp = document.getElementById('serviceInput');
   const val = inp.value.trim();
   if(!val) return;
-  servicesArr.push(`${selectedServiceIcon}|${val}`);
+  const icon = getAutoIcon(val);
+  servicesArr.push(`${icon}|${val}`);
   inp.value = '';
+  document.getElementById('serviceIconPreview').textContent = '🔔';
   renderServicesOnly();
 }
 
@@ -870,14 +881,9 @@ function renderServicesOnly(){
   const wrap = document.getElementById('servicesWrap');
   if(!wrap) return;
   wrap.innerHTML = servicesArr.map((t,i)=>{
-    const parts = t.includes('|') ? t.split('|') : ['🔔', t];
+    const parts = t.includes('|') ? t.split('|') : [getAutoIcon(t), t];
     return `<div class="tag">${parts[0]} ${parts[1]}<button onclick="removeServiceTag(${i})">✕</button></div>`;
   }).join('');
-}
-
-function removeServiceTag(i){
-  servicesArr.splice(i,1);
-  renderServicesOnly();
 }
 
 // Init
