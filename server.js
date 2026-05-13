@@ -61,7 +61,10 @@ app.get('/:slug', async (req, res, next) => {
     // Only show approved portfolio images
     const approvedPortfolio = installer.portfolioImages.filter(p => p.status === 'approved');
 
-    res.render('landing', {
+    const templateMap = { dark: 'landing-dark', red: 'landing-red', white: 'landing' };
+    const view = templateMap[installer.template] || 'landing';
+
+    res.render(view, {
       installer: {
         ...installer.toObject(),
         portfolioImages: approvedPortfolio
