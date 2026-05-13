@@ -150,7 +150,7 @@ router.get('/installer/profile', requireInstaller, async (req, res) => {
 // Update profile (text fields)
 router.put('/installer/profile', requireInstaller, async (req, res) => {
   try {
-    const allowed = ['name','businessName','phone','whatsapp','tagline','about','services','areas','facebook','instagram'];
+    const allowed = ['name','businessName','phone','whatsapp','tagline','about','services','areas','facebook','instagram','badge','checklistItems'];
     const updates = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined) updates[key] = req.body[key];
@@ -158,6 +158,24 @@ router.put('/installer/profile', requireInstaller, async (req, res) => {
     const inst = await Installer.findByIdAndUpdate(req.session.installerId, updates, { new: true }).select('-password');
     res.json(inst);
   } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Upload logo
+router.post('/installer/logo', requireInstaller, memUpload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file' });
+    const inst = await Installer.findById(req.session.installerId);
+    if (inst.logo?.publicId) {
+      await cloudinary.uploader.destroy(inst.logo.publicId).catch(() => {});
+    }
+    const result = await uploadToCloudinary(req.file.buffer, 'installer_logos');
+    inst.logo = { url: result.secure_url, publicId: result.public_id };
+    await inst.save();
+    res.json({ url: result.secure_url });
+  } catch (e) {
+    console.error('❌ Logo upload error:', e.message);
     res.status(500).json({ error: e.message });
   }
 });
