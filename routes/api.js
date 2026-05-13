@@ -182,7 +182,15 @@ router.post('/installer/hero-image', requireInstaller, heroUpload.single('image'
 });
 
 // Upload portfolio image (goes to pending)
-router.post('/installer/portfolio', requireInstaller, portfolioUpload.single('image'), async (req, res) => {
+router.post('/installer/portfolio', requireInstaller, (req, res, next) => {
+  portfolioUpload.single('image')(req, res, (err) => {
+    if(err){
+      console.error('❌ Multer/Cloudinary upload error:', JSON.stringify(err), err.message);
+      return res.status(500).json({ error: err.message || 'Upload failed' });
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     const inst = await Installer.findById(req.session.installerId);
@@ -190,7 +198,7 @@ router.post('/installer/portfolio', requireInstaller, portfolioUpload.single('im
     await inst.save();
     res.json({ success: true });
   } catch (e) {
-    console.error('❌ Portfolio upload error:', e.message, e.http_code || '');
+    console.error('❌ Portfolio save error:', e.message);
     res.status(500).json({ error: e.message });
   }
 });
