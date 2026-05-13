@@ -180,7 +180,10 @@ router.delete('/installer/image/:type', requireInstaller, async (req, res) => {
     console.error('❌ Delete image error:', e.message);
     res.status(500).json({ error: e.message });
   }
-}); requireInstaller, memUpload.single('image'), async (req, res) => {
+});
+
+// Upload logo
+router.post('/installer/logo', requireInstaller, memUpload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file' });
     const inst = await Installer.findById(req.session.installerId);
