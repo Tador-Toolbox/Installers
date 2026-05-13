@@ -3,7 +3,7 @@ const router  = express.Router();
 const bcrypt  = require('bcryptjs');
 const multer  = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const cloudinary = require('cloudinary');
+const cloudinary = require('cloudinary').v2;
 const { Installer, Lead, Admin, ClickEvent } = require('../db');
 const { requireInstaller, requireAdmin } = require('../middleware/auth');
 
