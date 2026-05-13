@@ -196,7 +196,7 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,.06);padding
     <% if(installer.logo && installer.logo.url){ %>
       <img src="<%= installer.logo.url %>" alt="<%= installer.businessName || installer.name %>" style="height:36px;width:auto;object-fit:contain"/>
     <% } else { %>
-      <%= installer.businessName || installer.name %><em>.</em>
+      <%= installer.businessName || installer.name %>
     <% } %>
   </div>
   <div class="nav-links">
@@ -261,7 +261,8 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,.06);padding
     <div class="svc-grid">
       <% const ICONS=['🔔','🔐','📷','🎛️','🔑','📡','🛡️','⚡','🔧','🏗️']; %>
       <% installer.services.forEach((s,i)=>{ %>
-      <div class="svc-card reveal"><div class="svc-icon"><%= ICONS[i%ICONS.length] %></div><div class="svc-name"><%= s %></div></div>
+      <% const parts = s.includes('|') ? s.split('|') : [ICONS[i%ICONS.length], s]; %>
+      <div class="svc-card reveal"><div class="svc-icon"><%= parts[0] %></div><div class="svc-name"><%= parts[1] %></div></div>
       <% }) %>
     </div>
   </div>
