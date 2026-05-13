@@ -192,7 +192,13 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,.06);padding
 <body>
 
 <nav class="nav">
-  <div class="nav-logo"><%= installer.businessName || installer.name %><em>.</em></div>
+  <div class="nav-logo">
+    <% if(installer.logo && installer.logo.url){ %>
+      <img src="<%= installer.logo.url %>" alt="<%= installer.businessName || installer.name %>" style="height:36px;width:auto;object-fit:contain"/>
+    <% } else { %>
+      <%= installer.businessName || installer.name %><em>.</em>
+    <% } %>
+  </div>
   <div class="nav-links">
     <% if(installer.services && installer.services.length){ %><span class="nav-link" onclick="ss('services')">שירותים</span><% } %>
     <% if(installer.about){ %><span class="nav-link" onclick="ss('about')">אודות</span><% } %>
@@ -205,7 +211,7 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,.06);padding
 <section class="hero">
   <div class="hero-inner">
     <div class="reveal">
-      <div class="eyebrow">✦ מומחה מוסמך ומנוסה</div>
+      <div class="eyebrow">✦ <%= installer.badge || 'מומחה מוסמך ומנוסה' %></div>
       <h1 class="hero-name"><%= installer.name %></h1>
       <% if(installer.businessName){ %><div class="hero-business"><%= installer.businessName %></div><% } %>
       <p class="hero-tagline"><%= installer.tagline || 'מומחה להתקנת מערכות אינטרקום, בקרת כניסה ואבטחה לבניינים, משרדים ובתים פרטיים.' %></p>
@@ -279,10 +285,11 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,.06);padding
         <h2 class="sec-title reveal">למה לבחור בי?</h2>
         <p class="about-text reveal"><%= installer.about %></p>
         <ul class="check-list">
-          <li class="reveal"><span class="chk">✓</span>ניסיון רב שנים בתחום האינטרקום והאבטחה</li>
-          <li class="reveal"><span class="chk">✓</span>שירות מהיר ואמין עד הבית</li>
-          <li class="reveal"><span class="chk">✓</span>אחריות מלאה על כל עבודה שבוצעה</li>
-          <li class="reveal"><span class="chk">✓</span>מחירים הוגנים ושקיפות מלאה</li>
+          <% const defaultChecks = ['ניסיון רב שנים בתחום האינטרקום והאבטחה','שירות מהיר ואמין עד הבית','אחריות מלאה על כל עבודה שבוצעה','מחירים הוגנים ושקיפות מלאה']; %>
+          <% const checks = (installer.checklistItems && installer.checklistItems.length) ? installer.checklistItems : defaultChecks; %>
+          <% checks.forEach(item=>{ %>
+          <li class="reveal"><span class="chk">✓</span><%= item %></li>
+          <% }) %>
         </ul>
       </div>
     </div>
