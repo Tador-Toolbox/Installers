@@ -2,7 +2,6 @@ const express = require('express');
 const router  = express.Router();
 const bcrypt  = require('bcryptjs');
 const multer  = require('multer');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
 const { Installer, Lead, Admin, ClickEvent } = require('../db');
 const { requireInstaller, requireAdmin } = require('../middleware/auth');
@@ -27,14 +26,28 @@ if(!cldConfig.cloud_name || !cldConfig.api_key || !cldConfig.api_secret){
   console.log('✅ Cloudinary configured:', cldConfig.cloud_name);
 }
 
-const makeStorage = (folder) => new CloudinaryStorage({
-  cloudinary,
-  params: { folder, allowed_formats: ['jpg', 'jpeg', 'png', 'webp'] }
+// ─── Upload helper — memory storage + direct cloudinary upload ────────────────
+const memUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (req, file, cb) => {
+    const allowed = ['image/jpeg','image/png','image/webp','image/gif'];
+    allowed.includes(file.mimetype) ? cb(null, true) : cb(new Error('Invalid file type'));
+  }
 });
 
-const profileUpload   = multer({ storage: makeStorage('installer_profiles') });
-const heroUpload      = multer({ storage: makeStorage('installer_heroes') });
-const portfolioUpload = multer({ storage: makeStorage('installer_portfolio') });
+function uploadToCloudinary(buffer, folder) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder, allowed_formats: ['jpg','jpeg','png','webp'] },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    stream.end(buffer);
+  });
+}
 
 // ─── PUBLIC ──────────────────────────────────────────────────────────────────
 
@@ -150,55 +163,52 @@ router.put('/installer/profile', requireInstaller, async (req, res) => {
 });
 
 // Upload profile image
-router.post('/installer/profile-image', requireInstaller, profileUpload.single('image'), async (req, res) => {
+router.post('/installer/profile-image', requireInstaller, memUpload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file' });
     const inst = await Installer.findById(req.session.installerId);
     if (inst.profileImage?.publicId) {
       await cloudinary.uploader.destroy(inst.profileImage.publicId).catch(() => {});
     }
-    inst.profileImage = { url: req.file.path, publicId: req.file.filename };
+    const result = await uploadToCloudinary(req.file.buffer, 'installer_profiles');
+    inst.profileImage = { url: result.secure_url, publicId: result.public_id };
     await inst.save();
-    res.json({ url: req.file.path });
+    res.json({ url: result.secure_url });
   } catch (e) {
+    console.error('❌ Profile image upload error:', e.message);
     res.status(500).json({ error: e.message });
   }
 });
 
 // Upload hero image
-router.post('/installer/hero-image', requireInstaller, heroUpload.single('image'), async (req, res) => {
+router.post('/installer/hero-image', requireInstaller, memUpload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file' });
     const inst = await Installer.findById(req.session.installerId);
     if (inst.heroImage?.publicId) {
       await cloudinary.uploader.destroy(inst.heroImage.publicId).catch(() => {});
     }
-    inst.heroImage = { url: req.file.path, publicId: req.file.filename };
+    const result = await uploadToCloudinary(req.file.buffer, 'installer_heroes');
+    inst.heroImage = { url: result.secure_url, publicId: result.public_id };
     await inst.save();
-    res.json({ url: req.file.path });
+    res.json({ url: result.secure_url });
   } catch (e) {
+    console.error('❌ Hero image upload error:', e.message);
     res.status(500).json({ error: e.message });
   }
 });
 
 // Upload portfolio image (goes to pending)
-router.post('/installer/portfolio', requireInstaller, (req, res, next) => {
-  portfolioUpload.single('image')(req, res, (err) => {
-    if(err){
-      console.error('❌ Multer/Cloudinary upload error:', JSON.stringify(err), err.message);
-      return res.status(500).json({ error: err.message || 'Upload failed' });
-    }
-    next();
-  });
-}, async (req, res) => {
+router.post('/installer/portfolio', requireInstaller, memUpload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    const result = await uploadToCloudinary(req.file.buffer, 'installer_portfolio');
     const inst = await Installer.findById(req.session.installerId);
-    inst.portfolioImages.push({ url: req.file.path, publicId: req.file.filename });
+    inst.portfolioImages.push({ url: result.secure_url, publicId: result.public_id });
     await inst.save();
     res.json({ success: true });
   } catch (e) {
-    console.error('❌ Portfolio save error:', e.message);
+    console.error('❌ Portfolio upload error:', e.message);
     res.status(500).json({ error: e.message });
   }
 });
