@@ -546,6 +546,7 @@ function showPage(page){
   if(page==='testimonials') renderTestimonials();
   if(page==='leads') loadLeads();
   if(page==='notifications') loadNotifications();
+  if(page==='profile') setTimeout(initIconPicker, 50);
 }
 
 /* ── Load Profile ──────────────────────────────────────────── */
@@ -600,9 +601,10 @@ function removeTag(type, i){
 }
 
 function renderTags(type){
-  const arrs  = {services:servicesArr,areas:areasArr,checklist:checklistArr,trust:trustArr};
-  const wraps = {services:'servicesWrap',areas:'areasWrap',checklist:'checklistWrap',trust:'trustWrap'};
-  const inps  = {services:'serviceInput',areas:'areaInput',checklist:'checklistInput',trust:'trustInput'};
+  if(type==='services'){ renderServicesOnly(); return; }
+  const arrs  = {areas:areasArr,checklist:checklistArr,trust:trustArr};
+  const wraps = {areas:'areasWrap',checklist:'checklistWrap',trust:'trustWrap'};
+  const inps  = {areas:'areaInput',checklist:'checklistInput',trust:'trustInput'};
   const arr  = arrs[type];
   const wrap = document.getElementById(wraps[type]);
   const inp  = document.getElementById(inps[type]);
@@ -832,7 +834,6 @@ const SECURITY_ICONS = [
   '🚪','🎛️','📱','🌐','💡','🔊','🎥','⚡','🖥️','📹',
   '🔗','🔲','📶','🏗️','🔩','🛠️','💼','🏪','🏬','🔭'
 ];
-
 let selectedServiceIcon = '🔔';
 
 function initIconPicker(){
@@ -840,7 +841,7 @@ function initIconPicker(){
   if(!grid) return;
   grid.innerHTML = SECURITY_ICONS.map(icon=>`
     <button class="icon-btn ${icon===selectedServiceIcon?'selected':''}"
-      onclick="selectIcon('${icon}')" title="${icon}">${icon}</button>
+      onclick="selectIcon('${icon}')">${icon}</button>
   `).join('');
 }
 
@@ -848,7 +849,7 @@ function selectIcon(icon){
   selectedServiceIcon = icon;
   document.getElementById('selectedIcon').textContent = icon;
   document.querySelectorAll('.icon-btn').forEach(b=>{
-    b.classList.toggle('selected', b.textContent===icon);
+    b.classList.toggle('selected', b.textContent.trim()===icon);
   });
 }
 
@@ -858,34 +859,25 @@ function addServiceManual(){
   if(!val) return;
   servicesArr.push(`${selectedServiceIcon}|${val}`);
   inp.value = '';
-  renderTags('services');
+  renderServicesOnly();
 }
 
 function addServiceTag(e){
-  if(e.key === 'Enter'){ e.preventDefault(); addServiceManual(); }
+  if(e.key==='Enter'){ e.preventDefault(); addServiceManual(); }
 }
 
-// Override renderTags for services to show icon+name
-const _origRenderTags = renderTags;
-function renderTags(type){
-  if(type !== 'services'){ _origRenderTags(type); return; }
+function renderServicesOnly(){
   const wrap = document.getElementById('servicesWrap');
   if(!wrap) return;
-  [...wrap.querySelectorAll('.tag')].forEach(t=>t.remove());
-  servicesArr.forEach((t,i)=>{
+  wrap.innerHTML = servicesArr.map((t,i)=>{
     const parts = t.includes('|') ? t.split('|') : ['🔔', t];
-    const el = document.createElement('div');
-    el.className='tag';
-    el.innerHTML = `${parts[0]} ${parts[1]}<button onclick="removeTag('services',${i})">✕</button>`;
-    wrap.appendChild(el);
-  });
+    return `<div class="tag">${parts[0]} ${parts[1]}<button onclick="removeServiceTag(${i})">✕</button></div>`;
+  }).join('');
 }
 
-// Init icon picker when profile page shown
-const _origShowPage = showPage;
-function showPage(page){
-  _origShowPage(page);
-  if(page==='profile') setTimeout(initIconPicker, 50);
+function removeServiceTag(i){
+  servicesArr.splice(i,1);
+  renderServicesOnly();
 }
 
 // Init
