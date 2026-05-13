@@ -350,28 +350,15 @@ footer{background:var(--bg);border-top:1px solid var(--border);padding:32px}
 <% if(installer.about){ %>
 <section class="section" id="about">
   <div class="section-inner">
-    <div class="about-grid">
-      <div class="about-img-wrap reveal">
-        <% if(installer.heroImage&&installer.heroImage.url){ %>
-          <img class="about-img" src="<%= installer.heroImage.url %>" alt=""/>
-        <% } else if(installer.profileImage&&installer.profileImage.url){ %>
-          <img class="about-img" src="<%= installer.profileImage.url %>" alt=""/>
-        <% } else { %>
-          <div class="about-ph">🔧</div>
-        <% } %>
-      </div>
-      <div>
-        <div class="sec-ey reveal">אודות</div>
-        <h2 class="sec-title reveal">למה לבחור בי?</h2>
-        <p class="about-text reveal"><%= installer.about %></p>
-        <ul class="check-list">
-          <% const dC=['ניסיון רב שנים בתחום','שירות מהיר ואמין','אחריות מלאה','מחירים הוגנים']; %>
-          <% ((installer.checklistItems&&installer.checklistItems.length)?installer.checklistItems:dC).forEach(item=>{ %>
-          <li class="reveal"><span class="chk">✓</span><%= item %></li>
-          <% }) %>
-        </ul>
-      </div>
-    </div>
+    <div class="sec-ey reveal">אודות</div>
+    <h2 class="sec-title reveal">למה לבחור בי?</h2>
+    <p class="about-text reveal" style="max-width:680px"><%= installer.about %></p>
+    <ul class="check-list" style="max-width:580px">
+      <% const dC=['ניסיון רב שנים בתחום','שירות מהיר ואמין','אחריות מלאה','מחירים הוגנים']; %>
+      <% ((installer.checklistItems&&installer.checklistItems.length)?installer.checklistItems:dC).forEach(item=>{ %>
+      <li class="reveal"><span class="chk">✓</span><%= item %></li>
+      <% }) %>
+    </ul>
   </div>
 </section>
 <% } %>
