@@ -15,6 +15,18 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
+// Validate Cloudinary config on startup
+const cldConfig = cloudinary.config();
+if(!cldConfig.cloud_name || !cldConfig.api_key || !cldConfig.api_secret){
+  console.error('❌ Cloudinary config missing:', {
+    cloud_name: !!cldConfig.cloud_name,
+    api_key:    !!cldConfig.api_key,
+    api_secret: !!cldConfig.api_secret
+  });
+} else {
+  console.log('✅ Cloudinary configured:', cldConfig.cloud_name);
+}
+
 const makeStorage = (folder) => new CloudinaryStorage({
   cloudinary,
   params: { folder, allowed_formats: ['jpg', 'jpeg', 'png', 'webp'] }
@@ -172,12 +184,13 @@ router.post('/installer/hero-image', requireInstaller, heroUpload.single('image'
 // Upload portfolio image (goes to pending)
 router.post('/installer/portfolio', requireInstaller, portfolioUpload.single('image'), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ error: 'No file' });
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     const inst = await Installer.findById(req.session.installerId);
     inst.portfolioImages.push({ url: req.file.path, publicId: req.file.filename });
     await inst.save();
     res.json({ success: true });
   } catch (e) {
+    console.error('❌ Portfolio upload error:', e.message, e.http_code || '');
     res.status(500).json({ error: e.message });
   }
 });
