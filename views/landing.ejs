@@ -228,9 +228,11 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,.06);padding
         <% } %>
       </div>
       <div class="trust-bar">
-        <div class="trust-item">⚡ שירות מהיר</div>
-        <div class="trust-item">🛡️ אחריות מלאה</div>
-        <div class="trust-item">✅ מוסמך ומנוסה</div>
+        <% const defaultTrust = ['⚡ שירות מהיר','🛡️ אחריות מלאה','✅ מוסמך ומנוסה']; %>
+        <% const trustItems = (installer.trustItems && installer.trustItems.length) ? installer.trustItems : defaultTrust; %>
+        <% trustItems.forEach(item=>{ %>
+        <div class="trust-item"><%= item %></div>
+        <% }) %>
       </div>
     </div>
     <div class="hero-card reveal">
