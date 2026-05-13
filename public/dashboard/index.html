@@ -886,6 +886,11 @@ function renderServicesOnly(){
   }).join('');
 }
 
+function removeServiceTag(i){
+  servicesArr.splice(i,1);
+  renderServicesOnly();
+}
+
 // Init
 checkSession();
 </script>
