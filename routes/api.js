@@ -150,7 +150,7 @@ router.get('/installer/profile', requireInstaller, async (req, res) => {
 // Update profile (text fields)
 router.put('/installer/profile', requireInstaller, async (req, res) => {
   try {
-    const allowed = ['name','businessName','phone','whatsapp','tagline','about','services','areas','facebook','instagram','badge','checklistItems'];
+    const allowed = ['name','businessName','phone','whatsapp','tagline','about','services','areas','facebook','instagram','badge','checklistItems','trustItems'];
     const updates = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined) updates[key] = req.body[key];
