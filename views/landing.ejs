@@ -273,29 +273,16 @@ footer{background:var(--navy);border-top:1px solid rgba(255,255,255,.06);padding
 <% if(installer.about){ %>
 <section class="section" id="about">
   <div class="section-inner">
-    <div class="about-grid">
-      <div class="about-img-wrap reveal">
-        <% if(installer.heroImage && installer.heroImage.url){ %>
-          <img class="about-img" src="<%= installer.heroImage.url %>" alt="עבודה בשטח"/>
-        <% } else if(installer.profileImage && installer.profileImage.url){ %>
-          <img class="about-img" src="<%= installer.profileImage.url %>" alt="<%= installer.name %>"/>
-        <% } else { %>
-          <div class="about-ph">🔧</div>
-        <% } %>
-      </div>
-      <div>
-        <div class="sec-ey reveal">אודות</div>
-        <h2 class="sec-title reveal">למה לבחור בי?</h2>
-        <p class="about-text reveal"><%= installer.about %></p>
-        <ul class="check-list">
-          <% const defaultChecks = ['ניסיון רב שנים בתחום האינטרקום והאבטחה','שירות מהיר ואמין עד הבית','אחריות מלאה על כל עבודה שבוצעה','מחירים הוגנים ושקיפות מלאה']; %>
-          <% const checks = (installer.checklistItems && installer.checklistItems.length) ? installer.checklistItems : defaultChecks; %>
-          <% checks.forEach(item=>{ %>
-          <li class="reveal"><span class="chk">✓</span><%= item %></li>
-          <% }) %>
-        </ul>
-      </div>
-    </div>
+    <div class="sec-ey reveal">אודות</div>
+    <h2 class="sec-title reveal">למה לבחור בי?</h2>
+    <p class="about-text reveal" style="max-width:700px"><%= installer.about %></p>
+    <ul class="check-list">
+      <% const defaultChecks = ['ניסיון רב שנים בתחום האינטרקום והאבטחה','שירות מהיר ואמין עד הבית','אחריות מלאה על כל עבודה שבוצעה','מחירים הוגנים ושקיפות מלאה']; %>
+      <% const checks = (installer.checklistItems && installer.checklistItems.length) ? installer.checklistItems : defaultChecks; %>
+      <% checks.forEach(item=>{ %>
+      <li class="reveal"><span class="chk">✓</span><%= item %></li>
+      <% }) %>
+    </ul>
   </div>
 </section>
 <% } %>
