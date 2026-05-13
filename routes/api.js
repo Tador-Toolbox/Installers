@@ -3,7 +3,7 @@ const router  = express.Router();
 const bcrypt  = require('bcryptjs');
 const multer  = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const cloudinary = require('cloudinary').v2;
+const cloudinary = require('cloudinary');
 const { Installer, Lead, Admin, ClickEvent } = require('../db');
 const { requireInstaller, requireAdmin } = require('../middleware/auth');
 
@@ -352,6 +352,25 @@ router.put('/admin/installers/:id/password', requireAdmin, async (req, res) => {
     const { newPassword } = req.body;
     const inst = await Installer.findById(req.params.id);
     inst.password = newPassword;
+    await inst.save();
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Update installer username and/or password
+router.put('/admin/installers/:id/credentials', requireAdmin, async (req, res) => {
+  try {
+    const { newPassword, newUsername } = req.body;
+    const inst = await Installer.findById(req.params.id);
+    if(!inst) return res.status(404).json({ error: 'Not found' });
+    if(newUsername){
+      const exists = await Installer.findOne({ username: newUsername, _id: { $ne: inst._id } });
+      if(exists) return res.status(400).json({ error: 'שם המשתמש כבר קיים במערכת' });
+      inst.username = newUsername;
+    }
+    if(newPassword) inst.password = newPassword;
     await inst.save();
     res.json({ success: true });
   } catch (e) {
