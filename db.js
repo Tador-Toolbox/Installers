@@ -54,6 +54,7 @@ const InstallerSchema = new mongoose.Schema({
   badge:          { type: String, default: 'מומחה מוסמך ומנוסה' },
   checklistItems: [{ type: String }],
   trustItems:     [{ type: String }],
+  template:       { type: String, enum: ['white','dark','red'], default: 'white' },
   popup: {
     active:    { type: Boolean, default: false },
     title:     { type: String, default: '' },
