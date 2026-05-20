@@ -28,15 +28,17 @@ body{
 .f-dark .top-bar{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#C9963A,#E8B04B,transparent)}
 .f-dark .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(201,150,58,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(201,150,58,0.035) 1px,transparent 1px);background-size:18px 18px}
 .f-dark .left-strip{position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#C9963A 0%,#E8B04B 50%,transparent 100%)}
-.f-dark .body{position:relative;z-index:1;display:flex;height:100%;padding:18px 14px 18px 18px;gap:10px;align-items:center}
-.f-dark .info{flex:1;display:flex;flex-direction:column;justify-content:center}
-.f-dark .top-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.f-dark .body{position:relative;z-index:1;display:flex;height:100%;padding:18px 14px 18px 18px;gap:10px;align-items:stretch;flex-direction:column}
+.f-dark .top-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
 .f-dark .name{font-size:1rem;font-weight:900;color:#fff;line-height:1.15}
-.f-dark .title{font-size:0.58rem;color:#C9963A;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;margin-top:2px}
+.f-dark .company{font-size:0.75rem;font-weight:700;color:#C9963A;text-align:right}
+.f-dark .title{font-size:0.58rem;color:rgba(201,150,58,0.6);font-weight:500;letter-spacing:0.5px;text-align:right;margin-top:2px}
+.f-dark .bottom-row{display:flex;gap:14px;align-items:center;flex:1}
+.f-dark .contacts-col{flex:1;display:flex;flex-direction:column;justify-content:center;gap:6px}
 .f-dark .div{height:1px;background:linear-gradient(90deg,rgba(201,150,58,0.25),transparent);margin-bottom:10px}
-.f-dark .ci{display:flex;align-items:center;gap:6px;font-size:0.67rem;color:rgba(255,255,255,0.6);margin-bottom:5px;direction:rtl;text-align:right}
+.f-dark .ci{display:flex;align-items:center;gap:6px;font-size:0.67rem;color:rgba(255,255,255,0.65);direction:rtl;text-align:right}
 .f-dark .ci-dot{width:4px;height:4px;border-radius:50%;background:#C9963A;flex-shrink:0}
-.f-dark .qr-col{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.f-dark .qr-col{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex-shrink:0}
 .f-dark .qr-lbl{font-size:0.45rem;color:rgba(255,255,255,0.2);letter-spacing:0.5px;text-align:center}
 .f-dark .logo-img{height:22px;width:auto;object-fit:contain;opacity:0.9}
 .f-dark .logo-txt{font-size:0.7rem;font-weight:900;color:#C9963A;letter-spacing:1px}
@@ -51,15 +53,17 @@ body{
 .f-red .corner{position:absolute;top:0;right:0;width:0;height:0;border-style:solid;border-width:0 80px 80px 0;border-color:transparent #8B0000 transparent transparent}
 .f-red .top-bar{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#720000,#C41230,transparent)}
 .f-red .left-strip{position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#8B0000,#C41230,transparent)}
-.f-red .body{position:relative;z-index:1;display:flex;height:100%;padding:18px 14px 18px 18px;gap:10px;align-items:center}
-.f-red .info{flex:1;display:flex;flex-direction:column;justify-content:center}
-.f-red .top-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.f-red .body{position:relative;z-index:1;display:flex;height:100%;padding:18px 14px 18px 18px;gap:10px;align-items:stretch;flex-direction:column}
+.f-red .top-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
 .f-red .name{font-size:1rem;font-weight:900;color:#fff;line-height:1.15}
-.f-red .title{font-size:0.58rem;color:#C41230;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;margin-top:2px}
+.f-red .company{font-size:0.75rem;font-weight:700;color:#C41230;text-align:right}
+.f-red .title{font-size:0.58rem;color:rgba(196,18,48,0.6);font-weight:500;letter-spacing:0.5px;text-align:right;margin-top:2px}
+.f-red .bottom-row{display:flex;gap:14px;align-items:center;flex:1}
+.f-red .contacts-col{flex:1;display:flex;flex-direction:column;justify-content:center;gap:6px}
 .f-red .div{height:1px;background:linear-gradient(90deg,rgba(139,0,0,0.4),transparent);margin-bottom:10px}
-.f-red .ci{display:flex;align-items:center;gap:6px;font-size:0.67rem;color:rgba(255,255,255,0.6);margin-bottom:5px;direction:rtl;text-align:right}
+.f-red .ci{display:flex;align-items:center;gap:6px;font-size:0.67rem;color:rgba(255,255,255,0.65);direction:rtl;text-align:right}
 .f-red .ci-dot{width:4px;height:4px;border-radius:50%;background:#8B0000;flex-shrink:0}
-.f-red .qr-col{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.f-red .qr-col{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex-shrink:0}
 .f-red .qr-lbl{font-size:0.45rem;color:rgba(255,255,255,0.2);letter-spacing:0.5px;text-align:center}
 .f-red .logo-img{height:22px;width:auto;object-fit:contain;opacity:0.9}
 .f-red .logo-txt{font-size:0.7rem;font-weight:900;color:#C41230;letter-spacing:1px}
@@ -109,21 +113,24 @@ body{
     <div class="grid"></div>
     <div class="left-strip"></div>
     <div class="body">
-      <div class="info">
-        <div class="top-row">
-          <div>
-            <div class="name"><%= installer.name %></div>
-            <div class="title"><%= installer.tagline||'מומחה אינטרקום ובקרת כניסה' %></div>
-          </div>
+      <div class="top-row">
+        <div class="name"><%= installer.name %></div>
+        <div style="text-align:right">
+          <div class="company"><%= installer.businessName||installer.name %></div>
+          <div class="title"><%= installer.tagline||'מומחה אינטרקום ובקרת כניסה' %></div>
         </div>
-        <div class="div"></div>
-        <% if(phone){ %><div class="ci"><div class="ci-dot"></div><%= phone %></div><% } %>
-        <% if(showWA){ %><div class="ci"><div class="ci-dot"></div>WA: <%= wa %></div><% } %>
-        <% if(areas){ %><div class="ci"><div class="ci-dot"></div><%= areas %></div><% } %>
       </div>
-      <div class="qr-col">
-        <canvas id="qr1" width="58" height="58" style="border-radius:6px"></canvas>
-        <div class="qr-lbl">סרוק לדף שלי</div>
+      <div class="div"></div>
+      <div class="bottom-row">
+        <div class="contacts-col">
+          <% if(phone){ %><div class="ci"><div class="ci-dot"></div><%= phone %></div><% } %>
+          <% if(showWA){ %><div class="ci"><div class="ci-dot"></div><%= wa %></div><% } %>
+          <% if(areas){ %><div class="ci"><div class="ci-dot"></div><%= areas %></div><% } %>
+        </div>
+        <div class="qr-col">
+          <canvas id="qr1" width="58" height="58" style="border-radius:6px"></canvas>
+          <div class="qr-lbl">סרוק לדף שלי</div>
+        </div>
       </div>
     </div>
   </div>
@@ -143,21 +150,24 @@ body{
     <div class="top-bar"></div>
     <div class="left-strip"></div>
     <div class="body">
-      <div class="info">
-        <div class="top-row">
-          <div>
-            <div class="name"><%= installer.name %></div>
-            <div class="title"><%= installer.tagline||'מומחה אינטרקום ובקרת כניסה' %></div>
-          </div>
+      <div class="top-row">
+        <div class="name"><%= installer.name %></div>
+        <div style="text-align:right">
+          <div class="company"><%= installer.businessName||installer.name %></div>
+          <div class="title"><%= installer.tagline||'מומחה אינטרקום ובקרת כניסה' %></div>
         </div>
-        <div class="div"></div>
-        <% if(phone){ %><div class="ci"><div class="ci-dot"></div><%= phone %></div><% } %>
-        <% if(showWA){ %><div class="ci"><div class="ci-dot"></div>WA: <%= wa %></div><% } %>
-        <% if(areas){ %><div class="ci"><div class="ci-dot"></div><%= areas %></div><% } %>
       </div>
-      <div class="qr-col">
-        <canvas id="qr2" width="58" height="58" style="border-radius:6px"></canvas>
-        <div class="qr-lbl">סרוק לדף שלי</div>
+      <div class="div"></div>
+      <div class="bottom-row">
+        <div class="contacts-col">
+          <% if(phone){ %><div class="ci"><div class="ci-dot"></div><%= phone %></div><% } %>
+          <% if(showWA){ %><div class="ci"><div class="ci-dot"></div><%= wa %></div><% } %>
+          <% if(areas){ %><div class="ci"><div class="ci-dot"></div><%= areas %></div><% } %>
+        </div>
+        <div class="qr-col">
+          <canvas id="qr2" width="58" height="58" style="border-radius:6px"></canvas>
+          <div class="qr-lbl">סרוק לדף שלי</div>
+        </div>
       </div>
     </div>
   </div>
