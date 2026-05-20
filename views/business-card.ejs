@@ -2,266 +2,267 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>כרטיס ביקור — <%= installer.name %></title>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{
   font-family:'Heebo',sans-serif;
-  background:#1a1a2e;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  min-height:100vh;gap:32px;padding:40px 20px;
+  background:#111;
+  display:flex;flex-direction:column;align-items:center;
+  min-height:100vh;gap:28px;padding:36px 20px;
 }
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
+.btn{padding:10px 22px;border-radius:8px;border:none;cursor:pointer;font-family:'Heebo',sans-serif;font-size:0.85rem;font-weight:700;transition:all .2s}
+.btn-print{background:#C9963A;color:#0D0D0D}
+.btn-print:hover{background:#E8B04B;transform:translateY(-1px)}
+.btn-style{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15)}
+.btn-style.active{background:rgba(201,150,58,0.2);border-color:#C9963A;color:#C9963A}
+.btn-back{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.4);font-size:0.78rem;text-decoration:none;display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px}
 
-/* ── Controls (hidden on print) ── */
-.controls{
-  display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;
-}
-.btn{
-  padding:12px 28px;border-radius:8px;border:none;cursor:pointer;
-  font-family:'Heebo',sans-serif;font-size:0.9rem;font-weight:700;
-  transition:all .2s;
-}
-.btn-print{background:#C9963A;color:#fff}
-.btn-print:hover{background:#E8B04B}
-.btn-style{background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2)}
-.btn-style:hover{background:rgba(255,255,255,0.15)}
-.btn-back{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.6);font-size:0.82rem}
+/* CARD SIZE: 85.6 × 54mm = 323 × 204px at 96dpi */
+.card-wrap{display:flex;flex-direction:column;gap:0;filter:drop-shadow(0 24px 64px rgba(0,0,0,0.6))}
+.card{width:323px;height:204px;border-radius:14px;overflow:hidden;position:relative;font-family:'Heebo',sans-serif}
 
-.style-label{color:rgba(255,255,255,0.5);font-size:0.82rem}
-
-/* ── Card Wrapper ── */
-.card-wrap{
-  display:flex;flex-direction:column;gap:0;
-  filter:drop-shadow(0 20px 60px rgba(0,0,0,0.5));
+/* ══════ STYLE 1: Dark Gold ══════ */
+.front-dark{
+  background:linear-gradient(135deg,#0A0A0F 0%,#0F1020 100%);
 }
-
-/* ── CARD: Dark Gold (style 1) ── */
-.card{
-  width:338px;height:190px;
-  border-radius:12px;
-  overflow:hidden;
-  position:relative;
-  font-family:'Heebo',sans-serif;
-}
-
-/* FRONT */
-.card-front.dark-gold{
-  background:#0D0D0D;
-  display:flex;flex-direction:column;justify-content:center;
-  padding:28px 28px;
-  border-bottom:0;
-}
-.dark-gold .top-line{
+.front-dark .gold-bar{
   position:absolute;top:0;right:0;left:0;height:3px;
-  background:linear-gradient(90deg,transparent,#C9963A,#E8B04B,transparent);
+  background:linear-gradient(90deg,transparent 0%,#C9963A 40%,#E8B04B 60%,transparent 100%);
 }
-.dark-gold .logo-area{
-  margin-bottom:14px;
+.front-dark .grid-pattern{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(201,150,58,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,150,58,0.04) 1px,transparent 1px);
+  background-size:20px 20px;
 }
-.dark-gold .logo-area img{
-  height:28px;object-fit:contain;
+.front-dark .inner{
+  position:relative;z-index:1;
+  display:flex;height:100%;
+  align-items:stretch;
 }
-.dark-gold .logo-text{
-  font-size:1.1rem;font-weight:900;color:#C9963A;letter-spacing:1px;
+/* Left accent strip */
+.front-dark .left-strip{
+  width:4px;background:linear-gradient(180deg,#C9963A,#E8B04B,transparent);flex-shrink:0;
 }
-.dark-gold .name{
-  font-size:1.2rem;font-weight:800;color:#fff;margin-bottom:3px;
+/* Main content */
+.front-dark .main{
+  flex:1;display:flex;flex-direction:column;justify-content:center;padding:20px 18px 18px;
 }
-.dark-gold .title{
-  font-size:0.72rem;color:#C9963A;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
-  margin-bottom:14px;
+.front-dark .top-row{
+  display:flex;align-items:center;gap:12px;margin-bottom:14px;
 }
-.dark-gold .contacts{
-  display:flex;flex-direction:column;gap:3px;
+.front-dark .logo-box img{height:30px;width:auto;object-fit:contain}
+.front-dark .logo-box-text{font-size:0.8rem;font-weight:900;color:#C9963A;letter-spacing:1.5px}
+.front-dark .name-box .name{font-size:1.05rem;font-weight:900;color:#fff;line-height:1.1;margin-bottom:3px}
+.front-dark .name-box .title{font-size:0.62rem;color:#C9963A;font-weight:600;letter-spacing:1.5px;text-transform:uppercase}
+.front-dark .divider{height:1px;background:linear-gradient(90deg,rgba(201,150,58,0.3),transparent);margin-bottom:12px}
+.front-dark .contacts{display:flex;flex-direction:column;gap:5px}
+.front-dark .ci{display:flex;align-items:center;gap:7px;font-size:0.68rem;color:rgba(255,255,255,0.65)}
+.front-dark .ci-icon{width:14px;height:14px;border-radius:50%;background:rgba(201,150,58,0.15);display:flex;align-items:center;justify-content:center;font-size:0.55rem;flex-shrink:0}
+/* QR code area */
+.front-dark .qr-area{
+  width:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:14px 12px 14px 8px;
 }
-.dark-gold .contact-item{
-  font-size:0.72rem;color:rgba(255,255,255,0.6);
-  display:flex;align-items:center;gap:6px;
-}
-.dark-gold .contact-icon{color:#C9963A;font-size:0.75rem;width:12px;text-align:center}
-.dark-gold .deco{
-  position:absolute;bottom:-30px;left:-30px;
-  width:120px;height:120px;border-radius:50%;
-  background:radial-gradient(circle,rgba(201,150,58,0.08),transparent);
-}
+.front-dark .qr-area canvas{border-radius:6px}
+.front-dark .qr-label{font-size:0.5rem;color:rgba(255,255,255,0.25);margin-top:4px;text-align:center;letter-spacing:0.5px}
 
-/* BACK */
-.card-back.dark-gold{
-  background:linear-gradient(135deg,#0D0D0D 60%,#1a1200);
+/* Back dark */
+.back-dark{
+  background:linear-gradient(135deg,#0A0A0F,#0F1020);
   display:flex;align-items:center;justify-content:center;
-  border-top:1px solid rgba(201,150,58,0.15);
+  border-top:1px solid rgba(201,150,58,0.1);
+  position:relative;
 }
-.dark-gold-back-logo{
-  font-size:2rem;font-weight:900;color:#C9963A;letter-spacing:3px;opacity:0.3;
-}
-.dark-gold .back-line{
+.back-dark .gold-bar-bottom{
   position:absolute;bottom:0;right:0;left:0;height:2px;
   background:linear-gradient(90deg,transparent,#C9963A,transparent);
 }
+.back-dark .center-logo img{height:36px;width:auto;object-fit:contain;opacity:0.35}
+.back-dark .center-logo-text{font-size:1.4rem;font-weight:900;color:rgba(201,150,58,0.25);letter-spacing:4px}
 
-/* ── CARD: Red White (style 2) ── */
-.card-front.red-white{
-  background:#fff;
-  padding:0;overflow:hidden;
+/* ══════ STYLE 2: Charcoal Red ══════ */
+.front-charcoal{
+  background:linear-gradient(135deg,#1C1C24 0%,#24242E 100%);
 }
-.red-white .red-panel{
-  position:absolute;top:0;right:0;width:45%;height:100%;
-  background:linear-gradient(145deg,#8B0000,#C41230);
-  clip-path:polygon(20% 0,100% 0,100% 100%,0% 100%);
+.front-charcoal .red-corner{
+  position:absolute;top:0;right:0;
+  width:0;height:0;
+  border-style:solid;border-width:0 90px 90px 0;
+  border-color:transparent #8B0000 transparent transparent;
 }
-.red-white .content{
-  position:relative;z-index:1;padding:24px 24px;
-  display:flex;flex-direction:column;justify-content:center;height:100%;
+.front-charcoal .red-corner-inner{
+  position:absolute;top:0;right:0;
+  width:0;height:0;
+  border-style:solid;border-width:0 85px 85px 0;
+  border-color:transparent #720000 transparent transparent;
 }
-.red-white .logo-area img{ height:24px;object-fit:contain;margin-bottom:10px; }
-.red-white .logo-text{ font-size:1rem;font-weight:900;color:#8B0000;margin-bottom:10px; }
-.red-white .name{ font-size:1.1rem;font-weight:800;color:#1a0000;margin-bottom:2px; }
-.red-white .title{ font-size:0.68rem;color:#8B0000;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px; }
-.red-white .contact-item{ font-size:0.7rem;color:#444;display:flex;align-items:center;gap:5px;margin-bottom:3px; }
-.red-white .contact-icon{ color:#8B0000;width:12px;text-align:center; }
-.red-white .white-dots{
-  position:absolute;top:0;right:0;width:45%;height:100%;
+.front-charcoal .inner{position:relative;z-index:1;display:flex;height:100%;align-items:stretch}
+.front-charcoal .left-strip{width:4px;background:linear-gradient(180deg,#8B0000,#C41230,transparent);flex-shrink:0}
+.front-charcoal .main{flex:1;display:flex;flex-direction:column;justify-content:center;padding:20px 18px 18px}
+.front-charcoal .top-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.front-charcoal .logo-box img{height:30px;width:auto;object-fit:contain}
+.front-charcoal .logo-box-text{font-size:0.8rem;font-weight:900;color:#C41230;letter-spacing:1.5px}
+.front-charcoal .name-box .name{font-size:1.05rem;font-weight:900;color:#fff;line-height:1.1;margin-bottom:3px}
+.front-charcoal .name-box .title{font-size:0.62rem;color:#C41230;font-weight:600;letter-spacing:1.5px;text-transform:uppercase}
+.front-charcoal .divider{height:1px;background:linear-gradient(90deg,rgba(139,0,0,0.5),transparent);margin-bottom:12px}
+.front-charcoal .contacts{display:flex;flex-direction:column;gap:5px}
+.front-charcoal .ci{display:flex;align-items:center;gap:7px;font-size:0.68rem;color:rgba(255,255,255,0.65)}
+.front-charcoal .ci-icon{width:14px;height:14px;border-radius:50%;background:rgba(139,0,0,0.2);display:flex;align-items:center;justify-content:center;font-size:0.55rem;flex-shrink:0}
+.front-charcoal .qr-area{width:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 12px 14px 8px}
+.front-charcoal .qr-label{font-size:0.5rem;color:rgba(255,255,255,0.25);margin-top:4px;text-align:center;letter-spacing:0.5px}
+
+.back-charcoal{
+  background:linear-gradient(135deg,#1C1C24,#24242E);
   display:flex;align-items:center;justify-content:center;
-  pointer-events:none;
+  border-top:1px solid rgba(139,0,0,0.15);
+  position:relative;
 }
-.red-white .initials{
-  font-size:3.5rem;font-weight:900;color:rgba(255,255,255,0.15);letter-spacing:-2px;
-  position:absolute;top:50%;right:5%;transform:translateY(-50%);
-}
+.back-charcoal .red-bar{position:absolute;bottom:0;right:0;left:0;height:3px;background:linear-gradient(90deg,transparent,#8B0000,transparent)}
+.back-charcoal .center-logo img{height:36px;width:auto;object-fit:contain;opacity:0.3}
+.back-charcoal .center-logo-text{font-size:1.4rem;font-weight:900;color:rgba(139,0,0,0.3);letter-spacing:4px}
 
-.card-back.red-white{
-  background:linear-gradient(135deg,#8B0000,#C41230);
-  display:flex;align-items:center;justify-content:center;
-  flex-direction:column;gap:8px;
-}
-.red-white-back-logo{ font-size:1.8rem;font-weight:900;color:rgba(255,255,255,0.15);letter-spacing:3px; }
-.card-back.red-white .qr-hint{ font-size:0.65rem;color:rgba(255,255,255,0.3);letter-spacing:1px; }
+/* SEPARATOR */
+.sep{width:323px;border:none;border-top:1px dashed rgba(255,255,255,0.08);margin:0}
 
-/* ── Separator ── */
-.card-sep{
-  height:0;border-top:1px dashed rgba(255,255,255,0.1);
-  width:338px;margin:0;
-}
-
-/* ── SIZE LABEL ── */
-.size-note{
-  color:rgba(255,255,255,0.3);font-size:0.72rem;text-align:center;
-}
-
-/* ── PRINT ── */
+/* PRINT */
 @media print{
-  body{background:#fff;padding:0;min-height:auto;gap:0}
+  body{background:#fff;padding:0;gap:0;min-height:auto}
   .controls,.size-note{display:none!important}
-  .card-wrap{filter:none;gap:0}
-  .card-sep{display:none}
-
-  @page{
-    size:85.6mm 53.98mm;
-    margin:0;
-  }
-  .card{
-    width:85.6mm;height:53.98mm;
-    border-radius:0;
-    page-break-after:always;
-  }
-  .card-back{ page-break-before:always; }
+  .card-wrap{filter:none}
+  .sep{display:none}
+  @page{size:85.6mm 54mm;margin:0}
+  .card{width:85.6mm;height:54mm;border-radius:0;page-break-after:always}
+  .back-dark,.back-charcoal{page-break-before:always}
 }
 </style>
 </head>
 <body>
 
 <div class="controls">
-  <a href="/admin" class="btn btn-back">← חזור לאדמין</a>
-  <span class="style-label">סגנון:</span>
-  <button class="btn btn-style" onclick="setStyle('dark')">⬛ כהה זהב</button>
-  <button class="btn btn-style" onclick="setStyle('red')">🔴 אדום לבן</button>
-  <button class="btn btn-print" onclick="window.print()">🖨️ הדפס / שמור PDF</button>
+  <a href="/admin" class="btn-back">← אדמין</a>
+  <button class="btn btn-style active" id="btn-dark" onclick="setStyle('dark')">⬛ כהה זהב</button>
+  <button class="btn btn-style" id="btn-charcoal" onclick="setStyle('charcoal')">🔴 אפור אדום</button>
+  <button class="btn btn-print" onclick="window.print()">🖨️ הדפס / PDF</button>
 </div>
 
-<div class="size-note">גודל סטנדרטי: 85.6 × 54 מ"מ | הדפסה → שמור כ-PDF</div>
-
-<!-- ── DARK GOLD ── -->
+<!-- ══ DARK GOLD ══ -->
 <div class="card-wrap" id="wrap-dark">
-
-  <div class="card card-front dark-gold">
-    <div class="top-line"></div>
-    <div class="deco"></div>
-    <div class="logo-area">
+  <div class="card front-dark">
+    <div class="gold-bar"></div>
+    <div class="grid-pattern"></div>
+    <div class="inner">
+      <div class="left-strip"></div>
+      <div class="main">
+        <div class="top-row">
+          <div class="logo-box">
+            <% if(installer.logo && installer.logo.url){ %>
+              <img src="<%= installer.logo.url %>" alt=""/>
+            <% } else { %>
+              <div class="logo-box-text"><%= (installer.businessName||installer.name).substring(0,8).toUpperCase() %></div>
+            <% } %>
+          </div>
+          <div class="name-box">
+            <div class="name"><%= installer.name %></div>
+            <div class="title"><%= installer.tagline || 'מומחה אינטרקום ובקרת כניסה' %></div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="contacts">
+          <% if(installer.phone){ %><div class="ci"><div class="ci-icon">📞</div><%= installer.phone %></div><% } %>
+          <% if(installer.whatsapp){ %><div class="ci"><div class="ci-icon">💬</div><%= installer.whatsapp %></div><% } %>
+          <% if(installer.areas && installer.areas.length){ %><div class="ci"><div class="ci-icon">📍</div><%= installer.areas.slice(0,3).join(' · ') %></div><% } %>
+        </div>
+      </div>
+      <div class="qr-area">
+        <canvas id="qr-dark" width="54" height="54"></canvas>
+        <div class="qr-label">סרוק לדף שלי</div>
+      </div>
+    </div>
+  </div>
+  <hr class="sep"/>
+  <div class="card back-dark">
+    <div class="gold-bar-bottom"></div>
+    <div class="center-logo">
       <% if(installer.logo && installer.logo.url){ %>
-        <img src="<%= installer.logo.url %>" alt="לוגו"/>
+        <img src="<%= installer.logo.url %>" alt=""/>
       <% } else { %>
-        <div class="logo-text"><%= (installer.businessName || installer.name).toUpperCase() %></div>
+        <div class="center-logo-text"><%= (installer.businessName||installer.name).substring(0,6).toUpperCase() %></div>
       <% } %>
     </div>
-    <div class="name"><%= installer.name %></div>
-    <div class="title"><%= installer.tagline || 'מומחה אינטרקום ובקרת כניסה' %></div>
-    <div class="contacts">
-      <% if(installer.phone){ %>
-      <div class="contact-item"><span class="contact-icon">📞</span><%= installer.phone %></div>
-      <% } %>
-      <% if(installer.whatsapp){ %>
-      <div class="contact-item"><span class="contact-icon">💬</span><%= installer.whatsapp %></div>
-      <% } %>
-      <% if(installer.areas && installer.areas.length){ %>
-      <div class="contact-item"><span class="contact-icon">📍</span><%= installer.areas.slice(0,3).join(' | ') %></div>
-      <% } %>
-      <div class="contact-item"><span class="contact-icon">🌐</span>installers.co.il/<%= installer.slug %></div>
-    </div>
   </div>
-
-  <div class="card-sep"></div>
-
-  <div class="card card-back dark-gold" style="position:relative">
-    <% if(installer.logo && installer.logo.url){ %>
-      <img src="<%= installer.logo.url %>" style="height:40px;object-fit:contain;opacity:0.25"/>
-    <% } else { %>
-      <div class="dark-gold-back-logo"><%= (installer.businessName || installer.name).substring(0,6).toUpperCase() %></div>
-    <% } %>
-    <div class="back-line"></div>
-  </div>
-
 </div>
 
-<!-- ── RED WHITE ── -->
-<div class="card-wrap" id="wrap-red" style="display:none">
-
-  <div class="card card-front red-white">
-    <div class="red-panel"></div>
-    <div class="initials"><%= installer.name.charAt(0) %></div>
-    <div class="content">
-      <% if(installer.logo && installer.logo.url){ %>
-        <img src="<%= installer.logo.url %>" class="logo-area" style="height:24px;object-fit:contain;margin-bottom:10px"/>
-      <% } else { %>
-        <div class="logo-text"><%= (installer.businessName || installer.name).toUpperCase() %></div>
-      <% } %>
-      <div class="name"><%= installer.name %></div>
-      <div class="title"><%= installer.tagline || 'מומחה אינטרקום ובקרת כניסה' %></div>
-      <% if(installer.phone){ %><div class="contact-item"><span class="contact-icon">📞</span><%= installer.phone %></div><% } %>
-      <% if(installer.whatsapp){ %><div class="contact-item"><span class="contact-icon">💬</span><%= installer.whatsapp %></div><% } %>
-      <% if(installer.areas && installer.areas.length){ %><div class="contact-item"><span class="contact-icon">📍</span><%= installer.areas.slice(0,2).join(' | ') %></div><% } %>
-      <div class="contact-item"><span class="contact-icon">🌐</span>installers.co.il/<%= installer.slug %></div>
+<!-- ══ CHARCOAL RED ══ -->
+<div class="card-wrap" id="wrap-charcoal" style="display:none">
+  <div class="card front-charcoal">
+    <div class="red-corner"></div>
+    <div class="red-corner-inner"></div>
+    <div class="inner">
+      <div class="left-strip"></div>
+      <div class="main">
+        <div class="top-row">
+          <div class="logo-box">
+            <% if(installer.logo && installer.logo.url){ %>
+              <img src="<%= installer.logo.url %>" alt=""/>
+            <% } else { %>
+              <div class="logo-box-text"><%= (installer.businessName||installer.name).substring(0,8).toUpperCase() %></div>
+            <% } %>
+          </div>
+          <div class="name-box">
+            <div class="name"><%= installer.name %></div>
+            <div class="title"><%= installer.tagline || 'מומחה אינטרקום ובקרת כניסה' %></div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="contacts">
+          <% if(installer.phone){ %><div class="ci"><div class="ci-icon">📞</div><%= installer.phone %></div><% } %>
+          <% if(installer.whatsapp){ %><div class="ci"><div class="ci-icon">💬</div><%= installer.whatsapp %></div><% } %>
+          <% if(installer.areas && installer.areas.length){ %><div class="ci"><div class="ci-icon">📍</div><%= installer.areas.slice(0,3).join(' · ') %></div><% } %>
+        </div>
+      </div>
+      <div class="qr-area">
+        <canvas id="qr-charcoal" width="54" height="54"></canvas>
+        <div class="qr-label">סרוק לדף שלי</div>
+      </div>
     </div>
   </div>
-
-  <div class="card-sep"></div>
-
-  <div class="card card-back red-white">
-    <% if(installer.logo && installer.logo.url){ %>
-      <img src="<%= installer.logo.url %>" style="height:36px;object-fit:contain;opacity:0.2"/>
-    <% } else { %>
-      <div class="red-white-back-logo"><%= (installer.businessName || installer.name).toUpperCase().substring(0,8) %></div>
-    <% } %>
-    <div class="qr-hint">installers.co.il/<%= installer.slug %></div>
+  <hr class="sep"/>
+  <div class="card back-charcoal">
+    <div class="red-bar"></div>
+    <div class="center-logo">
+      <% if(installer.logo && installer.logo.url){ %>
+        <img src="<%= installer.logo.url %>" alt=""/>
+      <% } else { %>
+        <div class="center-logo-text"><%= (installer.businessName||installer.name).substring(0,6).toUpperCase() %></div>
+      <% } %>
+    </div>
   </div>
-
 </div>
 
+<!-- QR lib -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
+const URL = 'https://installers.co.il/<%= installer.slug %>';
+
+function makeQR(canvasId, dark, light){
+  const canvas = document.getElementById(canvasId);
+  QRCode.toCanvas(canvas, URL, {
+    width:54, margin:1,
+    color:{ dark: dark||'#C9963A', light: light||'#0A0A0F' }
+  }, function(err){});
+}
+
+makeQR('qr-dark','#C9963A','#0A0A0F');
+makeQR('qr-charcoal','#C41230','#1C1C24');
+
 function setStyle(s){
-  document.getElementById('wrap-dark').style.display = s==='dark' ? 'flex' : 'none';
-  document.getElementById('wrap-red').style.display  = s==='red'  ? 'flex' : 'none';
+  document.getElementById('wrap-dark').style.display      = s==='dark'     ?'flex':'none';
+  document.getElementById('wrap-charcoal').style.display  = s==='charcoal' ?'flex':'none';
+  document.querySelectorAll('.btn-style').forEach(b=>b.classList.remove('active'));
+  document.getElementById('btn-'+s).classList.add('active');
 }
 </script>
 </body>
