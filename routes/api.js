@@ -3,7 +3,7 @@ const router  = express.Router();
 const bcrypt  = require('bcryptjs');
 const multer  = require('multer');
 const cloudinary = require('cloudinary').v2;
-const { Installer, Lead, Admin, ClickEvent } = require('../db');
+const { Installer, Lead, Admin, ClickEvent, Order } = require('../db');
 const { requireInstaller, requireAdmin } = require('../middleware/auth');
 
 // ─── Cloudinary config ───────────────────────────────────────────────────────
@@ -373,6 +373,35 @@ router.put('/installer/password', requireInstaller, async (req, res) => {
   }
 });
 
+// Place a marketing order
+router.post('/installer/order', requireInstaller, async (req, res) => {
+  try {
+    const { orderType, notes } = req.body;
+    const validTypes = ['business_card','metal_sticker','logo_sticker'];
+    if (!validTypes.includes(orderType)) return res.status(400).json({ error: 'Invalid order type' });
+    const inst = await Installer.findById(req.session.installerId).select('name phone slug');
+    await Order.create({
+      installerId:   inst._id,
+      installerSlug: inst.slug,
+      installerName: inst.name,
+      installerPhone:inst.phone || '',
+      orderType,
+      notes: notes || ''
+    });
+    res.json({ success: true });
+  } catch(e){
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Get installer's own orders
+router.get('/installer/orders', requireInstaller, async (req, res) => {
+  try {
+    const orders = await Order.find({ installerId: req.session.installerId }).sort({ createdAt: -1 });
+    res.json(orders);
+  } catch(e){ res.status(500).json({ error: e.message }); }
+});
+
 // ─── ADMIN ───────────────────────────────────────────────────────────────────
 
 // Get all installers
@@ -619,6 +648,32 @@ router.get('/admin/analytics', requireAdmin, async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+// Get all orders (admin)
+router.get('/admin/orders', requireAdmin, async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    await Order.updateMany({ read: false }, { read: true });
+    res.json(orders);
+  } catch(e){ res.status(500).json({ error: e.message }); }
+});
+
+// Get unread orders count (admin)
+router.get('/admin/orders/unread', requireAdmin, async (req, res) => {
+  try {
+    const count = await Order.countDocuments({ read: false });
+    res.json({ count });
+  } catch(e){ res.status(500).json({ error: e.message }); }
+});
+
+// Update order status (admin)
+router.put('/admin/orders/:id/status', requireAdmin, async (req, res) => {
+  try {
+    const { status } = req.body;
+    await Order.findByIdAndUpdate(req.params.id, { status });
+    res.json({ success: true });
+  } catch(e){ res.status(500).json({ error: e.message }); }
 });
 
 // Per-installer click breakdown (for drill-down)
