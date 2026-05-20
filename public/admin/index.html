@@ -168,6 +168,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       🖼️ אישור תמונות <span class="nav-badge" id="photoBadge" style="display:none">0</span>
     </div>
     <div class="nav-item" onclick="showPage('leads')" data-page="leads">📨 כל הלידים</div>
+    <div class="nav-item" onclick="showPage('orders')" data-page="orders">
+      📦 הזמנות שיווק <span class="nav-badge" id="ordersBadge" style="display:none">0</span>
+    </div>
     <div class="nav-item" onclick="showPage('notify')" data-page="notify">🔔 שליחת הודעה</div>
   </div>
   <div class="sidebar-bottom">
@@ -299,6 +302,20 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
   </div>
 
+  <!-- Orders -->
+  <div id="page-orders" class="page" style="display:none">
+    <div class="page-title">📦 הזמנות שיווק</div>
+    <div class="page-sub">בקשות הזמנת חומרי שיווק ממתקינים</div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>מתקין</th><th>טלפון</th><th>סוג הזמנה</th><th>הערות</th><th>תאריך</th><th>סטטוס</th></tr></thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- Send Notification -->
   <div id="page-notify" class="page" style="display:none">
     <div class="page-title">שליחת הודעה למתקין</div>
@@ -418,6 +435,7 @@ function showPage(page){
   if(page==='installers')  renderInstallersTable();
   if(page==='photos')      loadPhotos();
   if(page==='leads')       { loadLeads(); populateInstallerFilter(); }
+  if(page==='orders')      loadOrders();
   if(page==='notify')      populateNotifySelect();
 }
 
@@ -824,6 +842,53 @@ function downloadQR(){
   link.href     = out.toDataURL('image/png');
   link.click();
   toast('✅ QR Code הורד בהצלחה');
+}
+
+/* ── Orders ─────────────────────────────────────────────────── */
+const orderLabels = { business_card:'🪪 כרטיס ביקור', metal_sticker:'🏷️ מדבקת מתכת', logo_sticker:'🚗 מדבקת לוגו לרכב' };
+const orderStatusColors = { pending:'var(--yellow)', processing:'var(--blue)', done:'var(--green)' };
+const orderStatusLabels = { pending:'⏳ ממתין', processing:'🔄 בטיפול', done:'✅ בוצע' };
+
+async function loadOrders(){
+  const r = await fetch('/api/admin/orders');
+  const orders = await r.json();
+  // Hide badge
+  document.getElementById('ordersBadge').style.display='none';
+  const body = document.getElementById('ordersBody');
+  if(!orders.length){ body.innerHTML='<tr><td colspan="6"><div class="empty">אין הזמנות עדיין</div></td></tr>'; return; }
+  body.innerHTML = orders.map(o=>`
+    <tr>
+      <td><div style="font-weight:700">${o.installerName}</div><div style="font-size:0.78rem;color:var(--muted)">/${o.installerSlug}</div></td>
+      <td style="color:var(--muted);font-size:0.85rem">${o.installerPhone||'—'}</td>
+      <td style="font-weight:700">${orderLabels[o.orderType]||o.orderType}</td>
+      <td style="color:var(--muted);font-size:0.85rem;max-width:200px">${o.notes||'—'}</td>
+      <td style="color:var(--muted);font-size:0.82rem;white-space:nowrap">${new Date(o.createdAt).toLocaleDateString('he-IL')}</td>
+      <td>
+        <select onchange="updateOrderStatus('${o._id}',this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:${orderStatusColors[o.status]};font-size:0.82rem;cursor:pointer">
+          <option value="pending"    ${o.status==='pending'   ?'selected':''}>⏳ ממתין</option>
+          <option value="processing" ${o.status==='processing'?'selected':''}>🔄 בטיפול</option>
+          <option value="done"       ${o.status==='done'      ?'selected':''}>✅ בוצע</option>
+        </select>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function updateOrderStatus(id, status){
+  const r = await fetch(`/api/admin/orders/${id}/status`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});
+  if(r.ok) toast('✅ סטטוס עודכן');
+  else toast('שגיאה','error');
+}
+
+async function loadPhotoBadge(){
+  const r = await fetch('/api/admin/portfolio/pending');
+  const d = await r.json();
+  const badge = document.getElementById('photoBadge');
+  if(d.length){ badge.textContent=d.length; badge.style.display='inline-flex'; }
+  const ro = await fetch('/api/admin/orders/unread');
+  const od = await ro.json();
+  const ob = document.getElementById('ordersBadge');
+  if(od.count){ ob.textContent=od.count; ob.style.display='inline-flex'; }
 }
 
 checkSession();
