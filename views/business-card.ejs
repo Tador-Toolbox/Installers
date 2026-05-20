@@ -111,11 +111,6 @@ body{
     <div class="body">
       <div class="info">
         <div class="top-row">
-          <% if(installer.logo && installer.logo.url){ %>
-            <img class="logo-img" src="<%= installer.logo.url %>" alt=""/>
-          <% } else { %>
-            <div class="logo-txt"><%= (installer.businessName||installer.name).substring(0,8).toUpperCase() %></div>
-          <% } %>
           <div>
             <div class="name"><%= installer.name %></div>
             <div class="title"><%= installer.tagline||'מומחה אינטרקום ובקרת כניסה' %></div>
@@ -150,11 +145,6 @@ body{
     <div class="body">
       <div class="info">
         <div class="top-row">
-          <% if(installer.logo && installer.logo.url){ %>
-            <img class="logo-img" src="<%= installer.logo.url %>" alt=""/>
-          <% } else { %>
-            <div class="logo-txt"><%= (installer.businessName||installer.name).substring(0,8).toUpperCase() %></div>
-          <% } %>
           <div>
             <div class="name"><%= installer.name %></div>
             <div class="title"><%= installer.tagline||'מומחה אינטרקום ובקרת כניסה' %></div>
