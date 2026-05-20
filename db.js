@@ -54,7 +54,6 @@ const InstallerSchema = new mongoose.Schema({
   badge:          { type: String, default: 'מומחה מוסמך ומנוסה' },
   checklistItems: [{ type: String }],
   trustItems:     [{ type: String }],
-  template:       { type: String, enum: ['white','dark','red'], default: 'white' },
   popup: {
     active:    { type: Boolean, default: false },
     title:     { type: String, default: '' },
@@ -124,10 +123,23 @@ const ClickEventSchema = new mongoose.Schema({
 
 // ─── Models ──────────────────────────────────────────────────────────────────
 
+const OrderSchema = new mongoose.Schema({
+  installerId:    { type: mongoose.Schema.Types.ObjectId, ref: 'Installer', required: true },
+  installerSlug:  { type: String, required: true },
+  installerName:  { type: String, required: true },
+  installerPhone: { type: String, default: '' },
+  orderType:      { type: String, required: true }, // 'business_card' | 'metal_sticker' | 'logo_sticker'
+  notes:          { type: String, default: '' },
+  status:         { type: String, enum: ['pending','processing','done'], default: 'pending' },
+  read:           { type: Boolean, default: false },
+  createdAt:      { type: Date, default: Date.now }
+});
+
 const Installer   = mongoose.model('Installer', InstallerSchema);
 const Lead        = mongoose.model('Lead', LeadSchema);
 const Admin       = mongoose.model('Admin', AdminSchema);
 const ClickEvent  = mongoose.model('ClickEvent', ClickEventSchema);
+const Order       = mongoose.model('Order', OrderSchema);
 
 // ─── Seed Admin ──────────────────────────────────────────────────────────────
 
@@ -148,4 +160,4 @@ async function seedAdmin() {
 
 setTimeout(seedAdmin, 2000);
 
-module.exports = { Installer, Lead, Admin, ClickEvent };
+module.exports = { Installer, Lead, Admin, ClickEvent, Order };
