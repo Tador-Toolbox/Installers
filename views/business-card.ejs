@@ -7,260 +7,223 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{
-  font-family:'Heebo',sans-serif;
-  background:#111;
+  font-family:'Heebo',sans-serif;background:#0D0D12;
   display:flex;flex-direction:column;align-items:center;
-  min-height:100vh;gap:28px;padding:36px 20px;
+  min-height:100vh;gap:24px;padding:32px 20px;
 }
 .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
 .btn{padding:10px 22px;border-radius:8px;border:none;cursor:pointer;font-family:'Heebo',sans-serif;font-size:0.85rem;font-weight:700;transition:all .2s}
 .btn-print{background:#C9963A;color:#0D0D0D}
-.btn-print:hover{background:#E8B04B;transform:translateY(-1px)}
-.btn-style{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15)}
-.btn-style.active{background:rgba(201,150,58,0.2);border-color:#C9963A;color:#C9963A}
-.btn-back{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.4);font-size:0.78rem;text-decoration:none;display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px}
+.btn-print:hover{background:#E8B04B}
+.btn-style{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.12)}
+.btn-style.active{background:rgba(201,150,58,0.15);border-color:#C9963A;color:#C9963A}
+.btn-back{background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.35);font-size:0.78rem;text-decoration:none;display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px}
 
-/* CARD SIZE: 85.6 × 54mm = 323 × 204px at 96dpi */
-.card-wrap{display:flex;flex-direction:column;gap:0;filter:drop-shadow(0 24px 64px rgba(0,0,0,0.6))}
-.card{width:323px;height:204px;border-radius:14px;overflow:hidden;position:relative;font-family:'Heebo',sans-serif}
+/* 323×204px = 85.6×54mm @96dpi */
+.card-wrap{display:flex;flex-direction:column;gap:0;filter:drop-shadow(0 20px 60px rgba(0,0,0,0.7))}
+.card{width:323px;height:204px;border-radius:12px;overflow:hidden;position:relative;font-family:'Heebo',sans-serif;direction:ltr}
 
-/* ══════ STYLE 1: Dark Gold ══════ */
-.front-dark{
-  background:linear-gradient(135deg,#0A0A0F 0%,#0F1020 100%);
-}
-.front-dark .gold-bar{
-  position:absolute;top:0;right:0;left:0;height:3px;
-  background:linear-gradient(90deg,transparent 0%,#C9963A 40%,#E8B04B 60%,transparent 100%);
-}
-.front-dark .grid-pattern{
-  position:absolute;inset:0;
-  background-image:linear-gradient(rgba(201,150,58,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,150,58,0.04) 1px,transparent 1px);
-  background-size:20px 20px;
-}
-.front-dark .inner{
-  position:relative;z-index:1;
-  display:flex;height:100%;
-  align-items:stretch;
-}
-/* Left accent strip */
-.front-dark .left-strip{
-  width:4px;background:linear-gradient(180deg,#C9963A,#E8B04B,transparent);flex-shrink:0;
-}
-/* Main content */
-.front-dark .main{
-  flex:1;display:flex;flex-direction:column;justify-content:center;padding:20px 18px 18px;
-}
-.front-dark .top-row{
-  display:flex;align-items:center;gap:12px;margin-bottom:14px;
-}
-.front-dark .logo-box img{height:30px;width:auto;object-fit:contain}
-.front-dark .logo-box-text{font-size:0.8rem;font-weight:900;color:#C9963A;letter-spacing:1.5px}
-.front-dark .name-box .name{font-size:1.05rem;font-weight:900;color:#fff;line-height:1.1;margin-bottom:3px}
-.front-dark .name-box .title{font-size:0.62rem;color:#C9963A;font-weight:600;letter-spacing:1.5px;text-transform:uppercase}
-.front-dark .divider{height:1px;background:linear-gradient(90deg,rgba(201,150,58,0.3),transparent);margin-bottom:12px}
-.front-dark .contacts{display:flex;flex-direction:column;gap:5px}
-.front-dark .ci{display:flex;align-items:center;gap:7px;font-size:0.68rem;color:rgba(255,255,255,0.65)}
-.front-dark .ci-icon{width:14px;height:14px;border-radius:50%;background:rgba(201,150,58,0.15);display:flex;align-items:center;justify-content:center;font-size:0.55rem;flex-shrink:0}
-/* QR code area */
-.front-dark .qr-area{
-  width:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:14px 12px 14px 8px;
-}
-.front-dark .qr-area canvas{border-radius:6px}
-.front-dark .qr-label{font-size:0.5rem;color:rgba(255,255,255,0.25);margin-top:4px;text-align:center;letter-spacing:0.5px}
+/* ══ DARK GOLD ══ */
+.f-dark{background:linear-gradient(140deg,#080A10 0%,#0D1020 100%)}
+.f-dark .top-bar{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#C9963A,#E8B04B,transparent)}
+.f-dark .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(201,150,58,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(201,150,58,0.035) 1px,transparent 1px);background-size:18px 18px}
+.f-dark .left-strip{position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#C9963A 0%,#E8B04B 50%,transparent 100%)}
+.f-dark .body{position:relative;z-index:1;display:flex;height:100%;padding:18px 14px 18px 18px;gap:10px;align-items:center}
+.f-dark .info{flex:1;display:flex;flex-direction:column;justify-content:center}
+.f-dark .top-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.f-dark .name{font-size:1rem;font-weight:900;color:#fff;line-height:1.15}
+.f-dark .title{font-size:0.58rem;color:#C9963A;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;margin-top:2px}
+.f-dark .div{height:1px;background:linear-gradient(90deg,rgba(201,150,58,0.25),transparent);margin-bottom:10px}
+.f-dark .ci{display:flex;align-items:center;gap:6px;font-size:0.67rem;color:rgba(255,255,255,0.6);margin-bottom:5px;direction:rtl;text-align:right}
+.f-dark .ci-dot{width:4px;height:4px;border-radius:50%;background:#C9963A;flex-shrink:0}
+.f-dark .qr-col{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.f-dark .qr-lbl{font-size:0.45rem;color:rgba(255,255,255,0.2);letter-spacing:0.5px;text-align:center}
+.f-dark .logo-img{height:22px;width:auto;object-fit:contain;opacity:0.9}
+.f-dark .logo-txt{font-size:0.7rem;font-weight:900;color:#C9963A;letter-spacing:1px}
 
-/* Back dark */
-.back-dark{
-  background:linear-gradient(135deg,#0A0A0F,#0F1020);
-  display:flex;align-items:center;justify-content:center;
-  border-top:1px solid rgba(201,150,58,0.1);
-  position:relative;
-}
-.back-dark .gold-bar-bottom{
-  position:absolute;bottom:0;right:0;left:0;height:2px;
-  background:linear-gradient(90deg,transparent,#C9963A,transparent);
-}
-.back-dark .center-logo img{height:36px;width:auto;object-fit:contain;opacity:0.35}
-.back-dark .center-logo-text{font-size:1.4rem;font-weight:900;color:rgba(201,150,58,0.25);letter-spacing:4px}
+.b-dark{background:linear-gradient(140deg,#080A10,#0D1020);display:flex;align-items:center;justify-content:center;border-top:1px solid rgba(201,150,58,0.08);position:relative}
+.b-dark .bot-bar{position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#C9963A,transparent)}
+.b-dark .ctr img{height:32px;opacity:0.22;object-fit:contain}
+.b-dark .ctr-txt{font-size:1.2rem;font-weight:900;color:rgba(201,150,58,0.18);letter-spacing:4px}
 
-/* ══════ STYLE 2: Charcoal Red ══════ */
-.front-charcoal{
-  background:linear-gradient(135deg,#1C1C24 0%,#24242E 100%);
-}
-.front-charcoal .red-corner{
-  position:absolute;top:0;right:0;
-  width:0;height:0;
-  border-style:solid;border-width:0 90px 90px 0;
-  border-color:transparent #8B0000 transparent transparent;
-}
-.front-charcoal .red-corner-inner{
-  position:absolute;top:0;right:0;
-  width:0;height:0;
-  border-style:solid;border-width:0 85px 85px 0;
-  border-color:transparent #720000 transparent transparent;
-}
-.front-charcoal .inner{position:relative;z-index:1;display:flex;height:100%;align-items:stretch}
-.front-charcoal .left-strip{width:4px;background:linear-gradient(180deg,#8B0000,#C41230,transparent);flex-shrink:0}
-.front-charcoal .main{flex:1;display:flex;flex-direction:column;justify-content:center;padding:20px 18px 18px}
-.front-charcoal .top-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.front-charcoal .logo-box img{height:30px;width:auto;object-fit:contain}
-.front-charcoal .logo-box-text{font-size:0.8rem;font-weight:900;color:#C41230;letter-spacing:1.5px}
-.front-charcoal .name-box .name{font-size:1.05rem;font-weight:900;color:#fff;line-height:1.1;margin-bottom:3px}
-.front-charcoal .name-box .title{font-size:0.62rem;color:#C41230;font-weight:600;letter-spacing:1.5px;text-transform:uppercase}
-.front-charcoal .divider{height:1px;background:linear-gradient(90deg,rgba(139,0,0,0.5),transparent);margin-bottom:12px}
-.front-charcoal .contacts{display:flex;flex-direction:column;gap:5px}
-.front-charcoal .ci{display:flex;align-items:center;gap:7px;font-size:0.68rem;color:rgba(255,255,255,0.65)}
-.front-charcoal .ci-icon{width:14px;height:14px;border-radius:50%;background:rgba(139,0,0,0.2);display:flex;align-items:center;justify-content:center;font-size:0.55rem;flex-shrink:0}
-.front-charcoal .qr-area{width:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 12px 14px 8px}
-.front-charcoal .qr-label{font-size:0.5rem;color:rgba(255,255,255,0.25);margin-top:4px;text-align:center;letter-spacing:0.5px}
+/* ══ CHARCOAL RED ══ */
+.f-red{background:linear-gradient(140deg,#13131B 0%,#1A1A24 100%)}
+.f-red .corner{position:absolute;top:0;right:0;width:0;height:0;border-style:solid;border-width:0 80px 80px 0;border-color:transparent #8B0000 transparent transparent}
+.f-red .top-bar{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#720000,#C41230,transparent)}
+.f-red .left-strip{position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#8B0000,#C41230,transparent)}
+.f-red .body{position:relative;z-index:1;display:flex;height:100%;padding:18px 14px 18px 18px;gap:10px;align-items:center}
+.f-red .info{flex:1;display:flex;flex-direction:column;justify-content:center}
+.f-red .top-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.f-red .name{font-size:1rem;font-weight:900;color:#fff;line-height:1.15}
+.f-red .title{font-size:0.58rem;color:#C41230;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;margin-top:2px}
+.f-red .div{height:1px;background:linear-gradient(90deg,rgba(139,0,0,0.4),transparent);margin-bottom:10px}
+.f-red .ci{display:flex;align-items:center;gap:6px;font-size:0.67rem;color:rgba(255,255,255,0.6);margin-bottom:5px;direction:rtl;text-align:right}
+.f-red .ci-dot{width:4px;height:4px;border-radius:50%;background:#8B0000;flex-shrink:0}
+.f-red .qr-col{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.f-red .qr-lbl{font-size:0.45rem;color:rgba(255,255,255,0.2);letter-spacing:0.5px;text-align:center}
+.f-red .logo-img{height:22px;width:auto;object-fit:contain;opacity:0.9}
+.f-red .logo-txt{font-size:0.7rem;font-weight:900;color:#C41230;letter-spacing:1px}
 
-.back-charcoal{
-  background:linear-gradient(135deg,#1C1C24,#24242E);
-  display:flex;align-items:center;justify-content:center;
-  border-top:1px solid rgba(139,0,0,0.15);
-  position:relative;
-}
-.back-charcoal .red-bar{position:absolute;bottom:0;right:0;left:0;height:3px;background:linear-gradient(90deg,transparent,#8B0000,transparent)}
-.back-charcoal .center-logo img{height:36px;width:auto;object-fit:contain;opacity:0.3}
-.back-charcoal .center-logo-text{font-size:1.4rem;font-weight:900;color:rgba(139,0,0,0.3);letter-spacing:4px}
+.b-red{background:linear-gradient(140deg,#13131B,#1A1A24);display:flex;align-items:center;justify-content:center;border-top:1px solid rgba(139,0,0,0.1);position:relative}
+.b-red .bot-bar{position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#8B0000,transparent)}
+.b-red .ctr img{height:32px;opacity:0.2;object-fit:contain}
+.b-red .ctr-txt{font-size:1.2rem;font-weight:900;color:rgba(139,0,0,0.22);letter-spacing:4px}
 
-/* SEPARATOR */
-.sep{width:323px;border:none;border-top:1px dashed rgba(255,255,255,0.08);margin:0}
+.sep{width:323px;border:none;border-top:1px dashed rgba(255,255,255,0.06);margin:0}
+.note{color:rgba(255,255,255,0.2);font-size:0.7rem}
 
-/* PRINT */
 @media print{
   body{background:#fff;padding:0;gap:0;min-height:auto}
-  .controls,.size-note{display:none!important}
+  .controls,.note{display:none!important}
   .card-wrap{filter:none}
   .sep{display:none}
   @page{size:85.6mm 54mm;margin:0}
   .card{width:85.6mm;height:54mm;border-radius:0;page-break-after:always}
-  .back-dark,.back-charcoal{page-break-before:always}
 }
 </style>
 </head>
 <body>
 
+<%
+  // Deduplicate phone/whatsapp
+  const phone = installer.phone || '';
+  const wa    = installer.whatsapp || '';
+  const cleanPhone = phone.replace(/\D/g,'');
+  const cleanWA    = wa.replace(/\D/g,'');
+  const showWA     = cleanWA && cleanWA !== cleanPhone && cleanWA !== '972'+cleanPhone && ('972'+cleanWA) !== cleanPhone;
+  const areas      = (installer.areas||[]).slice(0,3).join(' · ');
+%>
+
 <div class="controls">
   <a href="/admin" class="btn-back">← אדמין</a>
   <button class="btn btn-style active" id="btn-dark" onclick="setStyle('dark')">⬛ כהה זהב</button>
-  <button class="btn btn-style" id="btn-charcoal" onclick="setStyle('charcoal')">🔴 אפור אדום</button>
+  <button class="btn btn-style" id="btn-red" onclick="setStyle('red')">🔴 אפור אדום</button>
   <button class="btn btn-print" onclick="window.print()">🖨️ הדפס / PDF</button>
 </div>
+<div class="note">גודל סטנדרטי: 85.6 × 54 מ"מ</div>
 
-<!-- ══ DARK GOLD ══ -->
+<!-- DARK GOLD -->
 <div class="card-wrap" id="wrap-dark">
-  <div class="card front-dark">
-    <div class="gold-bar"></div>
-    <div class="grid-pattern"></div>
-    <div class="inner">
-      <div class="left-strip"></div>
-      <div class="main">
+  <div class="card f-dark">
+    <div class="top-bar"></div>
+    <div class="grid"></div>
+    <div class="left-strip"></div>
+    <div class="body">
+      <div class="info">
         <div class="top-row">
-          <div class="logo-box">
-            <% if(installer.logo && installer.logo.url){ %>
-              <img src="<%= installer.logo.url %>" alt=""/>
-            <% } else { %>
-              <div class="logo-box-text"><%= (installer.businessName||installer.name).substring(0,8).toUpperCase() %></div>
-            <% } %>
-          </div>
-          <div class="name-box">
+          <% if(installer.logo && installer.logo.url){ %>
+            <img class="logo-img" src="<%= installer.logo.url %>" alt=""/>
+          <% } else { %>
+            <div class="logo-txt"><%= (installer.businessName||installer.name).substring(0,8).toUpperCase() %></div>
+          <% } %>
+          <div>
             <div class="name"><%= installer.name %></div>
-            <div class="title"><%= installer.tagline || 'מומחה אינטרקום ובקרת כניסה' %></div>
+            <div class="title"><%= installer.tagline||'מומחה אינטרקום ובקרת כניסה' %></div>
           </div>
         </div>
-        <div class="divider"></div>
-        <div class="contacts">
-          <% if(installer.phone){ %><div class="ci"><div class="ci-icon">📞</div><%= installer.phone %></div><% } %>
-          <% if(installer.whatsapp){ %><div class="ci"><div class="ci-icon">💬</div><%= installer.whatsapp %></div><% } %>
-          <% if(installer.areas && installer.areas.length){ %><div class="ci"><div class="ci-icon">📍</div><%= installer.areas.slice(0,3).join(' · ') %></div><% } %>
-        </div>
+        <div class="div"></div>
+        <% if(phone){ %><div class="ci"><div class="ci-dot"></div><%= phone %></div><% } %>
+        <% if(showWA){ %><div class="ci"><div class="ci-dot"></div>WA: <%= wa %></div><% } %>
+        <% if(areas){ %><div class="ci"><div class="ci-dot"></div><%= areas %></div><% } %>
       </div>
-      <div class="qr-area">
-        <canvas id="qr-dark" width="54" height="54"></canvas>
-        <div class="qr-label">סרוק לדף שלי</div>
+      <div class="qr-col">
+        <canvas id="qr1" width="58" height="58" style="border-radius:6px"></canvas>
+        <div class="qr-lbl">סרוק לדף שלי</div>
       </div>
     </div>
   </div>
   <hr class="sep"/>
-  <div class="card back-dark">
-    <div class="gold-bar-bottom"></div>
-    <div class="center-logo">
-      <% if(installer.logo && installer.logo.url){ %>
-        <img src="<%= installer.logo.url %>" alt=""/>
-      <% } else { %>
-        <div class="center-logo-text"><%= (installer.businessName||installer.name).substring(0,6).toUpperCase() %></div>
-      <% } %>
+  <div class="card b-dark">
+    <div class="bot-bar"></div>
+    <div class="ctr">
+      <% if(installer.logo && installer.logo.url){ %><img src="<%= installer.logo.url %>"/><% } else { %><div class="ctr-txt"><%= (installer.businessName||installer.name).substring(0,6).toUpperCase() %></div><% } %>
     </div>
   </div>
 </div>
 
-<!-- ══ CHARCOAL RED ══ -->
-<div class="card-wrap" id="wrap-charcoal" style="display:none">
-  <div class="card front-charcoal">
-    <div class="red-corner"></div>
-    <div class="red-corner-inner"></div>
-    <div class="inner">
-      <div class="left-strip"></div>
-      <div class="main">
+<!-- CHARCOAL RED -->
+<div class="card-wrap" id="wrap-red" style="display:none">
+  <div class="card f-red">
+    <div class="corner"></div>
+    <div class="top-bar"></div>
+    <div class="left-strip"></div>
+    <div class="body">
+      <div class="info">
         <div class="top-row">
-          <div class="logo-box">
-            <% if(installer.logo && installer.logo.url){ %>
-              <img src="<%= installer.logo.url %>" alt=""/>
-            <% } else { %>
-              <div class="logo-box-text"><%= (installer.businessName||installer.name).substring(0,8).toUpperCase() %></div>
-            <% } %>
-          </div>
-          <div class="name-box">
+          <% if(installer.logo && installer.logo.url){ %>
+            <img class="logo-img" src="<%= installer.logo.url %>" alt=""/>
+          <% } else { %>
+            <div class="logo-txt"><%= (installer.businessName||installer.name).substring(0,8).toUpperCase() %></div>
+          <% } %>
+          <div>
             <div class="name"><%= installer.name %></div>
-            <div class="title"><%= installer.tagline || 'מומחה אינטרקום ובקרת כניסה' %></div>
+            <div class="title"><%= installer.tagline||'מומחה אינטרקום ובקרת כניסה' %></div>
           </div>
         </div>
-        <div class="divider"></div>
-        <div class="contacts">
-          <% if(installer.phone){ %><div class="ci"><div class="ci-icon">📞</div><%= installer.phone %></div><% } %>
-          <% if(installer.whatsapp){ %><div class="ci"><div class="ci-icon">💬</div><%= installer.whatsapp %></div><% } %>
-          <% if(installer.areas && installer.areas.length){ %><div class="ci"><div class="ci-icon">📍</div><%= installer.areas.slice(0,3).join(' · ') %></div><% } %>
-        </div>
+        <div class="div"></div>
+        <% if(phone){ %><div class="ci"><div class="ci-dot"></div><%= phone %></div><% } %>
+        <% if(showWA){ %><div class="ci"><div class="ci-dot"></div>WA: <%= wa %></div><% } %>
+        <% if(areas){ %><div class="ci"><div class="ci-dot"></div><%= areas %></div><% } %>
       </div>
-      <div class="qr-area">
-        <canvas id="qr-charcoal" width="54" height="54"></canvas>
-        <div class="qr-label">סרוק לדף שלי</div>
+      <div class="qr-col">
+        <canvas id="qr2" width="58" height="58" style="border-radius:6px"></canvas>
+        <div class="qr-lbl">סרוק לדף שלי</div>
       </div>
     </div>
   </div>
   <hr class="sep"/>
-  <div class="card back-charcoal">
-    <div class="red-bar"></div>
-    <div class="center-logo">
-      <% if(installer.logo && installer.logo.url){ %>
-        <img src="<%= installer.logo.url %>" alt=""/>
-      <% } else { %>
-        <div class="center-logo-text"><%= (installer.businessName||installer.name).substring(0,6).toUpperCase() %></div>
-      <% } %>
+  <div class="card b-red">
+    <div class="bot-bar"></div>
+    <div class="ctr">
+      <% if(installer.logo && installer.logo.url){ %><img src="<%= installer.logo.url %>"/><% } else { %><div class="ctr-txt"><%= (installer.businessName||installer.name).substring(0,6).toUpperCase() %></div><% } %>
     </div>
   </div>
 </div>
 
-<!-- QR lib -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-const URL = 'https://installers.co.il/<%= installer.slug %>';
+const QRURL = 'https://installers.co.il/<%= installer.slug %>';
 
-function makeQR(canvasId, dark, light){
-  const canvas = document.getElementById(canvasId);
-  QRCode.toCanvas(canvas, URL, {
-    width:54, margin:1,
-    color:{ dark: dark||'#C9963A', light: light||'#0A0A0F' }
-  }, function(err){});
+function drawQR(id, dark, light){
+  try{
+    new QRCode(document.createElement('div'), {
+      text: QRURL, width:58, height:58,
+      colorDark: dark, colorLight: light,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+    // Use canvas API directly
+    QRCode.toCanvas(document.getElementById(id), QRURL, {
+      width:58, margin:1,
+      color:{ dark:dark, light:light }
+    });
+  } catch(e){
+    // fallback: draw via img
+    const c = document.getElementById(id);
+    const img = new Image();
+    img.onload = ()=>{ c.getContext('2d').drawImage(img,0,0,58,58); };
+    img.src = 'https://api.qrserver.com/v1/create-qr-code/?data='+encodeURIComponent(QRURL)+'&size=58x58&bgcolor='+light.replace('#','')+'&color='+dark.replace('#','')+'&margin=1';
+  }
 }
 
-makeQR('qr-dark','#C9963A','#0A0A0F');
-makeQR('qr-charcoal','#C41230','#1C1C24');
+window.addEventListener('load', function(){
+  // Use image-based QR as most reliable fallback
+  ['qr1','qr2'].forEach(function(id, i){
+    const dark  = i===0 ? 'C9963A' : '8B0000';
+    const light = i===0 ? '080A10' : '13131B';
+    const c = document.getElementById(id);
+    const img = new Image();
+    img.crossOrigin='anonymous';
+    img.onload = function(){
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img,0,0,58,58);
+    };
+    img.src = 'https://api.qrserver.com/v1/create-qr-code/?data='+encodeURIComponent(QRURL)+'&size=116x116&bgcolor='+light+'&color='+dark+'&margin=1&qzone=1';
+  });
+});
 
 function setStyle(s){
-  document.getElementById('wrap-dark').style.display      = s==='dark'     ?'flex':'none';
-  document.getElementById('wrap-charcoal').style.display  = s==='charcoal' ?'flex':'none';
+  document.getElementById('wrap-dark').style.display = s==='dark'?'flex':'none';
+  document.getElementById('wrap-red').style.display  = s==='red' ?'flex':'none';
   document.querySelectorAll('.btn-style').forEach(b=>b.classList.remove('active'));
   document.getElementById('btn-'+s).classList.add('active');
 }
