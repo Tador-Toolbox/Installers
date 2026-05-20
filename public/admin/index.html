@@ -551,6 +551,7 @@ function renderInstallersTable(){
       <td><span class="status-pill ${inst.isActive?'active':'inactive'}">${inst.isActive?'פעיל':'מושהה'}</span></td>
       <td>
         <div class="actions">
+          <a href="/admin/business-card/${inst.slug}" target="_blank" class="btn btn-outline btn-sm" title="ייצר כרטיס ביקור">🪪</a>
           <a href="/${inst.slug}" target="_blank" class="btn btn-outline btn-sm" title="דף ציבורי">👁️</a>
           <a href="/dashboard" target="_blank" class="btn btn-outline btn-sm" title="פאנל מתקין">🖥️</a>
           <button class="btn btn-outline btn-sm" onclick="openQRModal('${inst.slug}','${inst.name}')" title="QR Code">◻ QR</button>
