@@ -31,6 +31,15 @@ app.use(session({
 
 app.use('/api', apiRouter);
 
+// ─── Business Card Generator (Admin) ─────────────────────────────────────────
+app.get('/admin/business-card/:slug', async (req, res) => {
+  try {
+    const installer = await Installer.findOne({ slug: req.params.slug });
+    if (!installer) return res.status(404).send('Not found');
+    res.render('business-card', { installer });
+  } catch(e) { res.status(500).send(e.message); }
+});
+
 // ─── Admin Panel ──────────────────────────────────────────────────────────────
 
 app.get('/admin', (req, res) => {
