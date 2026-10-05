@@ -320,6 +320,14 @@ router.delete('/admin/designers/:id', requireAdmin, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// GET /api/admin/designers-all-leads
+router.get('/admin/designers-all-leads', requireAdmin, async (req, res) => {
+  try {
+    const leads = await DesignerLead.find({}).sort({ createdAt: -1 }).limit(200);
+    res.json(leads);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // GET /api/admin/designers/:id/leads
 router.get('/admin/designers/:id/leads', requireAdmin, async (req, res) => {
   try {
