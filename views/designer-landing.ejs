@@ -437,29 +437,9 @@
     }
     footer a { color: var(--accent); }
 
-    /* ── MOBILE STICKY BAR ────────────────────────────────────── */
-    #mobile-bar {
-      display: none;
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 800;
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      padding: 10px 16px 16px;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .mb-btn {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 13px; border-radius: 99px;
-      font-size: .95rem; font-weight: 700;
-      border: none; cursor: pointer; font-family: 'Heebo', sans-serif;
-    }
-    .mb-call { background: var(--accent); color: var(--bg); }
-    .mb-wa   { background: #25d366; color: #fff; }
-    @media(max-width:640px) { #mobile-bar { display: grid; } body { padding-bottom: 80px; } }
-
     /* ── FLOATING WHATSAPP ────────────────────────────────────── */
     #wa-float {
-      position: fixed; bottom: 90px; left: 20px; z-index: 700;
+      position: fixed; bottom: 24px; left: 20px; z-index: 700;
       width: 56px; height: 56px; border-radius: 50%;
       background: #25d366;
       display: flex; align-items: center; justify-content: center;
@@ -468,7 +448,6 @@
       font-size: 1.6rem;
     }
     #wa-float:hover { transform: scale(1.1); }
-    @media(min-width:641px) { #wa-float { bottom: 24px; } }
 
     /* ── POPUP ────────────────────────────────────────────────── */
     #popup-overlay {
@@ -857,12 +836,6 @@
   <p>© <%= new Date().getFullYear() %> <%= designer.name %> | עיצוב פנים</p>
   <p style="margin-top:6px">פותח בגאווה על ידי <a href="https://tador.co.il" target="_blank">Tador</a></p>
 </footer>
-
-<!-- ── MOBILE STICKY BAR ──────────────────────────────────────────── -->
-<div id="mobile-bar">
-  <a href="tel:<%= designer.phone %>" class="mb-btn mb-call" onclick="trackClick('call')">📞 התקשרי</a>
-  <a href="https://wa.me/972<%= (designer.whatsapp||designer.phone||'').replace(/[^0-9]/g,'').slice(-9) %>" class="mb-btn mb-wa" onclick="trackClick('whatsapp')">💬 WhatsApp</a>
-</div>
 
 <!-- ── FLOATING WHATSAPP ─────────────────────────────────────────── -->
 <a id="wa-float" href="https://wa.me/972<%= (designer.whatsapp||designer.phone||'').replace(/[^0-9]/g,'').slice(-9) %>"
