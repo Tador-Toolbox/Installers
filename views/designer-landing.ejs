@@ -510,6 +510,94 @@
     #popup-overlay { position: fixed; }
     .popup-wrap { position: relative; display: inline-block; width: 100%; max-width: 480px; }
   </style>
+
+  <!-- ── Template Skin Override ─────────────────────────────────── -->
+  <% if ((designer.template || 'elegant') === 'minimal') { %>
+  <style>
+    /* MINIMAL — soft cream light theme */
+    :root {
+      --bg:       #f5f2ee;
+      --surface:  #ffffff;
+      --surface2: #ede9e3;
+      --surface3: #e3ddd5;
+      --accent:   #7a5c38;
+      --accent2:  #a07d55;
+      --text:     #1a1714;
+      --text-dim: #6b6460;
+      --border:   rgba(0,0,0,0.09);
+      --border2:  rgba(122,92,56,0.25);
+      --shadow:   0 20px 60px rgba(0,0,0,0.12);
+    }
+    body { background: var(--bg); color: var(--text); }
+    #nav.scrolled { background: rgba(245,242,238,0.94); box-shadow: 0 1px 0 var(--border); }
+    .btn-primary { background: var(--text); color: var(--bg); }
+    .btn-primary:hover { background: var(--accent); }
+    .btn-secondary { border-color: var(--text); color: var(--text); }
+    .btn-secondary:hover { background: var(--text); color: var(--bg); }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); }
+    .hero-section { background: var(--bg); }
+    .hero-overlay { background: linear-gradient(to top, rgba(245,242,238,0.85) 0%, rgba(245,242,238,0.4) 50%, rgba(245,242,238,0.2) 100%); }
+    .hero-name { color: var(--text); }
+    .hero-tagline { color: var(--text-dim); }
+    .stats-bar { border-color: var(--border); background: var(--surface); }
+    .stat-num { color: var(--accent); }
+    .section-label { color: var(--accent); }
+    .service-card { background: var(--surface); border-color: var(--border); }
+    .service-icon { background: var(--surface2); color: var(--accent); }
+    .testimonial-card { background: var(--surface); border-color: var(--border); }
+    .contact-section { background: var(--surface); border-color: var(--border); }
+    .lead-form input, .lead-form select, .lead-form textarea { background: var(--surface2); border-color: var(--border); color: var(--text); }
+    .submit-btn { background: var(--text); color: var(--bg); }
+    .submit-btn:hover { background: var(--accent); color: #fff; }
+    footer { background: var(--text); color: var(--bg); }
+    .mobile-bar { background: rgba(245,242,238,0.96); border-color: var(--border); }
+    .wa-float { background: #25D366; }
+    #popup-overlay { background: rgba(26,23,20,0.55); }
+    .popup-box { background: var(--surface); border-color: var(--border); }
+    .popup-close { background: var(--surface2); color: var(--text); }
+  </style>
+  <% } else if ((designer.template || 'elegant') === 'bold') { %>
+  <style>
+    /* BOLD — high-contrast black + vivid gold */
+    :root {
+      --bg:       #030305;
+      --surface:  #0b0b12;
+      --surface2: #111120;
+      --surface3: #18182a;
+      --accent:   #f0c040;
+      --accent2:  #ffe57a;
+      --text:     #ffffff;
+      --text-dim: #9090b0;
+      --border:   rgba(255,255,255,0.1);
+      --border2:  rgba(240,192,64,0.35);
+      --shadow:   0 24px 80px rgba(0,0,0,0.8);
+    }
+    body { background: var(--bg); }
+    #nav.scrolled { background: rgba(3,3,5,0.96); }
+    h1, h2, .hero-name { letter-spacing: -0.02em; }
+    .hero-badge { background: var(--accent); color: #000; font-weight: 800; }
+    .hero-name { font-size: clamp(2.8rem, 8vw, 5.5rem); }
+    .btn-primary { background: var(--accent); color: #000; font-weight: 800; }
+    .btn-primary:hover { background: var(--accent2); }
+    .btn-secondary { border-color: var(--accent); color: var(--accent); }
+    .btn-secondary:hover { background: var(--accent); color: #000; }
+    .hero-overlay { background: linear-gradient(to top, rgba(3,3,5,0.88) 0%, rgba(3,3,5,0.5) 55%, rgba(3,3,5,0.15) 100%); }
+    .stats-bar { border-color: var(--border); }
+    .stat-num { color: var(--accent); font-size: 2rem; }
+    .section-label { color: var(--accent); letter-spacing: 0.12em; font-size: 0.78rem; }
+    .section-title { font-size: clamp(2rem, 5vw, 3rem); }
+    .service-card { background: var(--surface); border-color: var(--border); }
+    .service-card:hover { border-color: var(--accent); }
+    .service-icon { background: rgba(240,192,64,0.12); color: var(--accent); font-size: 1.5rem; }
+    .testimonial-card { background: var(--surface); border-color: var(--border); }
+    .submit-btn { background: var(--accent); color: #000; font-weight: 800; }
+    .submit-btn:hover { background: var(--accent2); }
+    footer { background: #000; }
+    .wa-float { background: #25D366; }
+    #popup-overlay { background: rgba(0,0,0,0.75); }
+  </style>
+  <% } %>
 </head>
 <body>
 
