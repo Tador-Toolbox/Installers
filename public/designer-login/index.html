@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>כניסה | מעצבי פנים</title>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0b0b0f; --surface: #13131a; --surface2: #1a1a24;
+      --accent: #c4956a; --text: #ede9e2; --text-dim: #8a8278;
+      --border: rgba(255,255,255,0.07); --r: 12px;
+    }
+    body {
+      font-family: 'Heebo', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex;
+      align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 48px 40px;
+      width: 100%; max-width: 420px;
+      text-align: center;
+    }
+    .login-icon { font-size: 3rem; margin-bottom: 16px; }
+    h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; }
+    .subtitle { color: var(--text-dim); font-size: .9rem; margin-bottom: 36px; }
+    .form-group { margin-bottom: 16px; text-align: right; }
+    label { display: block; font-size: .82rem; color: var(--text-dim); margin-bottom: 6px; font-weight: 600; }
+    input {
+      width: 100%; padding: 13px 16px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-family: 'Heebo', sans-serif; font-size: .95rem;
+      outline: none; transition: border-color .2s;
+    }
+    input:focus { border-color: var(--accent); }
+    .btn {
+      width: 100%; padding: 14px;
+      background: var(--accent); color: var(--bg);
+      border: none; border-radius: 99px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      margin-top: 8px; transition: opacity .2s;
+    }
+    .btn:hover { opacity: .88; }
+    .error { color: #f87171; font-size: .85rem; margin-top: 12px; display: none; }
+    .back { color: var(--text-dim); font-size: .82rem; margin-top: 20px; }
+    .back a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="login-icon">🎨</div>
+    <h1>כניסה למעצבים</h1>
+    <p class="subtitle">הזינו את פרטי הכניסה שלכם</p>
+    <form id="login-form">
+      <div class="form-group">
+        <label>שם משתמש</label>
+        <input type="text" id="username" autocomplete="username" required />
+      </div>
+      <div class="form-group">
+        <label>סיסמה</label>
+        <input type="password" id="password" autocomplete="current-password" required />
+      </div>
+      <button type="submit" class="btn">כניסה</button>
+      <div class="error" id="error-msg"></div>
+    </form>
+    <p class="back">חזרה ל<a href="/admin">פאנל ניהול</a></p>
+  </div>
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = this.querySelector('.btn');
+      const err = document.getElementById('error-msg');
+      btn.disabled = true; btn.textContent = 'מתחבר...'; err.style.display = 'none';
+      try {
+        const res = await fetch('/api/designer/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value
+          })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          window.location.href = '/designer-dashboard';
+        } else {
+          err.textContent = data.error || 'שגיאת כניסה';
+          err.style.display = 'block';
+        }
+      } catch (ex) {
+        err.textContent = 'שגיאת שרת. נסו שוב.';
+        err.style.display = 'block';
+      }
+      btn.disabled = false; btn.textContent = 'כניסה';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= designer.name %> | עיצוב פנים</title>
+  <meta name="description" content="<%= designer.tagline || 'מעצבת פנים מובילה – צרו קשר לייעוץ חינם' %>" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:        #0b0b0f;
+      --surface:   #13131a;
+      --surface2:  #1a1a24;
+      --surface3:  #22222f;
+      --accent:    #c4956a;
+      --accent2:   #e8c9a0;
+      --text:      #ede9e2;
+      --text-dim:  #8a8278;
+      --border:    rgba(255,255,255,0.07);
+      --border2:   rgba(196,149,106,0.25);
+      --r:         12px;
+      --r-sm:      8px;
+      --shadow:    0 20px 60px rgba(0,0,0,0.6);
+      --nav-h:     68px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Heebo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    img { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+
+    /* ── Scrollbar ────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 99px; }
+
+    /* ── Utility ──────────────────────────────────────────────── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    .gold { color: var(--accent); }
+    .fade-up { opacity: 0; transform: translateY(28px); transition: opacity .6s ease, transform .6s ease; }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── NAV ──────────────────────────────────────────────────── */
+    #nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      height: var(--nav-h);
+      display: flex; align-items: center;
+      padding: 0 24px;
+      transition: background .35s, backdrop-filter .35s, box-shadow .35s;
+    }
+    #nav.scrolled {
+      background: rgba(11,11,15,0.92);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 1px 0 var(--border);
+    }
+    .nav-inner {
+      width: 100%; max-width: 1100px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-logo img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+    .nav-name { font-size: 1rem; font-weight: 700; }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a {
+      font-size: .85rem; font-weight: 500; color: var(--text-dim);
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-cta {
+      background: var(--accent); color: var(--bg);
+      padding: 9px 22px; border-radius: 99px;
+      font-size: .85rem; font-weight: 700;
+      transition: opacity .2s;
+    }
+    .nav-cta:hover { opacity: .85; }
+    @media(max-width:640px) { .nav-links { display: none; } }
+
+    /* ── HERO ─────────────────────────────────────────────────── */
+    #hero {
+      position: relative;
+      min-height: 100svh;
+      display: flex; align-items: flex-end;
+      padding-bottom: 80px;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: var(--bg);
+    }
+    .hero-bg img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      opacity: .45;
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(11,11,15,.35) 0%,
+        rgba(11,11,15,.55) 45%,
+        rgba(11,11,15,.96) 100%
+      );
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      max-width: 680px;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(196,149,106,.15);
+      border: 1px solid var(--border2);
+      padding: 6px 14px; border-radius: 99px;
+      font-size: .78rem; font-weight: 600; letter-spacing: .08em;
+      color: var(--accent); text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .hero-badge::before { content: '✦'; font-size: .65rem; }
+    h1.hero-name {
+      font-size: clamp(2.4rem, 7vw, 5rem);
+      font-weight: 900; line-height: 1.05;
+      margin-bottom: 12px;
+    }
+    .hero-tagline {
+      font-size: clamp(1rem, 2.8vw, 1.35rem);
+      color: var(--text-dim); font-weight: 300;
+      margin-bottom: 36px; max-width: 520px;
+    }
+    .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--accent); color: var(--bg);
+      padding: 14px 32px; border-radius: 99px;
+      font-size: 1rem; font-weight: 700;
+      transition: transform .2s, box-shadow .2s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(196,149,106,.4); }
+    .btn-secondary {
+      border: 1px solid var(--border2);
+      color: var(--text); padding: 14px 32px; border-radius: 99px;
+      font-size: 1rem; font-weight: 600;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,.04);
+      transition: border-color .2s, background .2s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-secondary:hover { border-color: var(--accent); background: rgba(196,149,106,.08); }
+
+    /* ── STATS BAR ────────────────────────────────────────────── */
+    #stats {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 36px 20px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+    }
+    .stat-item {
+      text-align: center;
+      padding: 0 20px;
+      border-left: 1px solid var(--border);
+    }
+    .stat-item:last-child { border-left: none; }
+    .stat-num {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 900; color: var(--accent);
+      line-height: 1;
+    }
+    .stat-label { font-size: .82rem; color: var(--text-dim); margin-top: 6px; font-weight: 500; }
+    @media(max-width:600px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); row-gap: 28px; }
+      .stat-item:nth-child(2n) { border-left: 1px solid var(--border); }
+      .stat-item:nth-child(2n+1) { border-left: none; }
+    }
+
+    /* ── SECTION HEADER ───────────────────────────────────────── */
+    .section-header { text-align: center; margin-bottom: 52px; }
+    .section-eyebrow {
+      font-size: .75rem; font-weight: 700; letter-spacing: .14em;
+      color: var(--accent); text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .section-title {
+      font-size: clamp(1.7rem, 4vw, 2.5rem);
+      font-weight: 800; line-height: 1.15;
+    }
+    .section-sub {
+      color: var(--text-dim); margin-top: 12px;
+      font-size: 1rem; font-weight: 400;
+    }
+
+    /* ── PORTFOLIO ────────────────────────────────────────────── */
+    #portfolio { padding: 100px 0; }
+    .masonry {
+      columns: 3; column-gap: 14px;
+    }
+    .masonry-item {
+      break-inside: avoid;
+      margin-bottom: 14px;
+      border-radius: var(--r);
+      overflow: hidden;
+      cursor: zoom-in;
+      position: relative;
+    }
+    .masonry-item img {
+      width: 100%; display: block;
+      transition: transform .5s ease;
+    }
+    .masonry-item:hover img { transform: scale(1.04); }
+    .masonry-overlay {
+      position: absolute; inset: 0;
+      background: rgba(11,11,15,0);
+      display: flex; align-items: center; justify-content: center;
+      transition: background .3s;
+    }
+    .masonry-item:hover .masonry-overlay { background: rgba(11,11,15,0.35); }
+    .masonry-zoom {
+      opacity: 0; font-size: 1.6rem;
+      transition: opacity .3s;
+    }
+    .masonry-item:hover .masonry-zoom { opacity: 1; }
+    @media(max-width:700px) { .masonry { columns: 2; column-gap: 10px; } .masonry-item { margin-bottom: 10px; } }
+    @media(max-width:440px) { .masonry { columns: 1; } }
+
+    /* Lightbox */
+    #lightbox {
+      display: none; position: fixed; inset: 0; z-index: 9000;
+      background: rgba(0,0,0,.94);
+      align-items: center; justify-content: center;
+    }
+    #lightbox.open { display: flex; }
+    #lightbox img { max-width: 92vw; max-height: 90vh; border-radius: var(--r); object-fit: contain; }
+    #lb-close {
+      position: fixed; top: 20px; left: 20px;
+      background: rgba(255,255,255,.1); border: none;
+      color: #fff; font-size: 1.6rem; cursor: pointer;
+      width: 48px; height: 48px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+    }
+    #lb-close:hover { background: rgba(255,255,255,.2); }
+    #lb-prev, #lb-next {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+      color: #fff; font-size: 1.4rem; cursor: pointer;
+      width: 52px; height: 52px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+    }
+    #lb-prev:hover, #lb-next:hover { background: rgba(255,255,255,.18); }
+    #lb-prev { right: 20px; } #lb-next { left: 20px; }
+
+    /* ── ABOUT ────────────────────────────────────────────────── */
+    #about { padding: 100px 0; }
+    .about-grid {
+      display: grid; grid-template-columns: 2fr 3fr;
+      gap: 64px; align-items: start;
+    }
+    .about-photo {
+      border-radius: var(--r);
+      overflow: hidden;
+      aspect-ratio: 3/4;
+      position: sticky; top: calc(var(--nav-h) + 24px);
+    }
+    .about-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .about-photo-placeholder {
+      width: 100%; height: 100%;
+      background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 5rem;
+    }
+    .about-eyebrow {
+      font-size: .75rem; font-weight: 700; letter-spacing: .14em;
+      color: var(--accent); text-transform: uppercase; margin-bottom: 16px;
+    }
+    .about-name {
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      font-weight: 800; line-height: 1.1; margin-bottom: 20px;
+    }
+    .about-bio {
+      color: var(--text-dim); line-height: 1.85;
+      font-size: 1rem; margin-bottom: 32px;
+      white-space: pre-line;
+    }
+    .trust-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+    .trust-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: .92rem; color: var(--text-dim);
+    }
+    .trust-item::before {
+      content: '✦';
+      color: var(--accent); font-size: .7rem; flex-shrink: 0; margin-top: 4px;
+    }
+    .about-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .about-tag {
+      background: var(--surface2); border: 1px solid var(--border);
+      padding: 6px 14px; border-radius: 99px;
+      font-size: .8rem; color: var(--text-dim);
+    }
+    .social-row { display: flex; gap: 14px; margin-top: 28px; }
+    .social-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 20px; border-radius: 99px;
+      background: var(--surface2); border: 1px solid var(--border);
+      font-size: .85rem; font-weight: 600;
+      transition: border-color .2s, background .2s;
+    }
+    .social-btn:hover { border-color: var(--border2); background: var(--surface3); }
+    @media(max-width:760px) {
+      .about-grid { grid-template-columns: 1fr; gap: 36px; }
+      .about-photo { position: static; aspect-ratio: 4/3; }
+    }
+
+    /* ── SERVICES ─────────────────────────────────────────────── */
+    #services { padding: 100px 0; background: var(--surface); }
+    .services-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .service-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 32px 24px;
+      transition: border-color .3s, transform .3s;
+    }
+    .service-card:hover { border-color: var(--border2); transform: translateY(-4px); }
+    .service-icon { font-size: 2rem; margin-bottom: 16px; }
+    .service-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+    .service-desc { font-size: .88rem; color: var(--text-dim); line-height: 1.7; }
+    @media(max-width:760px) { .services-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media(max-width:480px) { .services-grid { grid-template-columns: 1fr; } }
+
+    /* ── TESTIMONIALS ─────────────────────────────────────────── */
+    #testimonials { padding: 100px 0; }
+    .testimonials-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .testimonial-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 28px 24px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .stars { color: var(--accent); font-size: .9rem; letter-spacing: 2px; }
+    .testimonial-text {
+      font-size: .95rem; color: var(--text-dim); line-height: 1.75;
+      font-style: italic;
+    }
+    .testimonial-text::before { content: '"'; font-size: 1.3rem; color: var(--accent); }
+    .testimonial-client { font-weight: 700; font-size: .9rem; }
+    @media(max-width:760px) { .testimonials-grid { grid-template-columns: 1fr; gap: 14px; } }
+
+    /* ── CTA / LEAD FORM ──────────────────────────────────────── */
+    #contact {
+      padding: 100px 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+    .contact-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: center;
+    }
+    .contact-left h2 {
+      font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+      font-weight: 800; margin-bottom: 16px;
+    }
+    .contact-left p { color: var(--text-dim); line-height: 1.8; margin-bottom: 28px; }
+    .contact-detail {
+      display: flex; align-items: center; gap: 12px;
+      font-size: .92rem; color: var(--text-dim); margin-bottom: 14px;
+    }
+    .contact-detail .icon { font-size: 1.1rem; }
+    .contact-detail a { color: var(--accent); font-weight: 600; }
+    .lead-form {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 36px 32px;
+    }
+    .form-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 24px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: .82rem; color: var(--text-dim); margin-bottom: 6px; font-weight: 600; }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%; padding: 13px 16px;
+      background: var(--surface3); border: 1px solid var(--border);
+      border-radius: var(--r-sm); color: var(--text);
+      font-family: 'Heebo', sans-serif; font-size: .95rem;
+      outline: none; transition: border-color .2s;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus { border-color: var(--accent); }
+    .form-group textarea { resize: vertical; min-height: 90px; }
+    .form-group select option { background: var(--surface3); }
+    .btn-form {
+      width: 100%; padding: 15px;
+      background: var(--accent); color: var(--bg);
+      border: none; border-radius: 99px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: opacity .2s, transform .2s;
+    }
+    .btn-form:hover { opacity: .88; transform: translateY(-1px); }
+    .form-success {
+      display: none; text-align: center; padding: 20px;
+      color: var(--accent); font-weight: 700; font-size: 1.1rem;
+    }
+    @media(max-width:760px) { .contact-grid { grid-template-columns: 1fr; gap: 40px; } }
+
+    /* ── FOOTER ───────────────────────────────────────────────── */
+    footer {
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 32px 20px;
+      text-align: center;
+      color: var(--text-dim); font-size: .8rem;
+    }
+    footer a { color: var(--accent); }
+
+    /* ── MOBILE STICKY BAR ────────────────────────────────────── */
+    #mobile-bar {
+      display: none;
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 800;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 10px 16px 16px;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .mb-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 13px; border-radius: 99px;
+      font-size: .95rem; font-weight: 700;
+      border: none; cursor: pointer; font-family: 'Heebo', sans-serif;
+    }
+    .mb-call { background: var(--accent); color: var(--bg); }
+    .mb-wa   { background: #25d366; color: #fff; }
+    @media(max-width:640px) { #mobile-bar { display: grid; } body { padding-bottom: 80px; } }
+
+    /* ── FLOATING WHATSAPP ────────────────────────────────────── */
+    #wa-float {
+      position: fixed; bottom: 90px; left: 20px; z-index: 700;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: #25d366;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(37,211,102,.45);
+      transition: transform .2s;
+      font-size: 1.6rem;
+    }
+    #wa-float:hover { transform: scale(1.1); }
+    @media(min-width:641px) { #wa-float { bottom: 24px; } }
+
+    /* ── POPUP ────────────────────────────────────────────────── */
+    #popup-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,.75); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    #popup-overlay.open { display: flex; }
+    .popup-box {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: var(--r);
+      max-width: 480px; width: 100%;
+      overflow: hidden;
+      animation: popIn .35s ease;
+    }
+    @keyframes popIn { from { opacity:0; transform:scale(.9); } to { opacity:1; transform:scale(1); } }
+    .popup-img { width: 100%; max-height: 220px; object-fit: cover; }
+    .popup-body { padding: 28px 24px; }
+    .popup-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 10px; }
+    .popup-text  { color: var(--text-dim); margin-bottom: 20px; line-height: 1.65; }
+    .popup-btn {
+      display: block; width: 100%;
+      background: var(--accent); color: var(--bg);
+      padding: 14px; border-radius: 99px; border: none;
+      font-family: 'Heebo', sans-serif;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      text-align: center;
+      transition: opacity .2s;
+    }
+    .popup-btn:hover { opacity: .88; }
+    .popup-close {
+      position: absolute; top: 16px; left: 16px;
+      background: rgba(255,255,255,.1); border: none; color: #fff;
+      width: 36px; height: 36px; border-radius: 50%;
+      font-size: 1.1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #popup-overlay { position: fixed; }
+    .popup-wrap { position: relative; display: inline-block; width: 100%; max-width: 480px; }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ──────────────────────────────────────────────────────── -->
+<nav id="nav">
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <% if (designer.logo && designer.logo.url) { %>
+        <img src="<%= designer.logo.url %>" alt="<%= designer.name %>" />
+      <% } %>
+      <span class="nav-name"><%= designer.name %></span>
+    </div>
+    <div class="nav-links">
+      <a href="#portfolio">פורטפוליו</a>
+      <a href="#about">אודות</a>
+      <a href="#services">שירותים</a>
+      <a href="#contact">יצירת קשר</a>
+    </div>
+    <a href="#contact" class="nav-cta">ייעוץ חינם</a>
+  </div>
+</nav>
+
+<!-- ── HERO ─────────────────────────────────────────────────────── -->
+<section id="hero">
+  <div class="hero-bg">
+    <% if (designer.heroImage && designer.heroImage.url) { %>
+      <img src="<%= designer.heroImage.url %>" alt="<%= designer.name %>" fetchpriority="high" />
+    <% } %>
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="container">
+    <div class="hero-content fade-up">
+      <div class="hero-badge"><%= designer.badge || 'מעצבת פנים מובילה' %></div>
+      <h1 class="hero-name"><%= designer.name %></h1>
+      <p class="hero-tagline"><%= designer.tagline || 'הופכת דירות לחלומות – עיצוב פנים שמרגיש כמו בית' %></p>
+      <div class="hero-ctas">
+        <a href="tel:<%= designer.phone %>" class="btn-primary" onclick="trackClick('call')">📞 לשיחה עכשיו</a>
+        <a href="#contact" class="btn-secondary">קבלי הצעה בחינם ✦</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── STATS ─────────────────────────────────────────────────────── -->
+<section id="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item fade-up">
+        <div class="stat-num"><%= designer.yearsExperience || 8 %>+</div>
+        <div class="stat-label">שנות ניסיון</div>
+      </div>
+      <div class="stat-item fade-up" style="transition-delay:.1s">
+        <div class="stat-num"><%= designer.projectsDone || 120 %>+</div>
+        <div class="stat-label">פרויקטים שהושלמו</div>
+      </div>
+      <div class="stat-item fade-up" style="transition-delay:.2s">
+        <div class="stat-num"><%= designer.portfolioImages ? designer.portfolioImages.length : 0 %>+</div>
+        <div class="stat-label">תמונות בפורטפוליו</div>
+      </div>
+      <div class="stat-item fade-up" style="transition-delay:.3s">
+        <div class="stat-num"><%= designer.testimonials ? designer.testimonials.length : 0 %>+</div>
+        <div class="stat-label">המלצות מלקוחות</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PORTFOLIO ─────────────────────────────────────────────────── -->
+<% if (designer.portfolioImages && designer.portfolioImages.length > 0) { %>
+<section id="portfolio">
+  <div class="container">
+    <div class="section-header fade-up">
+      <div class="section-eyebrow">הפרויקטים שלנו</div>
+      <h2 class="section-title">פורטפוליו עבודות</h2>
+      <p class="section-sub">כל פרויקט מספר סיפור ייחודי</p>
+    </div>
+    <div class="masonry" id="portfolio-grid">
+      <% designer.portfolioImages.forEach(function(img, idx) { %>
+      <div class="masonry-item fade-up" onclick="openLightbox(<%= idx %>)">
+        <img src="<%= img.url %>" alt="עיצוב פנים <%= idx + 1 %>" loading="lazy" />
+        <div class="masonry-overlay"><span class="masonry-zoom">🔍</span></div>
+      </div>
+      <% }); %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<!-- ── LIGHTBOX ──────────────────────────────────────────────────── -->
+<div id="lightbox">
+  <button id="lb-close" onclick="closeLightbox()">✕</button>
+  <button id="lb-prev" onclick="lbNav(-1)">›</button>
+  <img id="lb-img" src="" alt="" />
+  <button id="lb-next" onclick="lbNav(1)">‹</button>
+</div>
+
+<!-- ── ABOUT ─────────────────────────────────────────────────────── -->
+<section id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-photo fade-up">
+        <% if (designer.profileImage && designer.profileImage.url) { %>
+          <img src="<%= designer.profileImage.url %>" alt="<%= designer.name %>" />
+        <% } else { %>
+          <div class="about-photo-placeholder">🎨</div>
+        <% } %>
+      </div>
+      <div class="about-content fade-up" style="transition-delay:.15s">
+        <div class="about-eyebrow">קצת עליי</div>
+        <h2 class="about-name"><%= designer.name %></h2>
+        <% if (designer.businessName) { %><p style="color:var(--accent);font-weight:600;margin-bottom:16px"><%= designer.businessName %></p><% } %>
+        <p class="about-bio"><%= designer.about || 'מעצבת פנים עם תשוקה ליצירת מרחבים שמשקפים את אישיות הלקוחות. אני מאמינה שכל דירה יכולה להפוך לבית חלומות – עם הגישה הנכונה והעיצוב המושלם.' %></p>
+
+        <% if (designer.trustItems && designer.trustItems.length > 0) { %>
+        <div class="trust-list">
+          <% designer.trustItems.forEach(function(item) { %>
+          <div class="trust-item"><%= item %></div>
+          <% }); %>
+        </div>
+        <% } %>
+
+        <% if (designer.specialties && designer.specialties.length > 0) { %>
+        <div class="about-tags">
+          <% designer.specialties.forEach(function(s) { %>
+          <span class="about-tag"><%= s %></span>
+          <% }); %>
+        </div>
+        <% } else if (designer.areas && designer.areas.length > 0) { %>
+        <div class="about-tags">
+          <% designer.areas.forEach(function(a) { %>
+          <span class="about-tag">📍 <%= a %></span>
+          <% }); %>
+        </div>
+        <% } %>
+
+        <div class="social-row">
+          <% if (designer.phone) { %>
+          <a href="tel:<%= designer.phone %>" class="social-btn" onclick="trackClick('call')">📞 <span><%= designer.phone %></span></a>
+          <% } %>
+          <% if (designer.instagram) { %>
+          <a href="https://instagram.com/<%= designer.instagram.replace('@','') %>" target="_blank" class="social-btn">📸 אינסטגרם</a>
+          <% } %>
+          <% if (designer.facebook) { %>
+          <a href="<%= designer.facebook %>" target="_blank" class="social-btn">👤 פייסבוק</a>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SERVICES ───────────────────────────────────────────────────── -->
+<% if (designer.services && designer.services.length > 0) { %>
+<section id="services">
+  <div class="container">
+    <div class="section-header fade-up">
+      <div class="section-eyebrow">מה אני מציעה</div>
+      <h2 class="section-title">שירותי עיצוב פנים</h2>
+    </div>
+    <div class="services-grid">
+      <% designer.services.forEach(function(svc, i) {
+        var parts = svc.split('|');
+        var icon = parts[0] || '✦';
+        var name = parts[1] || svc;
+        var desc = parts[2] || '';
+      %>
+      <div class="service-card fade-up" style="transition-delay:<%= (i%3)*.1 %>s">
+        <div class="service-icon"><%= icon %></div>
+        <div class="service-name"><%= name %></div>
+        <% if (desc) { %><div class="service-desc"><%= desc %></div><% } %>
+      </div>
+      <% }); %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<!-- ── TESTIMONIALS ───────────────────────────────────────────────── -->
+<% if (designer.testimonials && designer.testimonials.length > 0) { %>
+<section id="testimonials">
+  <div class="container">
+    <div class="section-header fade-up">
+      <div class="section-eyebrow">מה אומרים עליי</div>
+      <h2 class="section-title">המלצות לקוחות</h2>
+    </div>
+    <div class="testimonials-grid">
+      <% designer.testimonials.forEach(function(t, i) { %>
+      <div class="testimonial-card fade-up" style="transition-delay:<%= (i%3)*.1 %>s">
+        <div class="stars"><%= '★'.repeat(t.rating || 5) %></div>
+        <p class="testimonial-text"><%= t.text %></p>
+        <div class="testimonial-client">— <%= t.clientName %></div>
+      </div>
+      <% }); %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<!-- ── CTA / LEAD FORM ────────────────────────────────────────────── -->
+<section id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="contact-left fade-up">
+        <div class="section-eyebrow">צרו קשר</div>
+        <h2>בואו נדבר על הדירה שלכם</h2>
+        <p>ייעוץ ראשוני ללא עלות. אשמח לשמוע על הפרויקט שלכם ולהציע את הפתרון המושלם.</p>
+        <% if (designer.phone) { %>
+        <div class="contact-detail"><span class="icon">📞</span><a href="tel:<%= designer.phone %>" onclick="trackClick('call')"><%= designer.phone %></a></div>
+        <% } %>
+        <% if (designer.whatsapp) { %>
+        <div class="contact-detail"><span class="icon">💬</span><a href="https://wa.me/972<%= designer.whatsapp.replace(/[^0-9]/g,'').slice(-9) %>" onclick="trackClick('whatsapp')">WhatsApp</a></div>
+        <% } %>
+        <% if (designer.instagram) { %>
+        <div class="contact-detail"><span class="icon">📸</span><a href="https://instagram.com/<%= designer.instagram.replace('@','') %>" target="_blank">@<%= designer.instagram.replace('@','') %></a></div>
+        <% } %>
+      </div>
+      <div class="lead-form fade-up" style="transition-delay:.15s">
+        <div class="form-title">השאירו פרטים ונחזור אליכם</div>
+        <form id="lead-form">
+          <div class="form-group">
+            <label>שם מלא *</label>
+            <input type="text" id="f-name" required placeholder="ישראל ישראלי" />
+          </div>
+          <div class="form-group">
+            <label>טלפון *</label>
+            <input type="tel" id="f-phone" required placeholder="050-1234567" />
+          </div>
+          <div class="form-group">
+            <label>סוג הפרויקט</label>
+            <select id="f-service">
+              <option value="">בחרו סוג פרויקט</option>
+              <% if (designer.services && designer.services.length > 0) {
+                designer.services.forEach(function(svc) {
+                  var name = svc.split('|')[1] || svc;
+              %>
+              <option value="<%= name %>"><%= name %></option>
+              <% }); } %>
+              <option value="עיצוב פנים מלא">עיצוב פנים מלא</option>
+              <option value="ייעוץ עיצוב">ייעוץ עיצוב</option>
+              <option value="אחר">אחר</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>הודעה</label>
+            <textarea id="f-msg" placeholder="ספרו לי על הדירה שלכם, גודל, מיקום, מה חשוב לכם..."></textarea>
+          </div>
+          <button type="submit" class="btn-form">שלחו פרטים ✦</button>
+        </form>
+        <div class="form-success" id="form-success">✅ תודה! נחזור אליכם בהקדם.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────────────────── -->
+<footer>
+  <p>© <%= new Date().getFullYear() %> <%= designer.name %> | עיצוב פנים</p>
+  <p style="margin-top:6px">פותח בגאווה על ידי <a href="https://tador.co.il" target="_blank">Tador</a></p>
+</footer>
+
+<!-- ── MOBILE STICKY BAR ──────────────────────────────────────────── -->
+<div id="mobile-bar">
+  <a href="tel:<%= designer.phone %>" class="mb-btn mb-call" onclick="trackClick('call')">📞 התקשרי</a>
+  <a href="https://wa.me/972<%= (designer.whatsapp||designer.phone||'').replace(/[^0-9]/g,'').slice(-9) %>" class="mb-btn mb-wa" onclick="trackClick('whatsapp')">💬 WhatsApp</a>
+</div>
+
+<!-- ── FLOATING WHATSAPP ─────────────────────────────────────────── -->
+<a id="wa-float" href="https://wa.me/972<%= (designer.whatsapp||designer.phone||'').replace(/[^0-9]/g,'').slice(-9) %>"
+   onclick="trackClick('whatsapp')" aria-label="WhatsApp">💬</a>
+
+<!-- ── POPUP ─────────────────────────────────────────────────────── -->
+<% if (designer.popup && designer.popup.active) { %>
+<div id="popup-overlay">
+  <div class="popup-wrap">
+    <button class="popup-close" onclick="closePopup()">✕</button>
+    <div class="popup-box">
+      <% if (designer.popup.image && designer.popup.image.url) { %>
+        <img class="popup-img" src="<%= designer.popup.image.url %>" alt="" />
+      <% } %>
+      <div class="popup-body">
+        <div class="popup-title"><%= designer.popup.title || 'רוצים לשפר את הדירה?' %></div>
+        <p class="popup-text"><%= designer.popup.text || 'השאירו פרטים לייעוץ ראשוני חינם!' %></p>
+        <a href="#contact" class="popup-btn" onclick="closePopup()"><%= designer.popup.btnText || 'לייעוץ חינם' %></a>
+      </div>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<script>
+// ── Portfolio images data ──────────────────────────────────────────
+const portfolioImages = <%- JSON.stringify(designer.portfolioImages || []) %>;
+let lbIndex = 0;
+
+function openLightbox(idx) {
+  lbIndex = idx;
+  document.getElementById('lb-img').src = portfolioImages[idx].url;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function lbNav(dir) {
+  lbIndex = (lbIndex + dir + portfolioImages.length) % portfolioImages.length;
+  document.getElementById('lb-img').src = portfolioImages[lbIndex].url;
+}
+document.getElementById('lightbox').addEventListener('click', function(e) {
+  if (e.target === this) closeLightbox();
+});
+
+// ── Scroll animations ─────────────────────────────────────────────
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+}, { threshold: 0.12 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// ── Nav scroll ────────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 60);
+}, { passive: true });
+
+// ── Click tracking ────────────────────────────────────────────────
+function trackClick(type) {
+  fetch('/api/designer/click/<%= designer.slug %>', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type })
+  }).catch(() => {});
+}
+
+// ── Lead form ─────────────────────────────────────────────────────
+document.getElementById('lead-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = this.querySelector('.btn-form');
+  btn.disabled = true; btn.textContent = 'שולח...';
+  try {
+    const res = await fetch('/api/designer/lead/<%= designer.slug %>', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name:        document.getElementById('f-name').value,
+        phone:       document.getElementById('f-phone').value,
+        serviceType: document.getElementById('f-service').value,
+        message:     document.getElementById('f-msg').value
+      })
+    });
+    if (res.ok) {
+      document.getElementById('lead-form').style.display = 'none';
+      document.getElementById('form-success').style.display = 'block';
+      trackClick('quote');
+    }
+  } catch(err) {}
+  btn.disabled = false;
+});
+
+// ── Popup ─────────────────────────────────────────────────────────
+<% if (designer.popup && designer.popup.active) { %>
+setTimeout(() => {
+  const seen = sessionStorage.getItem('popup_<%= designer.slug %>');
+  if (!seen) {
+    document.getElementById('popup-overlay').classList.add('open');
+    sessionStorage.setItem('popup_<%= designer.slug %>', '1');
+  }
+}, <%= (designer.popup.delay || 3) * 1000 %>);
+function closePopup() {
+  document.getElementById('popup-overlay').classList.remove('open');
+}
+document.getElementById('popup-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closePopup();
+});
+<% } %>
+</script>
+</body>
+</html>

@@ -5,8 +5,9 @@ const MongoStore = require('connect-mongo');
 const path       = require('path');
 
 require('./db');
-const { Installer } = require('./db');
-const apiRouter     = require('./routes/api');
+const { Installer, Designer } = require('./db');
+const apiRouter        = require('./routes/api');
+const designerApiRouter = require('./routes/designer-api');
 
 const app = express();
 
@@ -24,14 +25,16 @@ app.use(session({
   resave:            false,
   saveUninitialized: false,
   store:             MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
-  cookie:            { maxAge: 7 * 24 * 60 * 60 * 1000 } // 7 days
+  cookie:            { maxAge: 7 * 24 * 60 * 60 * 1000 }
 }));
 
 // ─── API Routes ───────────────────────────────────────────────────────────────
 
 app.use('/api', apiRouter);
+app.use('/api', designerApiRouter);
 
 // ─── Business Card Generator (Admin) ─────────────────────────────────────────
+
 app.get('/admin/business-card/:slug', async (req, res) => {
   try {
     const installer = await Installer.findOne({ slug: req.params.slug });
@@ -46,17 +49,51 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/admin/index.html'));
 });
 
-// ─── Dashboard ────────────────────────────────────────────────────────────────
+// ─── Installer Dashboard ──────────────────────────────────────────────────────
 
 app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/dashboard/index.html'));
 });
 
-// ─── Public Landing Pages ─────────────────────────────────────────────────────
+// ─── Designer Dashboard ───────────────────────────────────────────────────────
+
+app.get('/designer-dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/designer-dashboard/index.html'));
+});
+
+// ─── Designer Login Page ──────────────────────────────────────────────────────
+
+app.get('/designer-login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/designer-login/index.html'));
+});
+
+// ─── Designer Public Landing Pages ───────────────────────────────────────────
+
+app.get('/d/:slug', async (req, res) => {
+  try {
+    const designer = await Designer.findOne({
+      slug:     req.params.slug.toLowerCase(),
+      isActive: true
+    });
+    if (!designer) return res.status(404).render('404');
+
+    const approvedPortfolio = designer.portfolioImages.filter(p => p.status === 'approved');
+
+    res.render('designer-landing', {
+      designer: {
+        ...designer.toObject(),
+        portfolioImages: approvedPortfolio
+      }
+    });
+  } catch (e) {
+    res.status(500).send(e.message);
+  }
+});
+
+// ─── Installer Public Landing Pages ──────────────────────────────────────────
 
 app.get('/:slug', async (req, res, next) => {
-  // Skip known static routes
-  const skip = ['admin', 'dashboard', 'api', 'favicon.ico', 'assets'];
+  const skip = ['admin','dashboard','api','favicon.ico','assets','designer-dashboard','designer-login','d'];
   if (skip.includes(req.params.slug)) return next();
 
   try {
@@ -67,17 +104,12 @@ app.get('/:slug', async (req, res, next) => {
 
     if (!installer) return res.status(404).render('404');
 
-    // Only show approved portfolio images
     const approvedPortfolio = installer.portfolioImages.filter(p => p.status === 'approved');
-
     const templateMap = { dark: 'landing-dark', red: 'landing-red', white: 'landing' };
     const view = templateMap[installer.template] || 'landing';
 
     res.render(view, {
-      installer: {
-        ...installer.toObject(),
-        portfolioImages: approvedPortfolio
-      }
+      installer: { ...installer.toObject(), portfolioImages: approvedPortfolio }
     });
   } catch (e) {
     next(e);
@@ -89,9 +121,8 @@ app.get('/:slug', async (req, res, next) => {
 app.get('/', (req, res) => {
   res.send(`
     <html><body style="font-family:sans-serif;text-align:center;padding:60px">
-      <h1>🏠 Installer Landing Pages</h1>
-      <p>Visit <strong>/admin</strong> to manage installers</p>
-      <p>Visit <strong>/dashboard</strong> to access your installer panel</p>
+      <h1>🏠 Installer & Designer Landing Pages</h1>
+      <p>Visit <strong>/admin</strong> to manage everything</p>
     </body></html>
   `);
 });
