@@ -1025,7 +1025,7 @@ async function loadDesigners(){
 function renderDesignersTable(){
   const body = document.getElementById('designersBody');
   if(!allDesigners.length){ body.innerHTML='<tr><td colspan="8"><div class="empty">אין מעצבים</div></td></tr>'; return; }
-  const tplLabels = { elegant:'✨ אלגנטי', minimal:'⬜ מינימלי', bold:'🔲 בולד' };
+  const tplLabels = { elegant:'✨ אלגנטי', minimal:'⬜ מינימלי', bold:'🔲 בולד', industry:'🏗️ אינדסטריאל' };
   body.innerHTML = allDesigners.map(d=>`
     <tr>
       <td>
@@ -1037,9 +1037,10 @@ function renderDesignersTable(){
       <td><span style="font-family:monospace;font-size:0.85rem;color:var(--white)">${d.username}</span></td>
       <td>
         <select onchange="setDesignerTemplate('${d._id}',this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--white);font-size:0.82rem;cursor:pointer">
-          <option value="elegant" ${(d.template||'elegant')==='elegant'?'selected':''}>✨ אלגנטי</option>
-          <option value="minimal" ${d.template==='minimal'?'selected':''}>⬜ מינימלי</option>
-          <option value="bold"    ${d.template==='bold'   ?'selected':''}>🔲 בולד</option>
+          <option value="elegant"  ${(d.template||'elegant')==='elegant' ?'selected':''}>✨ אלגנטי</option>
+          <option value="minimal"  ${d.template==='minimal' ?'selected':''}>⬜ מינימלי</option>
+          <option value="bold"     ${d.template==='bold'    ?'selected':''}>🔲 בולד</option>
+          <option value="industry" ${d.template==='industry'?'selected':''}>🏗️ אינדסטריאל</option>
         </select>
       </td>
       <td>${d.totalLeads || 0}</td>
