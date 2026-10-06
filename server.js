@@ -78,13 +78,10 @@ app.get('/d/:slug', async (req, res) => {
     if (!designer) return res.status(404).render('404');
 
     const approvedPortfolio = designer.portfolioImages.filter(p => p.status === 'approved');
+    const designerData = { ...designer.toObject(), portfolioImages: approvedPortfolio };
+    const view = designer.template === 'industry-en' ? 'designer-landing-en' : 'designer-landing';
 
-    res.render('designer-landing', {
-      designer: {
-        ...designer.toObject(),
-        portfolioImages: approvedPortfolio
-      }
-    });
+    res.render(view, { designer: designerData });
   } catch (e) {
     res.status(500).send(e.message);
   }
