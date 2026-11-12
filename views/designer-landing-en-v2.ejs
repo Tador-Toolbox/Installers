@@ -4,8 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><%= designer.name %> | <%= T("Interior Design") %></title>
-  <link rel="alternate" hreflang="en" href="/d/<%= designer.slug %>" />
-  <link rel="alternate" hreflang="he" href="/d/<%= designer.slug %>?lang=he" />
+  <link rel="alternate" hreflang="en" href="<%= page.enUrl %>" />
+  <link rel="alternate" hreflang="he" href="<%= page.heUrl %>" />
+  <link rel="canonical" href="<%= page.canonical %>" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="<%= page.canonical %>" />
+  <meta property="og:title" content="<%= designer.name %> | <%= T("Interior Design") %>" />
+  <meta property="og:description" content="<%= designer.tagline || designer.badge || T('Award-winning interior designer – contact us for a free consultation') %>" />
+  <% if (page.image) { %><meta property="og:image" content="<%= page.image %>" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="<%= page.image %>" /><% } %>
   <meta name="description" content="<%= designer.tagline || T('Award-winning interior designer – contact us for a free consultation') %>" />
 
   <!-- Fonts -->
@@ -598,7 +608,7 @@
       <a href="#services"><%= T("Services") %></a>
       <a href="#contact"><%= T("Contact") %></a>
     </div>
-    <% if (lang === 'he') { %><a class="nav-lang" href="/d/<%= designer.slug %>" lang="en" dir="ltr">English</a><% } else { %><a class="nav-lang" href="/d/<%= designer.slug %>?lang=he" lang="he" dir="rtl">עברית</a><% } %>
+    <% if (lang === 'he') { %><a class="nav-lang" href="<%= page.enUrl %>" lang="en" dir="ltr">English</a><% } else { %><a class="nav-lang" href="<%= page.heUrl %>" lang="he" dir="rtl">עברית</a><% } %>
     <a href="#contact" class="nav-cta"><%= T("Free Consultation") %></a>
   </div>
 </nav>

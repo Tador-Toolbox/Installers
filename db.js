@@ -102,6 +102,7 @@ const DesignerSchema = new mongoose.Schema({
   trustItems:     [{ type: String }],
   template:       { type: String, enum: ['elegant','minimal','bold','industry','industry-en','industry-en-v2'], default: 'elegant' },
   hideCredit:     { type: Boolean, default: false },   // admin: hide the "Proudly built by Tador" footer line
+  shortLink:      { type: String, default: '', lowercase: true, trim: true },   // admin: short address, e.g. "haia" → installers.co.il/haia
   // Hebrew version of the content, shown on /d/<slug>?lang=he (English templates). Empty field = English is shown.
   he: {
     name:         { type: String, default: '' },

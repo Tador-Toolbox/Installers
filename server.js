@@ -70,6 +70,43 @@ app.get('/designer-login', (req, res) => {
 
 // ─── Designer Public Landing Pages ───────────────────────────────────────────
 
+// Words that can never be a designer short link (they are real pages of the site)
+const RESERVED = ['admin','dashboard','api','favicon.ico','assets','designer-dashboard','designer-login','d','he','en','uploads','public'];
+
+// Share-preview image (WhatsApp / Facebook): the main (hero) image, cropped to 1200x630
+function shareImage(d) {
+  const url = (d.heroImage && d.heroImage.url) || (d.profileImage && d.profileImage.url)
+           || ((d.portfolioImages || [])[0] || {}).url || '';
+  return url.includes('res.cloudinary.com') && url.includes('/upload/')
+    ? url.replace('/upload/', '/upload/c_fill,g_auto,w_1200,h_630,q_auto:good,f_jpg/')
+    : url;
+}
+
+async function renderDesignerPage(req, res, designer, wantHe) {
+  const approvedPortfolio = designer.portfolioImages.filter(p => p.status === 'approved');
+  const view = designer.template === 'industry-en' ? 'designer-landing-en'
+             : designer.template === 'industry-en-v2' ? 'designer-landing-en-v2'
+             : 'designer-landing';
+
+  // English templates have a Hebrew version
+  const isEnglishTemplate = view !== 'designer-landing';
+  const lang = (isEnglishTemplate && wantHe) ? 'he' : 'en';
+  const designerData = localizeDesigner({ ...designer.toObject(), portfolioImages: approvedPortfolio }, lang);
+
+  // Page addresses: the short link when there is one (installers.co.il/haia), otherwise /d/<slug>
+  const short = designer.shortLink;
+  const enPath = short ? `/${short}` : `/d/${designer.slug}`;
+  const hePath = short ? `/${short}/he` : `/d/${designer.slug}?lang=he`;
+  const origin = `https://${req.get('host')}`;
+  const page = {
+    enUrl: enPath, heUrl: hePath,
+    canonical: origin + (lang === 'he' ? hePath : enPath),
+    image: shareImage(designerData)
+  };
+
+  res.render(view, { designer: designerData, lang, T: makeT(lang), page });
+}
+
 app.get('/d/:slug', async (req, res) => {
   try {
     const designer = await Designer.findOne({
@@ -77,21 +114,21 @@ app.get('/d/:slug', async (req, res) => {
       isActive: true
     });
     if (!designer) return res.status(404).render('404');
-
-    const approvedPortfolio = designer.portfolioImages.filter(p => p.status === 'approved');
-    const view = designer.template === 'industry-en' ? 'designer-landing-en'
-               : designer.template === 'industry-en-v2' ? 'designer-landing-en-v2'
-               : 'designer-landing';
-
-    // English templates have a Hebrew version: /d/<slug>?lang=he
-    const isEnglishTemplate = view !== 'designer-landing';
-    const lang = (isEnglishTemplate && req.query.lang === 'he') ? 'he' : 'en';
-    const designerData = localizeDesigner({ ...designer.toObject(), portfolioImages: approvedPortfolio }, lang);
-
-    res.render(view, { designer: designerData, lang, T: makeT(lang) });
+    await renderDesignerPage(req, res, designer, req.query.lang === 'he');
   } catch (e) {
     res.status(500).send(e.message);
   }
+});
+
+// Short link, Hebrew version: installers.co.il/haia/he
+app.get('/:short/he', async (req, res, next) => {
+  try {
+    const short = req.params.short.toLowerCase();
+    if (RESERVED.includes(short)) return next();
+    const designer = await Designer.findOne({ shortLink: short, isActive: true });
+    if (!designer) return next();
+    await renderDesignerPage(req, res, designer, true);
+  } catch (e) { next(e); }
 });
 
 // ─── Installer Public Landing Pages ──────────────────────────────────────────
@@ -106,7 +143,12 @@ app.get('/:slug', async (req, res, next) => {
       isActive: true
     });
 
-    if (!installer) return res.status(404).render('404');
+    if (!installer) {
+      // not an installer page → maybe a designer's short link: installers.co.il/haia
+      const designer = await Designer.findOne({ shortLink: req.params.slug.toLowerCase(), isActive: true });
+      if (designer) return await renderDesignerPage(req, res, designer, req.query.lang === 'he');
+      return res.status(404).render('404');
+    }
 
     const approvedPortfolio = installer.portfolioImages.filter(p => p.status === 'approved');
     const templateMap = { dark: 'landing-dark', red: 'landing-red', white: 'landing' };

@@ -4,7 +4,7 @@ const cloudinary = require('cloudinary').v2;
 const bcrypt     = require('bcryptjs');
 const router     = express.Router();
 
-const { Designer, DesignerLead, DesignerClickEvent } = require('../db');
+const { Designer, DesignerLead, DesignerClickEvent, Installer } = require('../db');
 const { sanitizeHe, applyContent } = require('../lib/designer-i18n');
 
 cloudinary.config({
@@ -325,6 +325,17 @@ router.put('/admin/designers/:id', requireAdmin, async (req, res) => {
     if (isActive  !== undefined) designer.isActive  = isActive;
     if (template  !== undefined) designer.template  = template;
     if (hideCredit !== undefined) designer.hideCredit = !!hideCredit;
+    if (req.body.shortLink !== undefined) {
+      const short = String(req.body.shortLink || '').trim().toLowerCase();
+      if (short) {
+        const reserved = ['admin','dashboard','api','favicon.ico','assets','designer-dashboard','designer-login','d','he','en','uploads','public'];
+        if (!/^[a-z0-9][a-z0-9-]{1,39}$/.test(short)) return res.status(400).json({ error: 'קישור קצר: רק אותיות באנגלית, ספרות ומקף (2–40 תווים)' });
+        if (reserved.includes(short)) return res.status(400).json({ error: 'הכתובת הזו שמורה למערכת' });
+        if (await Installer.findOne({ slug: short })) return res.status(409).json({ error: 'הכתובת כבר תפוסה על ידי דף מתקין' });
+        if (await Designer.findOne({ shortLink: short, _id: { $ne: designer._id } })) return res.status(409).json({ error: 'הכתובת כבר תפוסה על ידי מעצב אחר' });
+      }
+      designer.shortLink = short;
+    }
     if (name      !== undefined) designer.name      = name;
     if (password) {
       designer.password = password; // will be hashed by pre-save

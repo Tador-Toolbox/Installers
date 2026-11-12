@@ -478,6 +478,11 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       <label>סיסמה חדשה (השאר ריק לשמור קיימת)</label>
       <input type="text" id="dResetPass" placeholder="לפחות 6 תווים"/>
     </div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label>🔗 קישור קצר — installers.co.il/<b id="dResetShortPrev"></b></label>
+      <input type="text" id="dResetShort" dir="ltr" placeholder="haia" oninput="document.getElementById('dResetShortPrev').textContent=this.value.trim().toLowerCase()"/>
+      <div style="color:var(--muted);font-size:0.78rem;margin-top:4px">אותיות באנגלית, ספרות ומקף. ריק = ללא קישור קצר. הקישור הארוך ממשיך לעבוד. עברית: ‎/שם/he</div>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('dResetModal')">ביטול</button>
       <button class="btn btn-gold" onclick="doDesignerReset()">💾 שמור שינויים</button>
@@ -1051,6 +1056,7 @@ function renderDesignersTable(){
         <div class="installer-row-info">
           <div class="installer-name">${d.name}</div>
           <div class="installer-slug">/d/${d.slug}</div>
+          ${d.shortLink ? `<div class="installer-slug" style="color:var(--gold,#c9a84c)">🔗 /${d.shortLink}</div>` : ''}
         </div>
       </td>
       <td><span style="font-family:monospace;font-size:0.85rem;color:var(--white)">${d.username}</span></td>
@@ -1217,6 +1223,10 @@ function openDesignerResetModal(id){
   document.getElementById('dResetId').value = id;
   document.getElementById('dResetPass').value = '';
   document.getElementById('dResetUsername').value = '';
+  const cur = (allDesigners.find(x=>x._id===id)||{}).shortLink || '';
+  document.getElementById('dResetShort').value = cur;
+  document.getElementById('dResetShort').dataset.orig = cur;
+  document.getElementById('dResetShortPrev').textContent = cur;
   document.getElementById('dResetModal').classList.add('open');
 }
 document.getElementById('dResetModal').addEventListener('click',function(e){ if(e.target===this) closeModal('dResetModal'); });
@@ -1225,12 +1235,16 @@ async function doDesignerReset(){
   const id          = document.getElementById('dResetId').value;
   const newPassword = document.getElementById('dResetPass').value.trim();
   const newUsername = document.getElementById('dResetUsername').value.trim();
-  if(!newPassword && !newUsername) return toast('מלא לפחות שדה אחד','error');
+  const shortEl  = document.getElementById('dResetShort');
+  const newShort = shortEl.value.trim().toLowerCase();
+  const shortChanged = newShort !== (shortEl.dataset.orig || '');
+  if(!newPassword && !newUsername && !shortChanged) return toast('מלא לפחות שדה אחד','error');
   const body = {};
+  if(shortChanged) body.shortLink = newShort;
   if(newPassword) body.password = newPassword;
   if(newUsername) body.username = newUsername;
   const r = await fetch(`/api/admin/designers/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(r.ok){ closeModal('dResetModal'); toast('✅ פרטי הכניסה עודכנו'); await loadDesigners(); renderDesignersTable(); }
+  if(r.ok){ closeModal('dResetModal'); toast('✅ הפרטים עודכנו'); await loadDesigners(); renderDesignersTable(); }
   else { const d=await r.json(); toast(d.error||'שגיאה','error'); }
 }
 
