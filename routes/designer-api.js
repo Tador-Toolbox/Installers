@@ -5,7 +5,7 @@ const bcrypt     = require('bcryptjs');
 const router     = express.Router();
 
 const { Designer, DesignerLead, DesignerClickEvent } = require('../db');
-const { sanitizeHe } = require('../lib/designer-i18n');
+const { sanitizeHe, debugLog: translateDebugLog } = require('../lib/designer-i18n');
 
 cloudinary.config({
   cloud_name:    process.env.CLOUDINARY_CLOUD_NAME,
@@ -294,10 +294,13 @@ router.delete('/designer/testimonial/:id', requireDesigner, async (req, res) => 
 // ADMIN DESIGNER ROUTES (require admin session)
 // ────────────────────────────────────────────────────────────────────
 
+// GET /api/admin/translate-debug — read-only log of the automatic Hebrew translation attempts
+router.get('/admin/translate-debug', requireAdmin, (req, res) => res.json(translateDebugLog.slice().reverse()));
+
 // GET /api/admin/designers
 router.get('/admin/designers', requireAdmin, async (req, res) => {
   try {
-    const designers = await Designer.find({}).select('-password').sort({ createdAt: -1 });
+    const designers = await Designer.find({}).select('-password -heAuto').sort({ createdAt: -1 });
     res.json(designers);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
