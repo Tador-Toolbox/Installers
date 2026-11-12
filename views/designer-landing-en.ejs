@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="<%= lang %>" dir="<%= lang === 'he' ? 'rtl' : 'ltr' %>">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title><%= designer.name %> | Interior Design</title>
-  <meta name="description" content="<%= designer.tagline || 'Award-winning interior designer – contact us for a free consultation' %>" />
+  <title><%= designer.name %> | <%= T("Interior Design") %></title>
+  <link rel="alternate" hreflang="en" href="/d/<%= designer.slug %>" />
+  <link rel="alternate" hreflang="he" href="/d/<%= designer.slug %>?lang=he" />
+  <meta name="description" content="<%= designer.tagline || T('Award-winning interior designer – contact us for a free consultation') %>" />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -479,6 +481,39 @@
     #popup-overlay { position: fixed; }
     .popup-wrap { position: relative; display: inline-block; width: 100%; max-width: 480px; }
   </style>
+<% if (lang === 'he') { %>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@200;300;400;500;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Hebrew / RTL ── */
+    body, input, select, textarea, button { font-family: 'Heebo', 'Outfit', sans-serif !important; }
+    * { letter-spacing: 0 !important; }
+    .stat-item { border-right: none !important; border-left: 1px solid rgba(128,128,128,0.18); }
+    .stat-item:last-child { border-left: none; }
+    @media(max-width:640px) {
+      .stat-item:nth-child(2n) { border-left: none; }
+      .stat-item:nth-child(2n+1) { border-left: 1px solid rgba(128,128,128,0.18); }
+    }
+    .testimonial-card { border-left: none !important; border-right: 2px solid var(--accent); }
+    .hero-content, .about-content, .contact-left, .lead-form { text-align: right; }
+    #f-phone, .contact-detail a, .social-btn span, .stat-num { direction: ltr; unicode-bidi: isolate; }
+    .contact-detail a, .social-btn span { display: inline-block; }
+    #f-phone { text-align: right; }
+  </style>
+<% } %>
+  <style>
+    .nav-lang {
+      font-size: .85rem; font-weight: 600; text-decoration: none; white-space: nowrap;
+      color: inherit; opacity: .85; padding: 7px 14px; border-radius: 999px;
+      border: 1px solid currentColor; transition: opacity .2s; margin-inline-start: auto; margin-inline-end: 12px;
+    }
+    .nav-lang:hover { opacity: 1; color: var(--accent); }
+    @media(min-width:641px) { .nav-lang { margin-inline-start: 0; } }
+    @media(max-width:480px) {
+      .nav-name { max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .9rem; }
+      .nav-lang { padding: 6px 10px; font-size: .78rem; margin-inline-end: 8px; }
+      .nav-cta { padding-inline: 12px !important; font-size: .78rem !important; white-space: nowrap; }
+    }
+  </style>
 </head>
 <body>
 
@@ -492,12 +527,13 @@
       <span class="nav-name"><%= designer.name %></span>
     </div>
     <div class="nav-links">
-      <a href="#portfolio">Portfolio</a>
-      <a href="#about">About</a>
-      <a href="#services">Services</a>
-      <a href="#contact">Contact</a>
+      <a href="#portfolio"><%= T("Portfolio") %></a>
+      <a href="#about"><%= T("About") %></a>
+      <a href="#services"><%= T("Services") %></a>
+      <a href="#contact"><%= T("Contact") %></a>
     </div>
-    <a href="#contact" class="nav-cta">Free Consultation</a>
+    <% if (lang === 'he') { %><a class="nav-lang" href="/d/<%= designer.slug %>" lang="en" dir="ltr">English</a><% } else { %><a class="nav-lang" href="/d/<%= designer.slug %>?lang=he" lang="he" dir="rtl">עברית</a><% } %>
+    <a href="#contact" class="nav-cta"><%= T("Free Consultation") %></a>
   </div>
 </nav>
 
@@ -511,12 +547,12 @@
   <div class="hero-overlay"></div>
   <div class="container">
     <div class="hero-content fade-up">
-      <div class="hero-badge"><%= designer.badge || 'Interior Design Studio' %></div>
+      <div class="hero-badge"><%= designer.badge || T('Interior Design Studio') %></div>
       <h1 class="hero-name"><%= designer.name %></h1>
-      <p class="hero-tagline"><%= designer.tagline || 'Transforming spaces into extraordinary living experiences' %></p>
+      <p class="hero-tagline"><%= designer.tagline || T('Transforming spaces into extraordinary living experiences') %></p>
       <div class="hero-ctas">
-        <a href="tel:<%= designer.phone %>" class="btn-primary" onclick="trackClick('call')">📞 Call Now</a>
-        <a href="#contact" class="btn-secondary">Get a Free Quote ✦</a>
+        <a href="tel:<%= designer.phone %>" class="btn-primary" onclick="trackClick('call')">📞 <%= T("Call Now") %></a>
+        <a href="#contact" class="btn-secondary"><%= T("Get a Free Quote") %> ✦</a>
       </div>
     </div>
   </div>
@@ -528,19 +564,19 @@
     <div class="stats-grid">
       <div class="stat-item fade-up">
         <div class="stat-num"><%= designer.yearsExperience || 8 %>+</div>
-        <div class="stat-label">Years of Experience</div>
+        <div class="stat-label"><%= T("Years of Experience") %></div>
       </div>
       <div class="stat-item fade-up" style="transition-delay:.1s">
         <div class="stat-num"><%= designer.projectsDone || 120 %>+</div>
-        <div class="stat-label">Projects Completed</div>
+        <div class="stat-label"><%= T("Projects Completed") %></div>
       </div>
       <div class="stat-item fade-up" style="transition-delay:.2s">
         <div class="stat-num"><%= designer.portfolioImages ? designer.portfolioImages.length : 0 %>+</div>
-        <div class="stat-label">Portfolio Works</div>
+        <div class="stat-label"><%= T("Portfolio Works") %></div>
       </div>
       <div class="stat-item fade-up" style="transition-delay:.3s">
         <div class="stat-num"><%= designer.testimonials ? designer.testimonials.length : 0 %>+</div>
-        <div class="stat-label">Client Reviews</div>
+        <div class="stat-label"><%= T("Client Reviews") %></div>
       </div>
     </div>
   </div>
@@ -551,14 +587,14 @@
 <section id="portfolio">
   <div class="container">
     <div class="section-header fade-up">
-      <div class="section-eyebrow">Selected Work</div>
-      <h2 class="section-title">Portfolio</h2>
-      <p class="section-sub">Every project tells a unique story</p>
+      <div class="section-eyebrow"><%= T("Selected Work") %></div>
+      <h2 class="section-title"><%= T("Portfolio") %></h2>
+      <p class="section-sub"><%= T("Every project tells a unique story") %></p>
     </div>
     <div class="masonry" id="portfolio-grid">
       <% designer.portfolioImages.forEach(function(img, idx) { %>
       <div class="masonry-item fade-up" onclick="openLightbox(<%= idx %>)">
-        <img src="<%= img.url %>" alt="Interior Design <%= idx + 1 %>" loading="lazy" />
+        <img src="<%= img.url %>" alt="<%= T('Interior Design') %> <%= idx + 1 %>" loading="lazy" />
         <div class="masonry-overlay"><span class="masonry-zoom">🔍</span></div>
       </div>
       <% }); %>
@@ -585,10 +621,10 @@
       </div>
       <% } %>
       <div class="about-content fade-up" style="transition-delay:.15s">
-        <div class="about-eyebrow">About Me</div>
+        <div class="about-eyebrow"><%= T("About Me") %></div>
         <h2 class="about-name"><%= designer.name %></h2>
         <% if (designer.businessName) { %><p style="color:var(--accent);font-weight:600;margin-bottom:16px;letter-spacing:0.04em"><%= designer.businessName %></p><% } %>
-        <p class="about-bio"><%= designer.about || 'An interior designer with a passion for creating spaces that reflect the personality and lifestyle of each client. I believe every home has the potential to become a dream space — with the right vision and design approach.' %></p>
+        <p class="about-bio"><%= designer.about || T("An interior designer with a passion for creating spaces that reflect the personality and lifestyle of each client. I believe every home has the potential to become a dream space — with the right vision and design approach.") %></p>
 
         <% if (designer.trustItems && designer.trustItems.length > 0) { %>
         <div class="trust-list">
@@ -633,8 +669,8 @@
 <section id="services">
   <div class="container">
     <div class="section-header fade-up">
-      <div class="section-eyebrow">What I Offer</div>
-      <h2 class="section-title">Design Services</h2>
+      <div class="section-eyebrow"><%= T("What I Offer") %></div>
+      <h2 class="section-title"><%= T("Design Services") %></h2>
     </div>
     <div class="services-grid">
       <% designer.services.forEach(function(svc, i) {
@@ -659,8 +695,8 @@
 <section id="testimonials">
   <div class="container">
     <div class="section-header fade-up">
-      <div class="section-eyebrow">Client Feedback</div>
-      <h2 class="section-title">What Clients Say</h2>
+      <div class="section-eyebrow"><%= T("Client Feedback") %></div>
+      <h2 class="section-title"><%= T("What Clients Say") %></h2>
     </div>
     <div class="testimonials-grid">
       <% designer.testimonials.forEach(function(t, i) { %>
@@ -680,9 +716,9 @@
   <div class="container">
     <div class="contact-grid">
       <div class="contact-left fade-up">
-        <div class="section-eyebrow">Get in Touch</div>
-        <h2>Let's talk about your space</h2>
-        <p>Free initial consultation. I'd love to hear about your project and offer the perfect design solution.</p>
+        <div class="section-eyebrow"><%= T("Get in Touch") %></div>
+        <h2><%= T("Let's talk about your space") %></h2>
+        <p><%= T("Free initial consultation. I'd love to hear about your project and offer the perfect design solution.") %></p>
         <% if (designer.phone) { %>
         <div class="contact-detail"><span class="icon">📞</span><a href="tel:<%= designer.phone %>" onclick="trackClick('call')"><%= designer.phone %></a></div>
         <% } %>
@@ -694,38 +730,38 @@
         <% } %>
       </div>
       <div class="lead-form fade-up" style="transition-delay:.15s">
-        <div class="form-title">Leave your details and we'll get back to you</div>
+        <div class="form-title"><%= T("Leave your details and we'll get back to you") %></div>
         <form id="lead-form">
           <div class="form-group">
-            <label>Full Name *</label>
-            <input type="text" id="f-name" required placeholder="Jane Smith" />
+            <label><%= T("Full Name *") %></label>
+            <input type="text" id="f-name" required placeholder="<%= T("Jane Smith") %>" />
           </div>
           <div class="form-group">
-            <label>Phone *</label>
-            <input type="tel" id="f-phone" required placeholder="+1 555 000 0000" />
+            <label><%= T("Phone *") %></label>
+            <input type="tel" id="f-phone" required placeholder="<%= T("+1 555 000 0000") %>" />
           </div>
           <div class="form-group">
-            <label>Project Type</label>
+            <label><%= T("Project Type") %></label>
             <select id="f-service">
-              <option value="">Select project type</option>
+              <option value=""><%= T("Select project type") %></option>
               <% if (designer.services && designer.services.length > 0) {
                 designer.services.forEach(function(svc) {
                   var name = svc.split('|')[1] || svc;
               %>
               <option value="<%= name %>"><%= name %></option>
               <% }); } %>
-              <option value="Full Interior Design">Full Interior Design</option>
-              <option value="Design Consultation">Design Consultation</option>
-              <option value="Other">Other</option>
+              <option value="<%= T("Full Interior Design") %>"><%= T("Full Interior Design") %></option>
+              <option value="<%= T("Design Consultation") %>"><%= T("Design Consultation") %></option>
+              <option value="<%= T("Other") %>"><%= T("Other") %></option>
             </select>
           </div>
           <div class="form-group">
-            <label>Message</label>
-            <textarea id="f-msg" placeholder="Tell me about your space — size, location, what matters most to you..."></textarea>
+            <label><%= T("Message") %></label>
+            <textarea id="f-msg" placeholder="<%= T("Tell me about your space — size, location, what matters most to you...") %>"></textarea>
           </div>
-          <button type="submit" class="btn-form">Send Details ✦</button>
+          <button type="submit" class="btn-form"><%= T("Send Details") %> ✦</button>
         </form>
-        <div class="form-success" id="form-success">✅ Thank you! We'll be in touch shortly.</div>
+        <div class="form-success" id="form-success">✅ <%= T("Thank you! We'll be in touch shortly.") %></div>
       </div>
     </div>
   </div>
@@ -733,9 +769,9 @@
 
 <!-- ── FOOTER ─────────────────────────────────────────────────────── -->
 <footer>
-  <p>© <%= new Date().getFullYear() %> <%= designer.name %> | Interior Design</p>
+  <p>© <%= new Date().getFullYear() %> <%= designer.name %> | <%= T("Interior Design") %></p>
   <% if (!designer.hideCredit) { %>
-  <p style="margin-top:6px">Proudly built by <a href="https://tador.co.il" target="_blank">Tador</a></p>
+  <p style="margin-top:6px"><%= T("Proudly built by") %> <a href="https://tador.co.il" target="_blank">Tador</a></p>
   <% } %>
 </footer>
 
@@ -753,9 +789,9 @@
         <img class="popup-img" src="<%= designer.popup.image.url %>" alt="" />
       <% } %>
       <div class="popup-body">
-        <div class="popup-title"><%= designer.popup.title || 'Want to transform your space?' %></div>
-        <p class="popup-text"><%= designer.popup.text || 'Leave your details for a free initial consultation!' %></p>
-        <a href="#contact" class="popup-btn" onclick="closePopup()"><%= designer.popup.btnText || 'Free Consultation' %></a>
+        <div class="popup-title"><%= designer.popup.title || T('Want to transform your space?') %></div>
+        <p class="popup-text"><%= designer.popup.text || T('Leave your details for a free initial consultation!') %></p>
+        <a href="#contact" class="popup-btn" onclick="closePopup()"><%= designer.popup.btnText || T('Free Consultation') %></a>
       </div>
     </div>
   </div>
@@ -809,7 +845,7 @@ function trackClick(type) {
 document.getElementById('lead-form').addEventListener('submit', async function(e) {
   e.preventDefault();
   const btn = this.querySelector('.btn-form');
-  btn.disabled = true; btn.textContent = 'Sending...';
+  btn.disabled = true; btn.textContent = <%- JSON.stringify(T('Sending...')) %>;
   try {
     const res = await fetch('/api/designer/lead/<%= designer.slug %>', {
       method: 'POST',

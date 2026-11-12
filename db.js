@@ -102,6 +102,24 @@ const DesignerSchema = new mongoose.Schema({
   trustItems:     [{ type: String }],
   template:       { type: String, enum: ['elegant','minimal','bold','industry','industry-en','industry-en-v2'], default: 'elegant' },
   hideCredit:     { type: Boolean, default: false },   // admin: hide the "Proudly built by Tador" footer line
+  // Hebrew version of the content, shown on /d/<slug>?lang=he (English templates). Empty field = English is shown.
+  he: {
+    name:         { type: String, default: '' },
+    businessName: { type: String, default: '' },
+    badge:        { type: String, default: '' },
+    tagline:      { type: String, default: '' },
+    about:        { type: String, default: '' },
+    services:     [{ type: String }],   // same order as services
+    specialties:  [{ type: String }],
+    areas:        [{ type: String }],
+    trustItems:   [{ type: String }],
+    testimonials: [{ _id: false, clientName: { type: String, default: '' }, text: { type: String, default: '' } }],
+    popup: {
+      title:   { type: String, default: '' },
+      text:    { type: String, default: '' },
+      btnText: { type: String, default: '' }
+    }
+  },
   popup: {
     active:    { type: Boolean, default: false },
     title:     { type: String, default: '' },

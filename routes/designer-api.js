@@ -5,6 +5,7 @@ const bcrypt     = require('bcryptjs');
 const router     = express.Router();
 
 const { Designer, DesignerLead, DesignerClickEvent } = require('../db');
+const { sanitizeHe } = require('../lib/designer-i18n');
 
 cloudinary.config({
   cloud_name:    process.env.CLOUDINARY_CLOUD_NAME,
@@ -318,7 +319,8 @@ router.put('/admin/designers/:id', requireAdmin, async (req, res) => {
   try {
     const designer = await Designer.findById(req.params.id);
     if (!designer) return res.status(404).json({ error: 'Not found' });
-    const { isActive, template, name, password, hideCredit } = req.body;
+    const { isActive, template, name, password, hideCredit, he } = req.body;
+    if (he !== undefined) designer.he = sanitizeHe(he);
     if (isActive  !== undefined) designer.isActive  = isActive;
     if (template  !== undefined) designer.template  = template;
     if (hideCredit !== undefined) designer.hideCredit = !!hideCredit;

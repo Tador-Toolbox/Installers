@@ -484,6 +484,32 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   </div>
 </div>
 
+<!-- Designer Hebrew Version Modal -->
+<div class="modal-bg" id="dHeModal">
+  <div class="modal" style="max-width:720px;max-height:90vh;overflow-y:auto">
+    <div class="modal-title">🇮🇱 גרסה בעברית — <span id="dHeName"></span></div>
+    <input type="hidden" id="dHeId"/>
+    <p style="color:var(--muted);font-size:0.85rem;margin:-8px 0 14px;line-height:1.6">
+      הטקסטים כאן מוצגים כשגולש לוחץ "עברית" בדף. שדה ריק = יוצג הטקסט באנגלית.
+      ברשימות — שורה אחת לכל פריט, באותו סדר כמו באנגלית.
+      <a id="dHeLink" href="#" target="_blank" style="color:var(--gold,#c9a84c)">צפה בדף בעברית ↗</a>
+    </p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <button class="btn btn-outline btn-sm" onclick="copyDesignerEnglish()">📋 העתק מקור באנגלית (לתרגום)</button>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('dHePasteBox').style.display='block'">📥 הדבק תרגום מוכן</button>
+    </div>
+    <div id="dHePasteBox" style="display:none;margin-bottom:16px">
+      <textarea id="dHePaste" rows="5" dir="ltr" placeholder='{"tagline":"...","about":"...","services":["..."]}' style="width:100%;font-family:monospace;font-size:0.8rem"></textarea>
+      <button class="btn btn-gold btn-sm" style="margin-top:8px" onclick="applyDesignerHePaste()">מלא את השדות</button>
+    </div>
+    <div id="dHeFields"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('dHeModal')">ביטול</button>
+      <button class="btn btn-gold" onclick="saveDesignerHe()">💾 שמור</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -1054,6 +1080,7 @@ function renderDesignersTable(){
           <a href="/d/${d.slug}" target="_blank" class="btn btn-outline btn-sm" title="דף ציבורי">👁️</a>
           <a href="/designer-dashboard" target="_blank" class="btn btn-outline btn-sm" title="פאנל מעצב">🖥️</a>
           <button class="btn btn-blue btn-sm" onclick="openDesignerResetModal('${d._id}')">🔐</button>
+          ${String(d.template||'').startsWith('industry-en') ? `<button class="btn btn-outline btn-sm" onclick="openDesignerHeModal('${d._id}')" title="גרסה בעברית — תרגום התוכן של הדף" style="${heHasContent(d)?'border-color:var(--gold,#c9a84c)':''}">עב</button>` : ''}
           <button class="btn btn-outline btn-sm" onclick="toggleDesignerCredit('${d._id}')" title="${d.hideCredit?'הקרדיט Tador מוסתר — לחץ להצגה':'הקרדיט Tador מוצג — לחץ להסתרה'}" style="${d.hideCredit?'opacity:.45;text-decoration:line-through':''}">©</button>
           <button class="btn ${d.isActive?'btn-red':'btn-green'} btn-sm" onclick="toggleDesigner('${d._id}')">
             ${d.isActive?'⏸':'▶'}
@@ -1110,6 +1137,79 @@ function copyDesignerDetails(){
 async function setDesignerTemplate(id, template){
   const r = await fetch(`/api/admin/designers/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({template})});
   if(r.ok){ toast(`✅ עיצוב עודכן ל-${template}`); await loadDesigners(); renderDesignersTable(); }
+  else toast('שגיאה','error');
+}
+
+/* ── Designer Hebrew version ────────────────────────────────── */
+const HE_TEXT  = [['name','שם'],['businessName','שם העסק'],['badge','תגית עליונה (Badge)'],['tagline','סלוגן'],['about','אודות']];
+const HE_LISTS = [['services','שירותים (אייקון|שם|תיאור)'],['specialties','התמחויות'],['areas','אזורי שירות'],['trustItems','שורות אמון']];
+const HE_POPUP = [['title','פופאפ — כותרת'],['text','פופאפ — טקסט'],['btnText','פופאפ — כפתור']];
+function heEsc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function heHasContent(d){
+  const h = d.he || {};
+  return HE_TEXT.some(([k])=>h[k]) || HE_LISTS.some(([k])=>(h[k]||[]).some(Boolean)) || (h.testimonials||[]).some(t=>t&&(t.text||t.clientName));
+}
+function heSrc(v){ return `<div dir="ltr" style="text-align:left;color:var(--muted);font-size:0.78rem;margin:4px 0 6px;white-space:pre-wrap;max-height:90px;overflow:auto">${heEsc(v)||'—'}</div>`; }
+function heDesignerEnglish(d){
+  return {
+    name:d.name||'', businessName:d.businessName||'', badge:d.badge||'', tagline:d.tagline||'', about:d.about||'',
+    services:d.services||[], specialties:d.specialties||[], areas:d.areas||[], trustItems:d.trustItems||[],
+    testimonials:(d.testimonials||[]).map(t=>({clientName:t.clientName||'',text:t.text||''})),
+    popup:{ title:(d.popup&&d.popup.title)||'', text:(d.popup&&d.popup.text)||'', btnText:(d.popup&&d.popup.btnText)||'' }
+  };
+}
+function fillDesignerHeFields(d, h){
+  h = h || {};
+  const tLines = (h.testimonials||[]).map(t=>`${t.clientName||''} | ${t.text||''}`).join('\n');
+  const tSrc   = (d.testimonials||[]).map(t=>`${t.clientName||''} | ${t.text||''}`).join('\n');
+  document.getElementById('dHeFields').innerHTML =
+    HE_TEXT.map(([k,label])=>`<div class="form-group" style="margin-bottom:14px"><label>${label}</label>${heSrc(d[k])}
+      ${k==='about' ? `<textarea id="dHe_${k}" rows="5" dir="rtl">${heEsc(h[k])}</textarea>` : `<input type="text" id="dHe_${k}" dir="rtl" value="${heEsc(h[k])}"/>`}</div>`).join('') +
+    HE_LISTS.map(([k,label])=>`<div class="form-group" style="margin-bottom:14px"><label>${label} — שורה לכל פריט</label>${heSrc((d[k]||[]).join('\n'))}
+      <textarea id="dHe_${k}" rows="${Math.max(2,(d[k]||[]).length)}" dir="rtl">${heEsc((h[k]||[]).join('\n'))}</textarea></div>`).join('') +
+    `<div class="form-group" style="margin-bottom:14px"><label>המלצות — שורה לכל המלצה: שם | טקסט</label>${heSrc(tSrc)}
+      <textarea id="dHe_testimonials" rows="${Math.max(2,(d.testimonials||[]).length)}" dir="rtl">${heEsc(tLines)}</textarea></div>` +
+    HE_POPUP.map(([k,label])=>`<div class="form-group" style="margin-bottom:14px"><label>${label}</label>${heSrc(d.popup&&d.popup[k])}
+      <input type="text" id="dHe_popup_${k}" dir="rtl" value="${heEsc(h.popup&&h.popup[k])}"/></div>`).join('');
+}
+function openDesignerHeModal(id){
+  const d = allDesigners.find(x=>x._id===id);
+  document.getElementById('dHeId').value = id;
+  document.getElementById('dHeName').textContent = d.name;
+  document.getElementById('dHeLink').href = `/d/${d.slug}?lang=he`;
+  document.getElementById('dHePasteBox').style.display = 'none';
+  document.getElementById('dHePaste').value = '';
+  fillDesignerHeFields(d, d.he);
+  document.getElementById('dHeModal').classList.add('open');
+}
+function readDesignerHeFields(){
+  const lines = id => document.getElementById(id).value.split('\n').map(x=>x.trim());
+  const he = { popup:{} };
+  HE_TEXT.forEach(([k])=> he[k] = document.getElementById('dHe_'+k).value.trim());
+  HE_LISTS.forEach(([k])=>{ const l = lines('dHe_'+k); while(l.length && !l[l.length-1]) l.pop(); he[k] = l; });
+  const t = lines('dHe_testimonials'); while(t.length && !t[t.length-1]) t.pop();
+  he.testimonials = t.map(line=>{ const i=line.indexOf('|'); return i<0 ? {clientName:'',text:line} : {clientName:line.slice(0,i).trim(), text:line.slice(i+1).trim()}; });
+  HE_POPUP.forEach(([k])=> he.popup[k] = document.getElementById('dHe_popup_'+k).value.trim());
+  return he;
+}
+async function copyDesignerEnglish(){
+  const d = allDesigners.find(x=>x._id===document.getElementById('dHeId').value);
+  const txt = JSON.stringify(heDesignerEnglish(d), null, 2);
+  try { await navigator.clipboard.writeText(txt); toast('✅ המקור באנגלית הועתק'); }
+  catch(e){ document.getElementById('dHePasteBox').style.display='block'; document.getElementById('dHePaste').value = txt; toast('העתק ידנית מהתיבה','error'); }
+}
+function applyDesignerHePaste(){
+  const d = allDesigners.find(x=>x._id===document.getElementById('dHeId').value);
+  let h;
+  try { h = JSON.parse(document.getElementById('dHePaste').value); } catch(e){ return toast('הטקסט שהודבק אינו תקין','error'); }
+  fillDesignerHeFields(d, h);
+  document.getElementById('dHePasteBox').style.display = 'none';
+  toast('✅ השדות מולאו — בדוק ולחץ שמור');
+}
+async function saveDesignerHe(){
+  const id = document.getElementById('dHeId').value;
+  const r = await fetch(`/api/admin/designers/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({he:readDesignerHeFields()})});
+  if(r.ok){ closeModal('dHeModal'); await loadDesigners(); renderDesignersTable(); toast('✅ הגרסה בעברית נשמרה'); }
   else toast('שגיאה','error');
 }
 

@@ -8,6 +8,7 @@ require('./db');
 const { Installer, Designer } = require('./db');
 const apiRouter        = require('./routes/api');
 const designerApiRouter = require('./routes/designer-api');
+const { makeT, localizeDesigner } = require('./lib/designer-i18n');
 
 const app = express();
 
@@ -78,12 +79,16 @@ app.get('/d/:slug', async (req, res) => {
     if (!designer) return res.status(404).render('404');
 
     const approvedPortfolio = designer.portfolioImages.filter(p => p.status === 'approved');
-    const designerData = { ...designer.toObject(), portfolioImages: approvedPortfolio };
     const view = designer.template === 'industry-en' ? 'designer-landing-en'
                : designer.template === 'industry-en-v2' ? 'designer-landing-en-v2'
                : 'designer-landing';
 
-    res.render(view, { designer: designerData });
+    // English templates have a Hebrew version: /d/<slug>?lang=he
+    const isEnglishTemplate = view !== 'designer-landing';
+    const lang = (isEnglishTemplate && req.query.lang === 'he') ? 'he' : 'en';
+    const designerData = localizeDesigner({ ...designer.toObject(), portfolioImages: approvedPortfolio }, lang);
+
+    res.render(view, { designer: designerData, lang, T: makeT(lang) });
   } catch (e) {
     res.status(500).send(e.message);
   }
