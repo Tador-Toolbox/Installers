@@ -101,6 +101,7 @@ const DesignerSchema = new mongoose.Schema({
   checklistItems: [{ type: String }],
   trustItems:     [{ type: String }],
   template:       { type: String, enum: ['elegant','minimal','bold','industry','industry-en','industry-en-v2'], default: 'elegant' },
+  hideCredit:     { type: Boolean, default: false },   // admin: hide the "Proudly built by Tador" footer line
   popup: {
     active:    { type: Boolean, default: false },
     title:     { type: String, default: '' },

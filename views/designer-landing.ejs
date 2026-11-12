@@ -1062,7 +1062,9 @@
 <!-- ── FOOTER ─────────────────────────────────────────────────────── -->
 <footer>
   <p>© <%= new Date().getFullYear() %> <%= designer.name %> | עיצוב פנים</p>
+  <% if (!designer.hideCredit) { %>
   <p style="margin-top:6px">פותח בגאווה על ידי <a href="https://tador.co.il" target="_blank">Tador</a></p>
+  <% } %>
 </footer>
 
 <!-- ── FLOATING WHATSAPP ─────────────────────────────────────────── -->

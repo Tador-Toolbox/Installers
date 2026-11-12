@@ -318,9 +318,10 @@ router.put('/admin/designers/:id', requireAdmin, async (req, res) => {
   try {
     const designer = await Designer.findById(req.params.id);
     if (!designer) return res.status(404).json({ error: 'Not found' });
-    const { isActive, template, name, password } = req.body;
+    const { isActive, template, name, password, hideCredit } = req.body;
     if (isActive  !== undefined) designer.isActive  = isActive;
     if (template  !== undefined) designer.template  = template;
+    if (hideCredit !== undefined) designer.hideCredit = !!hideCredit;
     if (name      !== undefined) designer.name      = name;
     if (password) {
       designer.password = password; // will be hashed by pre-save

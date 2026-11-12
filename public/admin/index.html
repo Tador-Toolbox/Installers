@@ -1054,6 +1054,7 @@ function renderDesignersTable(){
           <a href="/d/${d.slug}" target="_blank" class="btn btn-outline btn-sm" title="דף ציבורי">👁️</a>
           <a href="/designer-dashboard" target="_blank" class="btn btn-outline btn-sm" title="פאנל מעצב">🖥️</a>
           <button class="btn btn-blue btn-sm" onclick="openDesignerResetModal('${d._id}')">🔐</button>
+          <button class="btn btn-outline btn-sm" onclick="toggleDesignerCredit('${d._id}')" title="${d.hideCredit?'הקרדיט Tador מוסתר — לחץ להצגה':'הקרדיט Tador מוצג — לחץ להסתרה'}" style="${d.hideCredit?'opacity:.45;text-decoration:line-through':''}">©</button>
           <button class="btn ${d.isActive?'btn-red':'btn-green'} btn-sm" onclick="toggleDesigner('${d._id}')">
             ${d.isActive?'⏸':'▶'}
           </button>
@@ -1109,6 +1110,14 @@ function copyDesignerDetails(){
 async function setDesignerTemplate(id, template){
   const r = await fetch(`/api/admin/designers/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({template})});
   if(r.ok){ toast(`✅ עיצוב עודכן ל-${template}`); await loadDesigners(); renderDesignersTable(); }
+  else toast('שגיאה','error');
+}
+
+async function toggleDesignerCredit(id){
+  const d = allDesigners.find(x=>x._id===id);
+  const hide = !d.hideCredit;
+  const r = await fetch(`/api/admin/designers/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({hideCredit:hide})});
+  if(r.ok){ await loadDesigners(); renderDesignersTable(); toast(hide?'✅ "Built by Tador" הוסתר':'✅ "Built by Tador" מוצג'); }
   else toast('שגיאה','error');
 }
 

@@ -734,7 +734,9 @@
 <!-- ── FOOTER ─────────────────────────────────────────────────────── -->
 <footer>
   <p>© <%= new Date().getFullYear() %> <%= designer.name %> | Interior Design</p>
+  <% if (!designer.hideCredit) { %>
   <p style="margin-top:6px">Proudly built by <a href="https://tador.co.il" target="_blank">Tador</a></p>
+  <% } %>
 </footer>
 
 <!-- ── FLOATING WHATSAPP ─────────────────────────────────────────── -->
