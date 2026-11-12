@@ -31,6 +31,9 @@ app.use(session({
 
 // ─── API Routes ───────────────────────────────────────────────────────────────
 
+// Tiny wake-up endpoint for an external monitor (UptimeRobot) — keeps the free Render server from sleeping
+app.get('/api/ping', (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
+
 app.use('/api', apiRouter);
 app.use('/api', designerApiRouter);
 
