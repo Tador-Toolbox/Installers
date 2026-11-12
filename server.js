@@ -8,7 +8,7 @@ require('./db');
 const { Installer, Designer } = require('./db');
 const apiRouter        = require('./routes/api');
 const designerApiRouter = require('./routes/designer-api');
-const { makeT, localizeDesigner, ensureAutoTranslations } = require('./lib/designer-i18n');
+const { makeT, localizeDesigner } = require('./lib/designer-i18n');
 
 const app = express();
 
@@ -86,12 +86,7 @@ app.get('/d/:slug', async (req, res) => {
     // English templates have a Hebrew version: /d/<slug>?lang=he
     const isEnglishTemplate = view !== 'designer-landing';
     const lang = (isEnglishTemplate && req.query.lang === 'he') ? 'he' : 'en';
-    const plain = { ...designer.toObject(), portfolioImages: approvedPortfolio };
-    // Hebrew page: machine-translate any English text that has no Hebrew yet (done once, then cached on the designer)
-    const autoMap = lang === 'he'
-      ? await ensureAutoTranslations(plain, map => Designer.updateOne({ _id: designer._id }, { $set: { heAuto: map } }))
-      : null;
-    const designerData = localizeDesigner(plain, lang, autoMap);
+    const designerData = localizeDesigner({ ...designer.toObject(), portfolioImages: approvedPortfolio }, lang);
 
     res.render(view, { designer: designerData, lang, T: makeT(lang) });
   } catch (e) {
