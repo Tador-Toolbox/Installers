@@ -100,7 +100,7 @@ const DesignerSchema = new mongoose.Schema({
   badge:          { type: String, default: 'מעצבת פנים מובילה' },
   checklistItems: [{ type: String }],
   trustItems:     [{ type: String }],
-  template:       { type: String, enum: ['elegant','minimal','bold','industry','industry-en'], default: 'elegant' },
+  template:       { type: String, enum: ['elegant','minimal','bold','industry','industry-en','industry-en-v2'], default: 'elegant' },
   popup: {
     active:    { type: Boolean, default: false },
     title:     { type: String, default: '' },

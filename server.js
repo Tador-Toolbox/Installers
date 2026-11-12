@@ -79,7 +79,9 @@ app.get('/d/:slug', async (req, res) => {
 
     const approvedPortfolio = designer.portfolioImages.filter(p => p.status === 'approved');
     const designerData = { ...designer.toObject(), portfolioImages: approvedPortfolio };
-    const view = designer.template === 'industry-en' ? 'designer-landing-en' : 'designer-landing';
+    const view = designer.template === 'industry-en' ? 'designer-landing-en'
+               : designer.template === 'industry-en-v2' ? 'designer-landing-en-v2'
+               : 'designer-landing';
 
     res.render(view, { designer: designerData });
   } catch (e) {

@@ -1025,7 +1025,7 @@ async function loadDesigners(){
 function renderDesignersTable(){
   const body = document.getElementById('designersBody');
   if(!allDesigners.length){ body.innerHTML='<tr><td colspan="8"><div class="empty">אין מעצבים</div></td></tr>'; return; }
-  const tplLabels = { elegant:'✨ אלגנטי', minimal:'⬜ מינימלי', bold:'🔲 בולד', industry:'🏗️ אינדסטריאל', 'industry-en':'🌐 אינדסטריאל EN' };
+  const tplLabels = { elegant:'✨ אלגנטי', minimal:'⬜ מינימלי', bold:'🔲 בולד', industry:'🏗️ אינדסטריאל', 'industry-en':'🌐 אינדסטריאל EN', 'industry-en-v2':'🔥 אינדסטריאל EN Color' };
   body.innerHTML = allDesigners.map(d=>`
     <tr>
       <td>
@@ -1042,6 +1042,7 @@ function renderDesignersTable(){
           <option value="bold"     ${d.template==='bold'    ?'selected':''}>🔲 בולד</option>
           <option value="industry" ${d.template==='industry'?'selected':''}>🏗️ אינדסטריאל</option>
           <option value="industry-en" ${d.template==='industry-en'?'selected':''}>🌐 אינדסטריאל EN</option>
+          <option value="industry-en-v2" ${d.template==='industry-en-v2'?'selected':''}>🔥 אינדסטריאל EN Color</option>
         </select>
       </td>
       <td>${d.totalLeads || 0}</td>
