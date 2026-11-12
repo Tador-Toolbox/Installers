@@ -11,7 +11,10 @@
   <meta property="og:url" content="<%= page.canonical %>" />
   <meta property="og:title" content="<%= designer.name %> | <%= T("Interior Design") %>" />
   <meta property="og:description" content="<%= designer.tagline || designer.badge || T('Award-winning interior designer – contact us for a free consultation') %>" />
+  <meta property="og:site_name" content="<%= designer.businessName || designer.name %>" />
   <% if (page.image) { %><meta property="og:image" content="<%= page.image %>" />
+  <meta property="og:image:secure_url" content="<%= page.image %>" />
+  <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />

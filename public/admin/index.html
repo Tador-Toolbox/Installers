@@ -1076,7 +1076,7 @@ function renderDesignersTable(){
       <td><span class="status-pill ${d.isActive?'active':'inactive'}">${d.isActive?'פעיל':'מושהה'}</span></td>
       <td>
         <div class="actions">
-          <a href="/d/${d.slug}" target="_blank" class="btn btn-outline btn-sm" title="דף ציבורי">👁️</a>
+          <a href="${d.shortLink ? '/'+d.shortLink : '/d/'+d.slug}" target="_blank" class="btn btn-outline btn-sm" title="דף ציבורי">👁️</a>
           <a href="/designer-dashboard" target="_blank" class="btn btn-outline btn-sm" title="פאנל מעצב">🖥️</a>
           <button class="btn btn-blue btn-sm" onclick="openDesignerResetModal('${d._id}')">🔐</button>
           ${String(d.template||'').startsWith('industry-en') ? `<button class="btn btn-outline btn-sm" onclick="openDesignerHeModal('${d._id}')" title="תוכן הדף — אנגלית ועברית" style="${heHasContent(d)?'border-color:var(--gold,#c9a84c)':''}">EN | עב</button>` : ''}

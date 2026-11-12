@@ -315,6 +315,8 @@
       <div class="card-title">קישור לדף שלי</div>
       <div id="page-link-display" style="font-size:.9rem;color:var(--text-dim);word-break:break-all;margin-bottom:12px"></div>
       <button class="btn-save" onclick="copyPageLink()">📋 העתק קישור</button>
+      <button class="btn-save" id="copy-he-btn" style="display:none;margin-inline-start:8px" onclick="copyPageLink('he')">📋 העתק קישור בעברית</button>
+      <span id="copy-link-ok" style="display:none;margin-inline-start:10px;color:#4caf50;font-size:.85rem">הקישור הועתק ✓</span>
     </div>
     <div class="card">
       <div class="card-title">פורטפוליו ממתין לאישור</div>
@@ -540,8 +542,9 @@ function populateAll() {
   // Sidebar
   document.getElementById('sb-name').textContent   = d.name;
   document.getElementById('home-name').textContent  = d.name;
-  document.getElementById('preview-link').href      = `/d/${d.slug}`;
-  document.getElementById('page-link-display').textContent = `${location.origin}/d/${d.slug}`;
+  document.getElementById('preview-link').href      = pagePath(d);
+  document.getElementById('page-link-display').textContent = location.origin + pagePath(d);
+  document.getElementById('copy-he-btn').style.display = String(d.template||'').startsWith('industry-en') ? 'inline-block' : 'none';
 
   // Stats
   document.getElementById('stat-portfolio').textContent   = (d.portfolioImages||[]).length;
@@ -884,9 +887,20 @@ async function api(url, method, body, okId) {
   }
   return res.json();
 }
-function copyPageLink() {
-  navigator.clipboard.writeText(`${location.origin}/d/${designerData.slug}`)
-    .then(() => alert('הקישור הועתק! ✓'));
+// The page address to share: the short link when the admin set one (installers.co.il/haia), otherwise /d/<slug>
+function pagePath(d, lang) {
+  if (d.shortLink) return '/' + d.shortLink + (lang === 'he' ? '/he' : '');
+  return '/d/' + d.slug + (lang === 'he' ? '?lang=he' : '');
+}
+function copyPageLink(lang) {
+  const url = location.origin + pagePath(designerData, lang);
+  const done = () => { const el = document.getElementById('copy-link-ok'); el.style.display = 'inline'; setTimeout(() => { el.style.display = 'none'; }, 2500); };
+  const fallback = () => {   // older browsers / pages without clipboard permission
+    const ta = document.createElement('textarea'); ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch (e) {} ta.remove();
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done).catch(fallback);
+  else fallback();
 }
 async function logout() {
   await fetch('/api/designer/logout', { method: 'POST' });
