@@ -167,6 +167,24 @@ router.post('/designer/portfolio', requireDesigner, upload.single('image'), asyn
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// DELETE /api/designer/image/:type  — clear hero/profile/logo
+router.delete('/designer/image/:type', requireDesigner, async (req, res) => {
+  try {
+    const { type } = req.params;
+    if (!['profile','hero','logo'].includes(type)) return res.status(400).json({ error: 'Invalid type' });
+    const designer = await Designer.findById(req.session.designerId);
+    if (!designer) return res.status(404).json({ error: 'Not found' });
+    const fieldMap = { profile: 'profileImage', hero: 'heroImage', logo: 'logo' };
+    const field = fieldMap[type];
+    if (designer[field] && designer[field].publicId) {
+      await cloudinary.uploader.destroy(designer[field].publicId).catch(() => {});
+    }
+    designer[field] = undefined;
+    await designer.save();
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // DELETE /api/designer/portfolio/:imageId
 router.delete('/designer/portfolio/:imageId', requireDesigner, async (req, res) => {
   try {

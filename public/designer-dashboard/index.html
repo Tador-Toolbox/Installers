@@ -131,10 +131,14 @@
       border: 2px dashed var(--border);
       border-radius: var(--r);
       padding: 24px; text-align: center;
-      cursor: pointer; transition: border-color .2s;
+      cursor: pointer; transition: border-color .2s, background .2s;
       position: relative;
     }
     .img-upload-area:hover { border-color: var(--accent); }
+    .img-upload-area.drag-over {
+      border-color: var(--accent);
+      background: rgba(99,102,241,.08);
+    }
     .img-upload-area input[type=file] {
       position: absolute; inset: 0; opacity: 0; cursor: pointer;
       width: 100%; height: 100%;
@@ -145,6 +149,14 @@
     }
     .img-upload-icon { font-size: 2rem; margin-bottom: 8px; }
     .img-upload-text { color: var(--text-dim); font-size: .85rem; }
+    .img-delete-btn {
+      display: none; position: absolute; top: 8px; left: 8px;
+      background: rgba(0,0,0,.55); color: #fff; border: none;
+      border-radius: 50%; width: 28px; height: 28px; cursor: pointer;
+      font-size: 1rem; line-height: 28px; text-align: center;
+      z-index: 10;
+    }
+    .img-delete-btn:hover { background: #e53e3e; }
 
     /* ── Portfolio grid ────────────────────────────────────────── */
     .portfolio-grid {
@@ -376,29 +388,32 @@
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px">
       <div class="card">
         <div class="card-title">תמונת הירו (רקע הדף)</div>
-        <div class="img-upload-area" onclick="this.querySelector('input').click()">
+        <div class="img-upload-area" id="area-hero" data-type="hero" data-preview="prev-hero">
+          <button class="img-delete-btn" id="del-hero" onclick="deleteImage(event,'hero','prev-hero')">✕</button>
           <img class="img-preview" id="prev-hero" />
           <input type="file" accept="image/*" onchange="uploadImage(event,'hero','prev-hero')" />
           <div class="img-upload-icon">🌅</div>
-          <div class="img-upload-text">לחצו להעלאת תמונת רקע<br><small>מומלץ: 1920×1080 לפחות</small></div>
+          <div class="img-upload-text">גרור תמונה לכאן או לחצו<br><small>מומלץ: 1920×1080 לפחות</small></div>
         </div>
       </div>
       <div class="card">
         <div class="card-title">תמונת פרופיל אישית</div>
-        <div class="img-upload-area" onclick="this.querySelector('input').click()">
+        <div class="img-upload-area" id="area-profile" data-type="profile" data-preview="prev-profile">
+          <button class="img-delete-btn" id="del-profile" onclick="deleteImage(event,'profile','prev-profile')">✕</button>
           <img class="img-preview" id="prev-profile" style="border-radius:50%;width:140px;height:140px;margin:0 auto 10px" />
           <input type="file" accept="image/*" onchange="uploadImage(event,'profile','prev-profile')" />
           <div class="img-upload-icon">👤</div>
-          <div class="img-upload-text">לחצו להעלאת תמונת פרופיל</div>
+          <div class="img-upload-text">גרור תמונה לכאן או לחצו</div>
         </div>
       </div>
       <div class="card">
         <div class="card-title">לוגו</div>
-        <div class="img-upload-area" onclick="this.querySelector('input').click()">
+        <div class="img-upload-area" id="area-logo" data-type="logo" data-preview="prev-logo">
+          <button class="img-delete-btn" id="del-logo" onclick="deleteImage(event,'logo','prev-logo')">✕</button>
           <img class="img-preview" id="prev-logo" style="max-height:80px;object-fit:contain;margin:0 auto 10px" />
           <input type="file" accept="image/*" onchange="uploadImage(event,'logo','prev-logo')" />
           <div class="img-upload-icon">🎨</div>
-          <div class="img-upload-text">לחצו להעלאת לוגו</div>
+          <div class="img-upload-text">גרור תמונה לכאן או לחצו</div>
         </div>
       </div>
     </div>
@@ -515,6 +530,7 @@ async function init() {
     if (!res.ok) { window.location.href = '/designer-login'; return; }
     designerData = await res.json();
     populateAll();
+    initUploadAreas();
     loadLeads();
   } catch(e) { window.location.href = '/designer-login'; }
 }
@@ -673,17 +689,64 @@ async function saveServices() { await api('/api/designer/profile','PUT',{service
 // ── Image uploads ─────────────────────────────────────────────────
 function showImgPreview(id, url) {
   const el = document.getElementById(id);
-  if (el) { el.src = url; el.style.display = 'block'; }
+  if (!el) return;
+  el.src = url; el.style.display = 'block';
+  // show delete button
+  const type = el.id.replace('prev-','');
+  const delBtn = document.getElementById('del-' + type);
+  if (delBtn) delBtn.style.display = 'block';
 }
-async function uploadImage(event, type, previewId) {
-  const file = event.target.files[0];
-  if (!file) return;
+function hideImgPreview(previewId) {
+  const el = document.getElementById(previewId);
+  if (!el) return;
+  el.src = ''; el.style.display = 'none';
+  const type = el.id.replace('prev-','');
+  const delBtn = document.getElementById('del-' + type);
+  if (delBtn) delBtn.style.display = 'none';
+}
+async function uploadImageFile(file, type, previewId) {
   const fd = new FormData();
   fd.append('image', file);
   fd.append('type', type);
   const res = await fetch('/api/designer/upload-image', { method:'POST', body: fd });
   const data = await res.json();
   if (data.ok) showImgPreview(previewId, data.url);
+}
+async function uploadImage(event, type, previewId) {
+  const file = event.target.files[0];
+  if (!file) return;
+  await uploadImageFile(file, type, previewId);
+}
+async function deleteImage(event, type, previewId) {
+  event.stopPropagation();
+  const res = await fetch(`/api/designer/image/${type}`, { method:'DELETE' });
+  const data = await res.json();
+  if (data.ok) hideImgPreview(previewId);
+}
+
+// ── Drag-and-drop for image upload areas ──────────────────────────
+function initUploadAreas() {
+  ['area-hero','area-profile','area-logo'].forEach(areaId => {
+    const area = document.getElementById(areaId);
+    if (!area) return;
+    const type = area.dataset.type;
+    const previewId = area.dataset.preview;
+    area.addEventListener('dragover', e => {
+      e.preventDefault(); e.stopPropagation();
+      area.classList.add('drag-over');
+    });
+    area.addEventListener('dragleave', e => {
+      if (!area.contains(e.relatedTarget)) area.classList.remove('drag-over');
+    });
+    area.addEventListener('drop', async e => {
+      e.preventDefault(); e.stopPropagation();
+      area.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        await uploadImageFile(file, type, previewId);
+      }
+    });
+  });
 }
 
 // ── Portfolio ─────────────────────────────────────────────────────
