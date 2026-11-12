@@ -907,13 +907,11 @@
 <section id="about">
   <div class="container">
     <div class="about-grid">
+      <% if (designer.profileImage && designer.profileImage.url) { %>
       <div class="about-photo fade-up">
-        <% if (designer.profileImage && designer.profileImage.url) { %>
-          <img src="<%= designer.profileImage.url %>" alt="<%= designer.name %>" />
-        <% } else { %>
-          <div class="about-photo-placeholder">🎨</div>
-        <% } %>
+        <img src="<%= designer.profileImage.url %>" alt="<%= designer.name %>" />
       </div>
+      <% } %>
       <div class="about-content fade-up" style="transition-delay:.15s">
         <div class="about-eyebrow">קצת עליי</div>
         <h2 class="about-name"><%= designer.name %></h2>
