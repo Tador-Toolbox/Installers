@@ -501,6 +501,10 @@
   </style>
 <% } %>
   <style>
+    /* stats strip: 2 items (years, projects) */
+    .stats-grid { grid-template-columns: repeat(2, 1fr) !important; max-width: 620px; margin-inline: auto; }
+    .stat-item { border-right: none !important; border-left: none !important; }
+    .stat-item:first-child { border-inline-end: 1px solid rgba(128,128,128,0.18) !important; }
     .nav-lang {
       font-size: .85rem; font-weight: 600; text-decoration: none; white-space: nowrap;
       color: inherit; opacity: .85; padding: 7px 14px; border-radius: 999px;
@@ -569,14 +573,6 @@
       <div class="stat-item fade-up" style="transition-delay:.1s">
         <div class="stat-num"><%= designer.projectsDone || 120 %>+</div>
         <div class="stat-label"><%= T("Projects Completed") %></div>
-      </div>
-      <div class="stat-item fade-up" style="transition-delay:.2s">
-        <div class="stat-num"><%= designer.portfolioImages ? designer.portfolioImages.length : 0 %>+</div>
-        <div class="stat-label"><%= T("Portfolio Works") %></div>
-      </div>
-      <div class="stat-item fade-up" style="transition-delay:.3s">
-        <div class="stat-num"><%= designer.testimonials ? designer.testimonials.length : 0 %>+</div>
-        <div class="stat-label"><%= T("Client Reviews") %></div>
       </div>
     </div>
   </div>
