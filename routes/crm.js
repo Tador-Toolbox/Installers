@@ -168,14 +168,14 @@ router.get('/leads', requireUser, wrap(async (req, res) => {
 }));
 
 // Live phone check while typing: valid? already exists?
-router.get('/leads/check-phone', requireAdmin, wrap(async (req, res) => {
+router.get('/leads/check-phone', requireUser, wrap(async (req, res) => {
   const phone = normalizePhone(req.query.phone);
   if (!phone) return res.json({ valid: false });
   const ex = await CrmLead.findOne({ phone }, 'name');
   res.json({ valid: true, phone, exists: ex ? { id: ex._id, name: ex.name } : null });
 }));
 
-router.post('/leads', requireAdmin, wrap(async (req, res) => {
+router.post('/leads', requireUser, wrap(async (req, res) => {
   const name = String(req.body.name || '').trim();
   const phone = normalizePhone(req.body.phone);
   if (!name) return res.status(400).json({ error: 'שם מלא הוא חובה' });
@@ -183,7 +183,8 @@ router.post('/leads', requireAdmin, wrap(async (req, res) => {
   const ex = await CrmLead.findOne({ phone }, 'name');
   if (ex) return res.status(409).json({ error: `המספר כבר קיים במערכת (${ex.name})`, existingId: ex._id });
   let assignedTo = req.body.assignedTo || null;
-  if (!assignedTo) {   // default: the only active rep
+  if (me(req).role === 'sales') assignedTo = me(req).id;   // a rep's own lead is always his
+  else if (!assignedTo) {   // default: the only active rep
     const reps = await CrmUser.find({ isActive: true }, '_id');
     if (reps.length === 1) assignedTo = reps[0]._id;
   }
