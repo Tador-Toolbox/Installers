@@ -533,6 +533,7 @@ function renderUsers() {
       <div class="muted" style="font-size:12.5px"><span class="ltr">${esc(u.username)}</span> · ${u.leads} לידים · ${u.lastLogin ? 'כניסה אחרונה ' + ago(u.lastLogin) : 'טרם נכנס'}</div></div>
     <label class="switch"><input type="checkbox" data-f="seeAll" ${u.seeAll ? 'checked' : ''}/> רואה את כל הלידים</label>
     <label class="switch"><input type="checkbox" data-f="isActive" ${u.isActive ? 'checked' : ''}/> פעיל</label>
+    <button class="btn btn-ghost" data-act="creds">🔑 פרטי כניסה</button>
     <button class="btn btn-ghost" data-act="edit">עריכה</button>
   </div>`).join('');
 }
@@ -543,8 +544,10 @@ $('#userList').addEventListener('change', async e => {
   catch (err) { toast(err.message, true); }
 });
 $('#userList').addEventListener('click', e => {
-  if (e.target.dataset.act !== 'edit') return;
-  userModal(S.users.find(u => u.id === e.target.closest('.user').dataset.id));
+  const act = e.target.dataset.act; if (!act) return;
+  const u = S.users.find(x => x.id === e.target.closest('.user').dataset.id);
+  if (act === 'edit') return userModal(u);
+  if (act === 'creds') return resendCreds(u);
 });
 $('#newUserBtn').onclick = () => userModal(null);
 
@@ -553,7 +556,7 @@ function userModal(u) {
     <form class="form" id="uForm" autocomplete="off">
       <label>שם מלא *<input class="inp" id="uName" value="${esc(u ? u.fullName : '')}" required/></label>
       <label>שם משתמש (אנגלית) *<input class="inp ltr" style="text-align:right" id="uUser" value="${esc(u ? u.username : '')}" ${u ? 'disabled' : 'required'} autocapitalize="off"/></label>
-      <label>${u ? 'סיסמה חדשה (ריק = ללא שינוי)' : 'סיסמה * (לפחות 6 תווים)'}<input class="inp" id="uPass" type="text" ${u ? '' : 'required'} autocomplete="new-password"/></label>
+      <label>${u ? 'סיסמה חדשה (ריק = ללא שינוי)' : 'סיסמה * (לפחות 6 תווים)'}<input class="inp ltr" style="text-align:right" id="uPass" type="text" value="${u ? '' : genPass()}" ${u ? '' : 'required'} autocomplete="new-password"/></label>
       <label class="switch"><input type="checkbox" id="uAll" ${u && u.seeAll ? 'checked' : ''}/> רואה את כל הלידים (לא רק המשויכים אליו)</label>
       <div class="foot-btns"><button class="btn btn-red" type="submit">שמור</button></div>
       <div class="err" id="uErr"></div>
@@ -563,12 +566,59 @@ function userModal(u) {
       const body = { fullName: root.querySelector('#uName').value, seeAll: root.querySelector('#uAll').checked };
       const pw = root.querySelector('#uPass').value; if (pw) body.password = pw;
       try {
+        const username = u ? u.username : root.querySelector('#uUser').value.trim().toLowerCase();
         if (u) await api(`/users/${u.id}`, { method: 'PUT', body });
-        else await api('/users', { method: 'POST', body: { ...body, username: root.querySelector('#uUser').value, password: pw } });
-        closeModal(); toast('נשמר'); await loadUsers(); S.reps = await api('/reps'); fillRepFilter();
+        else await api('/users', { method: 'POST', body: { ...body, username, password: pw } });
+        await loadUsers(); S.reps = await api('/reps'); fillRepFilter();
+        if (pw) credsModal(body.fullName.trim(), username, pw); else { closeModal(); toast('נשמר'); }
       } catch (err) { root.querySelector('#uErr').textContent = err.message; }
     };
   });
+}
+
+// ══════════════ Login details to send to a rep ══════════════
+// Example: "היי דנה 👋 ... 🔗 https://installers.co.il/crm  👤 dana  🔑 Kx7m-42pq"
+function genPass() {
+  const a = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const r = crypto.getRandomValues(new Uint32Array(8));
+  const s = [...r].map(n => a[n % a.length]).join('');
+  return s.slice(0, 4) + '-' + s.slice(4);
+}
+function credsText(name, username, password) {
+  const first = String(name).split(' ')[0];
+  return `היי ${first} 👋\nאלה פרטי הכניסה שלך למערכת הלידים של Tador:\n\n` +
+    `🔗 כתובת: ${location.origin}/crm\n👤 שם משתמש: ${username}\n🔑 סיסמה: ${password}\n\n` +
+    `טיפ: אחרי הכניסה לחץ על 📲 "הוסף למסך הבית" — ככה המערכת תיפתח כמו אפליקציה.`;
+}
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); return true; }
+  catch (_) {
+    const ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); let ok = false;
+    try { ok = document.execCommand('copy'); } catch (__) {}
+    ta.remove(); return ok;
+  }
+}
+function credsModal(name, username, password) {
+  const text = credsText(name, username, password);
+  modal(`<h3>פרטי כניסה · ${esc(name)}</h3>
+    <p class="sub">העתק ושלח לאיש המכירות. הסיסמה מוצגת רק עכשיו — אחר כך היא נשמרת מוצפנת.</p>
+    <div class="form">
+      <textarea class="inp" id="cText" rows="8" readonly>${esc(text)}</textarea>
+      <div class="foot-btns">
+        <button class="btn btn-red" type="button" id="cCopy">📋 העתק הודעה</button>
+        <button class="btn" style="background:var(--wa);color:#fff" type="button" id="cWa">שלח ב-WhatsApp</button>
+      </div>
+    </div>`, root => {
+    root.querySelector('#cCopy').onclick = async () => toast(await copyText(text) ? 'ההודעה הועתקה — הדבק ושלח' : 'לא הצליח להעתיק — סמן והעתק ידנית', false);
+    root.querySelector('#cWa').onclick = () => window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+  });
+}
+async function resendCreds(u) {
+  if (!confirm(`הסיסמה של ${u.fullName} שמורה מוצפנת ואי אפשר להציג אותה.\nליצור סיסמה חדשה ולהכין הודעה לשליחה?\n(הסיסמה הקודמת תפסיק לעבוד)`)) return;
+  const pw = genPass();
+  try { await api(`/users/${u.id}`, { method: 'PUT', body: { password: pw } }); credsModal(u.fullName, u.username, pw); }
+  catch (e) { toast(e.message, true); }
 }
 
 window.TadorLeads = { toast, modal, closeModal };
