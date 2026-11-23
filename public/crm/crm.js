@@ -399,13 +399,15 @@ async function logCall(l) {
 }
 
 // ── Follow-up only ──
-function openFollowUp(l) {
+function openFollowUp(l, back) {
   modal(`<h3>תזכורת חזרה · ${esc(l.name)}</h3><p class="sub">הליד יקפוץ לראש הרשימה כשיגיע המועד</p>
     <form class="form" id="fuForm">${fuFields(l)}
       <div class="foot-btns"><button class="btn btn-red" type="submit">שמור</button></div></form>`, root => {
     wireFu(root);
     root.querySelector('#fuForm').onsubmit = async e => {
-      e.preventDefault(); await save(l.id, readFu(root), 'התזכורת נשמרה'); closeModal();
+      e.preventDefault(); await save(l.id, readFu(root), 'התזכורת נשמרה');
+      const nl = S.leads.find(x => x.id === l.id);
+      if (back && nl) openLead(nl); else closeModal();
     };
   });
 }
@@ -438,6 +440,17 @@ function openLead(l) {
   const hist = [...l.history].reverse().map(entryHtml).join('');
   modal(`<h3>${esc(l.name)}</h3>
     <p class="sub"><span class="ltr">${prettyPhone(l.phone)}</span>${l.assignedName ? ' · ' + esc(l.assignedName) : ''}</p>
+    <div class="lead-top">
+      <label class="lt-lbl">סטטוס פנייה
+        <select class="inp sel st-big st-${l.status}" id="lStatus">${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${k === l.status ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
+      <label class="lt-lbl">סוג לקוח
+        <div class="seg" id="lType">
+          <button type="button" data-v="private" class="${l.customerType === 'private' ? 'on' : ''}">פרטי</button>
+          <button type="button" data-v="installer" class="${l.customerType === 'installer' ? 'on' : ''}">מתקין</button>
+        </div></label>
+      <label class="lt-lbl">חזרה ללקוח
+        <button type="button" class="fu-btn ${l.followUpAt ? 'set' : ''} ${fuState(l)}" id="lFu">${fuLabel(l)}</button></label>
+    </div>
     ${isAdmin ? `<details class="edit-box"><summary>✎ עריכת פרטי הליד</summary><form class="form" id="editForm">
       <div class="row"><label>שם מלא<input class="inp" id="eName" value="${esc(l.name)}" required/></label>
       <label>טלפון<input class="inp ltr" style="text-align:right" id="ePhone" value="${esc(l.phone)}" inputmode="tel" required/></label></div>
@@ -453,6 +466,18 @@ function openLead(l) {
     </form>
     <div class="sec-title">היסטוריית הליד (${l.history.length})</div>
     <div class="timeline">${hist}</div>`, root => {
+    // status / type / follow-up: saved immediately, the window stays open
+    const reopen = nl => { upsertLead(nl); openLead(nl); };
+    root.querySelector('#lStatus').onchange = async e => {
+      try { reopen(await api(`/leads/${l.id}`, { method: 'PUT', body: { status: e.target.value } })); toast('הסטטוס עודכן'); }
+      catch (err) { toast(err.message, true); }
+    };
+    root.querySelectorAll('#lType button').forEach(b => b.onclick = async () => {
+      const v = l.customerType === b.dataset.v ? '' : b.dataset.v;
+      try { reopen(await api(`/leads/${l.id}`, { method: 'PUT', body: { customerType: v } })); }
+      catch (err) { toast(err.message, true); }
+    });
+    root.querySelector('#lFu').onclick = () => openFollowUp(l, true);
     root.querySelector('#noteForm').onsubmit = async e => {
       e.preventDefault();
       const text = root.querySelector('#nText').value.trim(); if (!text) return;
@@ -491,6 +516,7 @@ $('#newLeadBtn').onclick = () => {
       <label>מספר טלפון *<input class="inp" id="nlPhone" inputmode="tel" placeholder="050-1234567" required/>
         <span class="hint" id="nlPhoneMsg"></span></label>
       <label>במה התעניין<textarea class="inp" id="nlInt" rows="3" placeholder="למשל: אינטרקום לבניין 12 דירות"></textarea></label>
+      <label>סטטוס פנייה${statusSelect('new').replace('id="mStatus"', 'id="nlStatus"')}</label>
       ${S.user.role === 'admin' ? `<label>שיוך לאיש מכירות${repSelect('nlRep', '')}</label>` : '<p class="hint muted">הליד ישויך אליך</p>'}
       <div class="foot-btns"><button class="btn btn-red" type="submit" id="nlSave">שמור ליד</button></div>
     </form>`, root => {
@@ -522,7 +548,7 @@ $('#newLeadBtn').onclick = () => {
       try {
         const l = await api('/leads', { method: 'POST', body: {
           name: root.querySelector('#nlName').value, phone: ph.value,
-          interest: root.querySelector('#nlInt').value, assignedTo: (root.querySelector('#nlRep') || {}).value || '' } });
+          interest: root.querySelector('#nlInt').value, status: root.querySelector('#nlStatus').value, assignedTo: (root.querySelector('#nlRep') || {}).value || '' } });
         upsertLead(l); closeModal(); toast('הליד נוסף');
       } catch (err) { toast(err.message, true); }
     };

@@ -190,6 +190,7 @@ router.post('/leads', requireUser, wrap(async (req, res) => {
   }
   const lead = await CrmLead.create({
     name, phone, interest: String(req.body.interest || '').trim(), assignedTo,
+    status: STATUSES.includes(req.body.status) ? req.body.status : 'new',
     createdByName: me(req).name,
     history: [{ type: 'system', text: 'הליד נוצר', byId: me(req).id, byName: me(req).name }]
   });
