@@ -37,6 +37,9 @@ app.get('/api/ping', (req, res) => res.json({ ok: true, time: new Date().toISOSt
 app.use('/api', apiRouter);
 app.use('/api', designerApiRouter);
 
+// Sales CRM (separate module: lib/crm-models.js, routes/crm.js, public/crm/)
+app.use('/crm/api', require('./routes/crm'));
+
 // ─── Business Card Generator (Admin) ─────────────────────────────────────────
 
 app.get('/admin/business-card/:slug', async (req, res) => {
@@ -74,7 +77,7 @@ app.get('/designer-login', (req, res) => {
 // ─── Designer Public Landing Pages ───────────────────────────────────────────
 
 // Words that can never be a designer short link (they are real pages of the site)
-const RESERVED = ['admin','dashboard','api','favicon.ico','assets','designer-dashboard','designer-login','d','he','en','uploads','public'];
+const RESERVED = ['admin','dashboard','api','favicon.ico','assets','designer-dashboard','designer-login','d','he','en','uploads','public','crm'];
 
 // Share-preview image (WhatsApp / Facebook): the main (hero) image, cropped to 1200x630
 function shareImage(d) {
@@ -137,7 +140,7 @@ app.get('/:short/he', async (req, res, next) => {
 // ─── Installer Public Landing Pages ──────────────────────────────────────────
 
 app.get('/:slug', async (req, res, next) => {
-  const skip = ['admin','dashboard','api','favicon.ico','assets','designer-dashboard','designer-login','d'];
+  const skip = ['admin','dashboard','api','favicon.ico','assets','designer-dashboard','designer-login','d','crm'];
   if (skip.includes(req.params.slug)) return next();
 
   try {
