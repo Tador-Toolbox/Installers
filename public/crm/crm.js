@@ -218,46 +218,49 @@ function lastNote(l) {
   return null;
 }
 
+// Today's call mark on the check square: 'ok' (answered) | 'na' (no answer, dimmed) | ''
+function todayMark(l) {
+  for (let i = l.history.length - 1; i >= 0; i--) {
+    const h = l.history[i];
+    if (h.type !== 'call') continue;
+    if (dayStart(new Date(h.at)).getTime() !== dayStart(new Date()).getTime()) return '';
+    return h.answered === false ? 'na' : 'ok';
+  }
+  return '';
+}
+
 function leadRow(l) {
-  const st = fuState(l), isAdmin = S.user.role === 'admin';
+  const st = fuState(l), isAdmin = S.user.role === 'admin', mark = todayMark(l);
   const cls = ['lead', st === 'late' ? 'due-late' : st === 'today' ? 'due-today' : '', CLOSED.includes(l.status) ? 'done' : ''].join(' ');
   const ln = lastNote(l);
-  const stale = daysSince(l.lastCallAt) >= 7 && !CLOSED.includes(l.status) && l.lastCallAt;
-  const created = new Date(l.createdAt);
+  const stale = l.lastCallAt && daysSince(l.lastCallAt) >= 7 && !CLOSED.includes(l.status);
+  const typeLbl = l.customerType ? TYPE[l.customerType] : 'סוג לקוח?';
   return `<div class="${cls}" data-id="${l.id}">
-    <div class="c-main">
-      <div class="l-name">
+    <div class="r1">
+      <button class="chk ${mark}" data-act="chk" title="סמן שיחה">${mark === 'ok' ? '✓' : mark === 'na' ? '✕' : ''}</button>
+      <div class="r1-name">
         <button class="open" data-act="open">${esc(l.name)}</button>
-        ${l.customerType ? `<span class="tag ${l.customerType}">${TYPE[l.customerType]}</span>` : ''}
+        <button class="tag type ${l.customerType || 'none'}" data-act="type" title="לחץ להחלפה: פרטי / מתקין">${typeLbl}</button>
         ${isAdmin && l.assignedName ? `<span class="tag rep">${esc(l.assignedName)}</span>` : ''}
       </div>
-      <div class="l-phone"><span class="ltr">${prettyPhone(l.phone)}</span></div>
-      ${l.interest ? `<div class="l-int">${esc(l.interest)}</div>` : ''}
-      <div class="l-meta">נוצר ${fmtDate(created)} ${fmtTime(created)}</div>
-      ${ln ? `<div class="l-note"><b>${esc(ln.byName)}:</b> ${esc(ln.text)}</div>` : ''}
+      <label class="st-wrap"><span>סטטוס פנייה</span>
+        <select class="st-sel st-${l.status}" data-act="status">
+          ${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${k === l.status ? 'selected' : ''}>${v}</option>`).join('')}
+        </select></label>
     </div>
-    <div class="c-type">
-      <div class="type-seg">
-        <button class="private ${l.customerType === 'private' ? 'on' : ''}" data-act="type" data-v="private">פרטי</button>
-        <button class="installer ${l.customerType === 'installer' ? 'on' : ''}" data-act="type" data-v="installer">מתקין</button>
-      </div>
+    <div class="choice hidden">
+      <button class="ch-ok" data-act="answered">✓ ענה</button>
+      <button class="ch-na" data-act="noanswer">✕ לא ענה</button>
     </div>
-    <div class="c-status">
-      <select class="inp sel st-sel st-${l.status}" data-act="status">
-        ${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${k === l.status ? 'selected' : ''}>${v}</option>`).join('')}
-      </select>
-    </div>
-    <div class="c-call l-call">
-      <div class="ago ${l.lastCallAt ? (stale ? 'stale' : '') : 'never'}" data-ago="${l.lastCallAt || ''}">${ago(l.lastCallAt)}</div>
-      ${l.lastCallAt ? `<div class="exact">${fmtDT(new Date(l.lastCallAt))}</div>` : ''}
-    </div>
-    <div class="c-fu fu">
+    <div class="r2"><span class="ltr">${prettyPhone(l.phone)}</span>${l.interest ? ` · <span class="int">${esc(l.interest)}</span>` : ''}</div>
+    ${ln ? `<div class="l-note"><b>${esc(ln.byName)}:</b> ${esc(ln.text)}</div>` : ''}
+    <div class="r3">
+      <span class="last ${l.lastCallAt ? (stale ? 'stale' : '') : 'never'}" title="${l.lastCallAt ? fmtDT(new Date(l.lastCallAt)) : ''}">📞 <b data-ago="${l.lastCallAt || ''}">${ago(l.lastCallAt)}</b>${l.lastCallAt ? ` <small>${fmtDT(new Date(l.lastCallAt))}</small>` : ''}</span>
       <button class="fu-btn ${l.followUpAt ? 'set' : ''} ${st}" data-act="fu">${fuLabel(l)}</button>
-    </div>
-    <div class="c-acts acts">
-      <button class="a-call" data-act="call">📞 צלצלתי</button>
-      <a class="a-ic tel" href="tel:${l.phone}" title="חיוג">${ICON.tel}</a>
-      <button class="a-ic wa" data-act="wa" title="WhatsApp">${ICON.wa}</button>
+      <span class="r3-acts">
+        <a class="a-ic tel" href="tel:${l.phone}" title="חיוג">${ICON.tel}</a>
+        <button class="a-ic wa" data-act="wa" title="WhatsApp">${ICON.wa}</button>
+      </span>
     </div>
   </div>`;
 }
@@ -282,10 +285,16 @@ $('#leadList').addEventListener('click', async e => {
   const el = e.target.closest('[data-act]'); if (!el || el.tagName === 'SELECT') return;
   const id = el.closest('.lead').dataset.id, l = S.leads.find(x => x.id === id), act = el.dataset.act;
   if (act === 'type') {
-    const v = l.customerType === el.dataset.v ? '' : el.dataset.v;   // tap again = clear
-    return save(id, { customerType: v });
+    const next = { '': 'private', private: 'installer', installer: '' }[l.customerType || ''];
+    return save(id, { customerType: next });
   }
-  if (act === 'call') return logCall(l);
+  if (act === 'chk') {   // small square → choose: answered / no answer
+    const row = el.closest('.lead'), c = row.querySelector('.choice');
+    $$('.choice').forEach(x => x !== c && x.classList.add('hidden'));
+    return c.classList.toggle('hidden');
+  }
+  if (act === 'answered') return logCall(l);
+  if (act === 'noanswer') return logNoAnswer(l);
   if (act === 'wa') return openWa(l);
   if (act === 'fu') return openFollowUp(l);
   if (act === 'open') return openLead(l);
@@ -347,10 +356,16 @@ function readFu(root) {
 }
 const statusSelect = cur => `<select class="inp sel" id="mStatus">${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${k === cur ? 'selected' : ''}>${v}</option>`).join('')}</select>`;
 
-// ── "צלצלתי": stamp now, then write notes ──
+// ── No answer: one tap, no popup ──
+async function logNoAnswer(l) {
+  try { const r = await api(`/leads/${l.id}/call`, { method: 'POST', body: { answered: false } }); upsertLead(r.lead); toast('נרשם: לא ענה'); }
+  catch (e) { toast(e.message, true); }
+}
+
+// ── Answered: stamp now, then write notes ──
 async function logCall(l) {
   let r;
-  try { r = await api(`/leads/${l.id}/call`, { method: 'POST', body: {} }); }
+  try { r = await api(`/leads/${l.id}/call`, { method: 'POST', body: { answered: true } }); }
   catch (e) { return toast(e.message, true); }
   upsertLead(r.lead);
   const now = new Date();
@@ -413,9 +428,9 @@ function openWa(l) {
 // ── Lead details: history timeline, add note, admin edit ──
 function entryHtml(h) {
   const d = new Date(h.at);
-  const head = { call: '📞 שיחה', note: '📝 הערה', status: '↺ שינוי סטטוס', system: '•' }[h.type];
-  const text = h.type === 'status' ? `→ ${STATUS[h.text] || h.text}` : (h.text || (h.type === 'call' ? 'ללא הערה' : ''));
-  return `<div class="tl ${h.type}"><div class="tl-h"><b>${head}</b> · ${esc(h.byName)} · ${fmtDT(d)}</div>${text ? `<div class="tl-t">${esc(text)}</div>` : ''}</div>`;
+  const head = { call: h.answered === false ? '✕ שיחה · לא ענה' : '✓ שיחה · ענה', note: '📝 הערה', status: '↺ שינוי סטטוס', system: '•' }[h.type];
+  const text = h.type === 'status' ? `→ ${STATUS[h.text] || h.text}` : h.text;
+  return `<div class="tl ${h.type} ${h.type === 'call' && h.answered === false ? 'na' : ''}"><div class="tl-h"><b>${head}</b> · ${esc(h.byName)} · ${fmtDT(d)}</div>${text ? `<div class="tl-t">${esc(text)}</div>` : ''}</div>`;
 }
 function openLead(l) {
   const isAdmin = S.user.role === 'admin';
