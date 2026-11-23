@@ -58,7 +58,7 @@ function toClient(l, repNames) {
     assignedTo: l.assignedTo, assignedName: repNames[String(l.assignedTo)] || '',
     customerType: l.customerType, status: l.status,
     lastCallAt: l.lastCallAt, followUpAt: l.followUpAt, followUpHasTime: l.followUpHasTime,
-    history: (l.history || []).map(h => ({ id: h._id, type: h.type, text: h.text, at: h.at, byId: h.byId, byName: h.byName })),
+    history: (l.history || []).map(h => ({ id: h._id, type: h.type, text: h.text, at: h.at, byId: h.byId, byName: h.byName, answered: h.answered !== false })),
     createdAt: l.createdAt, createdByName: l.createdByName
   };
 }
@@ -246,12 +246,18 @@ router.post('/leads/:id/call', requireUser, wrap(async (req, res) => {
   if (!lead) return res.status(404).json({ error: 'ליד לא נמצא' });
   if (!(await canAccess(req, lead))) return res.status(403).json({ error: 'אין הרשאה לליד הזה' });
   const u = me(req), now = new Date();
+  const answered = req.body.answered !== false;
   lead.lastCallAt = now;
-  lead.history.push({ type: 'call', text: String(req.body.text || '').trim(), at: now, byId: u.id, byName: u.name });
+  lead.history.push({ type: 'call', text: String(req.body.text || '').trim(), at: now, byId: u.id, byName: u.name, answered });
+  // no answer → status "לא ענה" (only from an early stage, never overrides a quote / closed deal)
+  if (!answered && ['new', 'in_progress', 'no_answer'].includes(lead.status) && lead.status !== 'no_answer') {
+    lead.history.push({ type: 'status', text: 'no_answer', at: now, byId: u.id, byName: u.name });
+    lead.status = 'no_answer';
+  }
   lead.updatedAt = now;
   await lead.save();
   const entry = lead.history[lead.history.length - 1];
-  log('call_logged', { id: String(lead._id), by: u.name });
+  log('call_logged', { id: String(lead._id), by: u.name, answered });
   res.json({ lead: toClient(lead, await repNameMap()), entryId: entry._id });
 }));
 
