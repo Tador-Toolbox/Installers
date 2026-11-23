@@ -117,6 +117,7 @@ async function enterApp() {
   const isAdmin = S.user.role === 'admin';
   document.body.classList.toggle('is-admin', isAdmin);
   $$('.admin-only').forEach(el => el.classList.toggle('hidden', !isAdmin));
+  $('#newLeadBtn').classList.remove('hidden');   // reps can add their own leads too
   $('#whoName').textContent = S.user.name;
   await loadAll();
 }
@@ -490,7 +491,7 @@ $('#newLeadBtn').onclick = () => {
       <label>מספר טלפון *<input class="inp" id="nlPhone" inputmode="tel" placeholder="050-1234567" required/>
         <span class="hint" id="nlPhoneMsg"></span></label>
       <label>במה התעניין<textarea class="inp" id="nlInt" rows="3" placeholder="למשל: אינטרקום לבניין 12 דירות"></textarea></label>
-      <label>שיוך לאיש מכירות${repSelect('nlRep', '')}</label>
+      ${S.user.role === 'admin' ? `<label>שיוך לאיש מכירות${repSelect('nlRep', '')}</label>` : '<p class="hint muted">הליד ישויך אליך</p>'}
       <div class="foot-btns"><button class="btn btn-red" type="submit" id="nlSave">שמור ליד</button></div>
     </form>`, root => {
     const ph = root.querySelector('#nlPhone'), msg = root.querySelector('#nlPhoneMsg');
@@ -506,7 +507,8 @@ $('#newLeadBtn').onclick = () => {
           const r = await api('/leads/check-phone?phone=' + encodeURIComponent(p));
           if (r.exists) {
             dup = r.exists; msg.className = 'hint err';
-            msg.innerHTML = `⚠ המספר כבר קיים במערכת: <b>${esc(r.exists.name)}</b> · <a href="#" id="nlOpenDup">פתח ליד</a>`;
+            const mine = S.leads.some(x => x.id === String(r.exists.id));
+            msg.innerHTML = `⚠ המספר כבר קיים במערכת: <b>${esc(r.exists.name)}</b>` + (mine ? ' · <a href="#" id="nlOpenDup">פתח ליד</a>' : '');
             const a = root.querySelector('#nlOpenDup');
             if (a) a.onclick = ev => { ev.preventDefault(); const l = S.leads.find(x => x.id === String(r.exists.id)); if (l) openLead(l); };
           } else { msg.className = 'hint ok'; msg.textContent = '✓ ' + prettyPhone(p); }
@@ -520,7 +522,7 @@ $('#newLeadBtn').onclick = () => {
       try {
         const l = await api('/leads', { method: 'POST', body: {
           name: root.querySelector('#nlName').value, phone: ph.value,
-          interest: root.querySelector('#nlInt').value, assignedTo: root.querySelector('#nlRep').value } });
+          interest: root.querySelector('#nlInt').value, assignedTo: (root.querySelector('#nlRep') || {}).value || '' } });
         upsertLead(l); closeModal(); toast('הליד נוסף');
       } catch (err) { toast(err.message, true); }
     };
