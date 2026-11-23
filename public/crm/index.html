@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>Tador Leads · ניהול לידים</title>
+<meta name="theme-color" content="#1A1A1A"/>
+<link rel="manifest" href="/crm/manifest.json"/>
+<link rel="apple-touch-icon" href="/crm/icons/apple-180.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+<meta name="apple-mobile-web-app-title" content="Tador Leads"/>
+<link rel="icon" type="image/png" href="/crm/icons/icon-192.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/crm/crm.css?v=1.0.0"/>
+</head>
+<body>
+
+<!-- Loading (prevents the login-screen flash) -->
+<div id="loadingView" class="center-view"><div class="spinner"></div></div>
+
+<!-- Login -->
+<div id="loginView" class="center-view hidden">
+  <form class="login-card" id="loginForm" autocomplete="on">
+    <div class="wordmark big">TADOR<span>·</span>LEADS</div>
+    <p class="muted">מערכת מעקב לידים ומכירות</p>
+    <input class="inp" id="lgUser" placeholder="שם משתמש" autocomplete="username" required/>
+    <div class="pw-wrap">
+      <input class="inp" id="lgPass" type="password" placeholder="סיסמה" autocomplete="current-password" required/>
+      <button type="button" class="eye" id="lgEye" aria-label="הצג סיסמה">👁</button>
+    </div>
+    <button class="btn btn-red btn-block" type="submit">כניסה</button>
+    <div class="err" id="lgErr"></div>
+  </form>
+</div>
+
+<!-- App -->
+<div id="appView" class="hidden">
+  <header class="topbar">
+    <div class="wordmark">TADOR<span>·</span>LEADS</div>
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="leads">לידים</button>
+      <button class="tab admin-only" data-tab="users">אנשי מכירות</button>
+    </nav>
+    <div class="top-actions">
+      <button class="icon-btn hidden" id="installBtn" title="הוסף למסך הבית">📲<span class="lbl">הוסף למסך הבית</span></button>
+      <button class="icon-btn" id="refreshBtn" title="רענון"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg></button>
+      <span class="who" id="whoName"></span>
+      <button class="icon-btn" id="logoutBtn" title="יציאה"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h12"/></svg><span class="lbl">יציאה</span></button>
+    </div>
+  </header>
+
+  <!-- ═══ Leads tab ═══ -->
+  <main id="tab-leads" class="page">
+    <div class="page-head">
+      <div class="stats" id="stats"></div>
+      <button class="btn btn-red admin-only" id="newLeadBtn">＋ ליד חדש</button>
+    </div>
+
+    <div class="filters">
+      <div class="search-wrap">
+        <input class="inp" id="fSearch" type="search" placeholder="חיפוש לפי שם, טלפון, תיאור או הערות…"/>
+      </div>
+      <button class="btn btn-ghost more-btn" id="moreBtn" type="button">סינון ומיון ▾</button>
+      <div class="seg" id="fType">
+        <button class="on" data-v="">הכל</button>
+        <button data-v="installer">מתקינים</button>
+        <button data-v="private">פרטיים</button>
+      </div>
+      <select class="inp sel more" id="fStatus">
+        <option value="open">סטטוס: פתוחים</option>
+        <option value="">סטטוס: הכל</option>
+        <option value="new">חדש</option>
+        <option value="no_answer">לא ענה</option>
+        <option value="in_progress">בטיפול</option>
+        <option value="quote_sent">נשלחה הצעת מחיר</option>
+        <option value="closed_won">נסגרה עסקה</option>
+        <option value="not_relevant">לא רלוונטי</option>
+      </select>
+      <select class="inp sel more" id="fStale">
+        <option value="0">שיחה אחרונה: הכל</option>
+        <option value="3">לא דוברו 3+ ימים</option>
+        <option value="7">לא דוברו 7+ ימים</option>
+        <option value="14">לא דוברו 14+ ימים</option>
+      </select>
+      <select class="inp sel more admin-only" id="fRep"></select>
+      <select class="inp sel more" id="fSort">
+        <option value="follow">מיון: חזרה קרובה</option>
+        <option value="newest">מיון: לידים חדשים</option>
+        <option value="stale">מיון: הכי הרבה זמן בלי שיחה</option>
+      </select>
+    </div>
+
+    <div class="list-head">
+      <span>ליד</span><span>סוג</span><span>סטטוס</span><span>שיחה אחרונה</span><span>חזרה</span><span></span>
+    </div>
+    <div id="leadList" class="lead-list"></div>
+  </main>
+
+  <!-- ═══ Users tab (admin) ═══ -->
+  <main id="tab-users" class="page hidden">
+    <div class="page-head">
+      <h2>אנשי מכירות</h2>
+      <button class="btn btn-red" id="newUserBtn">＋ איש מכירות</button>
+    </div>
+    <div id="userList" class="user-list"></div>
+  </main>
+
+  <footer class="foot">Tador Leads v1.0.0</footer>
+</div>
+
+<!-- Modal shell -->
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-card">
+    <button class="modal-x" id="modalX" aria-label="סגור">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="/crm/crm.js?v=1.0.0"></script>
+<script src="/crm/pwa.js?v=1.0.0"></script>
+</body>
+</html>
