@@ -13,7 +13,7 @@
 <link rel="icon" type="image/png" href="/crm/icons/icon-192.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/crm/crm.css?v=1.3.0"/>
+<link rel="stylesheet" href="/crm/crm.css?v=1.6.0"/>
 </head>
 <body>
 
@@ -60,7 +60,7 @@
 
     <div class="filters">
       <div class="search-wrap">
-        <input class="inp" id="fSearch" type="search" placeholder="🔍 חיפוש שם / טלפון / הערות"/>
+        <input class="inp" id="fSearch" type="search" placeholder="🔍 חיפוש שם / טלפון / מייל / הערות"/>
       </div>
       <button class="btn btn-ghost more-btn" id="moreBtn" type="button">סינון ומיון ▾</button>
       <div class="seg" id="fType">
@@ -87,7 +87,7 @@
       <select class="inp sel more admin-only" id="fRep"></select>
       <select class="inp sel more" id="fSort">
         <option value="follow">מיון: חזרה קרובה</option>
-        <option value="newest">מיון: לידים חדשים</option>
+        <option value="newest">מיון: פנייה אחרונה</option>
         <option value="stale">מיון: הכי הרבה זמן בלי שיחה</option>
       </select>
     </div>
@@ -104,7 +104,7 @@
     <div id="userList" class="user-list"></div>
   </main>
 
-  <footer class="foot">Tador Leads v1.3.0</footer>
+  <footer class="foot">Tador Leads v1.6.0</footer>
 </div>
 
 <!-- Modal shell -->
@@ -117,7 +117,7 @@
 
 <div id="toast" class="toast"></div>
 
-<script src="/crm/crm.js?v=1.3.0"></script>
-<script src="/crm/pwa.js?v=1.3.0"></script>
+<script src="/crm/crm.js?v=1.6.0"></script>
+<script src="/crm/pwa.js?v=1.6.0"></script>
 </body>
 </html>

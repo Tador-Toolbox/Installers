@@ -6,6 +6,19 @@ const { Admin } = require('../db');
 const { CrmUser, CrmLead, STATUSES, normalizePhone } = require('../lib/crm-models');
 
 const router = express.Router();
+// '' is allowed (no email). Example: ' Dana@Mail.co.il ' → 'dana@mail.co.il'; 'dana@' → null (invalid)
+// Enquiry date from the form: a valid date, not in the future. Example: '2026-11-20T00:00' → Date; '' → null
+function cleanDate(v) {
+  if (!v) return null;
+  const d = new Date(v);
+  if (isNaN(d) || d.getTime() > Date.now() + 36 * 3600 * 1000) return undefined;
+  return d;
+}
+function cleanEmail(v) {
+  const e = String(v || '').trim().toLowerCase();
+  if (!e) return '';
+  return /^[^\s@"'<>]+@[^\s@"'<>]+\.[a-z]{2,}$/.test(e) ? e : null;
+}
 const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 // ── Debug log (in memory, last 200 events) — read-only at GET /crm/api/debug (admin) ──
@@ -54,7 +67,7 @@ async function canAccess(req, lead) {
 
 function toClient(l, repNames) {
   return {
-    id: l._id, name: l.name, phone: l.phone, interest: l.interest,
+    id: l._id, name: l.name, phone: l.phone, interest: l.interest, email: l.email || '', inquiryAt: l.inquiryAt || l.createdAt,
     assignedTo: l.assignedTo, assignedName: repNames[String(l.assignedTo)] || '',
     customerType: l.customerType, status: l.status,
     lastCallAt: l.lastCallAt, followUpAt: l.followUpAt, followUpHasTime: l.followUpHasTime,
@@ -180,6 +193,10 @@ router.post('/leads', requireUser, wrap(async (req, res) => {
   const phone = normalizePhone(req.body.phone);
   if (!name) return res.status(400).json({ error: 'שם מלא הוא חובה' });
   if (!phone) return res.status(400).json({ error: 'מספר טלפון לא תקין' });
+  const email = cleanEmail(req.body.email);
+  if (email === null) return res.status(400).json({ error: 'כתובת אימייל לא תקינה' });
+  const inquiryAt = cleanDate(req.body.inquiryAt);
+  if (inquiryAt === undefined) return res.status(400).json({ error: 'תאריך פנייה לא תקין' });
   const ex = await CrmLead.findOne({ phone }, 'name');
   if (ex) return res.status(409).json({ error: `המספר כבר קיים במערכת (${ex.name})`, existingId: ex._id });
   let assignedTo = req.body.assignedTo || null;
@@ -189,7 +206,8 @@ router.post('/leads', requireUser, wrap(async (req, res) => {
     if (reps.length === 1) assignedTo = reps[0]._id;
   }
   const lead = await CrmLead.create({
-    name, phone, interest: String(req.body.interest || '').trim(), assignedTo,
+    name, phone, email, inquiryAt: inquiryAt || new Date(), interest: String(req.body.interest || '').trim(), assignedTo,
+    status: STATUSES.includes(req.body.status) ? req.body.status : 'new',
     createdByName: me(req).name,
     history: [{ type: 'system', text: 'הליד נוצר', byId: me(req).id, byName: me(req).name }]
   });
@@ -220,6 +238,16 @@ router.put('/leads/:id', requireUser, wrap(async (req, res) => {
     }
     if (b.interest !== undefined) lead.interest = String(b.interest).trim();
     if (b.assignedTo !== undefined) lead.assignedTo = b.assignedTo || null;
+  }
+  if (b.inquiryAt !== undefined) {
+    const d = cleanDate(b.inquiryAt);
+    if (!d) return res.status(400).json({ error: 'תאריך פנייה לא תקין' });
+    lead.inquiryAt = d;
+  }
+  if (b.email !== undefined) {
+    const e = cleanEmail(b.email);
+    if (e === null) return res.status(400).json({ error: 'כתובת אימייל לא תקינה' });
+    lead.email = e;
   }
   if (b.customerType !== undefined) {
     if (!['', 'private', 'installer'].includes(b.customerType)) return res.status(400).json({ error: 'סוג לקוח לא תקין' });

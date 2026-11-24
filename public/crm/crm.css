@@ -121,6 +121,8 @@ textarea.inp{resize:vertical;min-height:84px}
 .a-ic svg{width:17px;height:17px}
 .a-ic.wa{color:var(--wa);border-color:#BBF7D0}
 .a-ic.tel{color:var(--black)}
+.a-ic.del{color:#A1A1AA}
+.a-ic.del:hover{color:var(--red);border-color:#FECDD3}
 .tl.na::before{border-color:#A1A1AA;background:#E4E4E7}
 .page-head,.filters,.stats{max-width:980px;margin-left:auto;margin-right:auto}
 
@@ -162,6 +164,19 @@ textarea.inp{resize:vertical;min-height:84px}
 .tl .tl-h{font-size:12px;color:var(--muted)}
 .tl .tl-h b{color:var(--ink)}
 .tl .tl-t{font-size:13.5px;white-space:pre-wrap;margin-top:2px}
+.lead-top{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:var(--line2);border-radius:12px;padding:12px;margin-bottom:12px}
+.lead-top .lt-lbl{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:var(--muted)}
+.lead-top .lt-lbl:first-child{grid-column:1/-1}
+.lead-top .st-big{font-weight:800;font-size:15px;border:none;padding:11px 12px;padding-left:28px}
+.lead-top .seg button{flex:1}
+.lead-top .fu-btn{padding:8px 10px;text-align:right}
+.inq-row{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:8px}
+.inq-row .inp{width:auto;padding:7px 10px}
+.r2 .inq{color:var(--muted);font-size:12px}
+.mail-row{display:flex;gap:6px;margin-bottom:10px;align-items:center}
+.mail-row .inp{flex:1}
+.mail-row .a-ic{height:42px;width:44px;font-size:17px}
+.r2 .mail{color:var(--blue);text-decoration:none}
 .edit-box{background:var(--line2);border-radius:10px;padding:10px 12px;margin-bottom:4px}
 .edit-box summary{font-weight:700;cursor:pointer;font-size:13.5px}
 .edit-box .form{margin-top:10px}

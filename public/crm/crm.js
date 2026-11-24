@@ -56,6 +56,7 @@ function ago(iso) {
   if (d < 30) return `לפני ${d} ימים`;
   const mo = Math.floor(d / 30); return mo === 1 ? 'לפני חודש' : `לפני ${mo} חודשים`;
 }
+const inq = l => l.inquiryAt || l.createdAt;   // enquiry date (falls back to creation date)
 const daysSince = iso => iso ? (Date.now() - new Date(iso)) / 86400000 : Infinity;
 
 // Follow-up state: 'late' | 'today' | 'future' | ''
@@ -91,6 +92,7 @@ const intl = p => '972' + p.slice(1);
 const waText = l => `היי ${l.name}, פניתי אליך בנוגע להתעניינות שלך ב${l.interest || 'פנייה שלך'}...`;
 
 const ICON = {
+  del: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>',
   tel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>',
   wa: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5.3-.5c.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.3 5.2 4.6 2.6 1 3.1.8 3.6.8.6-.1 1.8-.7 2-1.5.3-.7.3-1.3.2-1.5-.1-.1-.3-.2-.6-.3zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4a9.8 9.8 0 1 1 8.3 4.6zM12 0a12 12 0 0 0-10.3 18L0 24l6.2-1.6A12 12 0 1 0 12 0z"/></svg>'
 };
@@ -172,13 +174,13 @@ function matches(l) {
   if (F.status === 'open' && CLOSED.includes(l.status)) return false;
   if (F.status && F.status !== 'open' && l.status !== F.status) return false;
   // "not spoken X+ days": counts the last call, or the creation date if never called
-  if (F.stale && daysSince(l.lastCallAt || l.createdAt) < F.stale) return false;
+  if (F.stale && daysSince(l.lastCallAt || inq(l)) < F.stale) return false;
   if (F.rep === 'none' && l.assignedTo) return false;
   if (F.rep && F.rep !== 'none' && String(l.assignedTo) !== F.rep) return false;
   if (S.quick && fuState(l) !== S.quick) return false;
   if (F.q) {
     const qd = F.q.replace(/\D/g, '');
-    const hay = [l.name, l.interest, ...l.history.map(h => h.text)].join(' ').toLowerCase();
+    const hay = [l.name, l.interest, l.email, ...l.history.map(h => h.text)].join(' ').toLowerCase();
     const phoneHit = qd.length >= 3 && (l.phone.includes(qd) || intl(l.phone).includes(qd));
     if (!hay.includes(F.q) && !phoneHit) return false;
   }
@@ -188,8 +190,8 @@ function sorted(list) {
   const rank = l => ({ late: 0, today: 1 }[fuState(l)] ?? 2);   // overdue, then today, always on top
   const by = {
     follow: (a, b) => (a.followUpAt ? new Date(a.followUpAt) : Infinity) - (b.followUpAt ? new Date(b.followUpAt) : Infinity) || new Date(b.createdAt) - new Date(a.createdAt),
-    newest: (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-    stale: (a, b) => daysSince(b.lastCallAt || b.createdAt) - daysSince(a.lastCallAt || a.createdAt)
+    newest: (a, b) => new Date(inq(b)) - new Date(inq(a)),
+    stale: (a, b) => daysSince(b.lastCallAt || inq(b)) - daysSince(a.lastCallAt || inq(a))
   }[F.sort];
   return [...list].sort((a, b) => rank(a) - rank(b) || by(a, b));
 }
@@ -253,7 +255,7 @@ function leadRow(l) {
       <button class="ch-ok" data-act="answered">✓ ענה</button>
       <button class="ch-na" data-act="noanswer">✕ לא ענה</button>
     </div>
-    <div class="r2"><span class="ltr">${prettyPhone(l.phone)}</span>${l.interest ? ` · <span class="int">${esc(l.interest)}</span>` : ''}</div>
+    <div class="r2"><span class="inq">פנייה ${fmtDate(new Date(inq(l)))}</span> · <span class="ltr">${prettyPhone(l.phone)}</span>${l.email ? ` · <a class="mail ltr" href="mailto:${esc(l.email)}">${esc(l.email)}</a>` : ''}${l.interest ? ` · <span class="int">${esc(l.interest)}</span>` : ''}</div>
     ${ln ? `<div class="l-note"><b>${esc(ln.byName)}:</b> ${esc(ln.text)}</div>` : ''}
     <div class="r3">
       <span class="last ${l.lastCallAt ? (stale ? 'stale' : '') : 'never'}" title="${l.lastCallAt ? fmtDT(new Date(l.lastCallAt)) : ''}">📞 <b data-ago="${l.lastCallAt || ''}">${ago(l.lastCallAt)}</b>${l.lastCallAt ? ` <small>${fmtDT(new Date(l.lastCallAt))}</small>` : ''}</span>
@@ -261,6 +263,7 @@ function leadRow(l) {
       <span class="r3-acts">
         <a class="a-ic tel" href="tel:${l.phone}" title="חיוג">${ICON.tel}</a>
         <button class="a-ic wa" data-act="wa" title="WhatsApp">${ICON.wa}</button>
+        ${isAdmin ? `<button class="a-ic del" data-act="del" title="מחק ליד">${ICON.del}</button>` : ''}
       </span>
     </div>
   </div>`;
@@ -299,6 +302,7 @@ $('#leadList').addEventListener('click', async e => {
   if (act === 'wa') return openWa(l);
   if (act === 'fu') return openFollowUp(l);
   if (act === 'open') return openLead(l);
+  if (act === 'del') return deleteLead(l);
 });
 $('#leadList').addEventListener('change', e => {
   if (e.target.dataset.act !== 'status') return;
@@ -310,6 +314,15 @@ async function save(id, body, msg) {
   catch (e) { toast(e.message, true); renderLeads(); }
 }
 
+// Admin: delete a lead for good (it disappears from everyone's list)
+async function deleteLead(l) {
+  if (!confirm(`למחוק את הליד "${l.name}"?\nהליד וכל ההיסטוריה שלו יימחקו לצמיתות.`)) return;
+  try {
+    await api(`/leads/${l.id}`, { method: 'DELETE' });
+    S.leads = S.leads.filter(x => x.id !== l.id); renderLeads(); closeModal(); toast('הליד נמחק');
+  } catch (e) { toast(e.message, true); }
+}
+
 // ══════════════ Modal ══════════════
 function modal(html, onOpen) {
   $('#modalBody').innerHTML = html;
@@ -318,6 +331,7 @@ function modal(html, onOpen) {
   if (onOpen) onOpen($('#modalBody'));
 }
 function closeModal() {
+  if ($('#modal').classList.contains('hidden')) return;
   $('#modal').classList.add('hidden'); document.body.style.overflow = '';
   if (closeModal.after) { const f = closeModal.after; closeModal.after = null; f(); }
 }
@@ -399,13 +413,15 @@ async function logCall(l) {
 }
 
 // ── Follow-up only ──
-function openFollowUp(l) {
+function openFollowUp(l, back) {
   modal(`<h3>תזכורת חזרה · ${esc(l.name)}</h3><p class="sub">הליד יקפוץ לראש הרשימה כשיגיע המועד</p>
     <form class="form" id="fuForm">${fuFields(l)}
       <div class="foot-btns"><button class="btn btn-red" type="submit">שמור</button></div></form>`, root => {
     wireFu(root);
     root.querySelector('#fuForm').onsubmit = async e => {
-      e.preventDefault(); await save(l.id, readFu(root), 'התזכורת נשמרה'); closeModal();
+      e.preventDefault(); await save(l.id, readFu(root), 'התזכורת נשמרה');
+      const nl = S.leads.find(x => x.id === l.id);
+      if (back && nl) openLead(nl); else closeModal();
     };
   });
 }
@@ -438,6 +454,24 @@ function openLead(l) {
   const hist = [...l.history].reverse().map(entryHtml).join('');
   modal(`<h3>${esc(l.name)}</h3>
     <p class="sub"><span class="ltr">${prettyPhone(l.phone)}</span>${l.assignedName ? ' · ' + esc(l.assignedName) : ''}</p>
+    <label class="inq-row">תאריך פנייה
+      <input class="inp" id="lInq" type="date" value="${toInputDate(new Date(inq(l)))}" max="${toInputDate(new Date())}"/></label>
+    <form class="mail-row" id="mailForm">
+      <input class="inp ltr" style="text-align:right" id="lEmail" type="email" inputmode="email" autocapitalize="off" placeholder="אימייל של הלקוח" value="${esc(l.email || '')}"/>
+      ${l.email ? `<a class="a-ic" href="mailto:${esc(l.email)}" title="שלח מייל">✉</a>` : ''}
+      <button class="btn btn-dark" type="submit">שמור</button>
+    </form>
+    <div class="lead-top">
+      <label class="lt-lbl">סטטוס פנייה
+        <select class="inp sel st-big st-${l.status}" id="lStatus">${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${k === l.status ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
+      <label class="lt-lbl">סוג לקוח
+        <div class="seg" id="lType">
+          <button type="button" data-v="private" class="${l.customerType === 'private' ? 'on' : ''}">פרטי</button>
+          <button type="button" data-v="installer" class="${l.customerType === 'installer' ? 'on' : ''}">מתקין</button>
+        </div></label>
+      <label class="lt-lbl">חזרה ללקוח
+        <button type="button" class="fu-btn ${l.followUpAt ? 'set' : ''} ${fuState(l)}" id="lFu">${fuLabel(l)}</button></label>
+    </div>
     ${isAdmin ? `<details class="edit-box"><summary>✎ עריכת פרטי הליד</summary><form class="form" id="editForm">
       <div class="row"><label>שם מלא<input class="inp" id="eName" value="${esc(l.name)}" required/></label>
       <label>טלפון<input class="inp ltr" style="text-align:right" id="ePhone" value="${esc(l.phone)}" inputmode="tel" required/></label></div>
@@ -453,6 +487,28 @@ function openLead(l) {
     </form>
     <div class="sec-title">היסטוריית הליד (${l.history.length})</div>
     <div class="timeline">${hist}</div>`, root => {
+    // status / type / follow-up: saved immediately, the window stays open
+    const reopen = nl => { upsertLead(nl); openLead(nl); };
+    root.querySelector('#lStatus').onchange = async e => {
+      try { reopen(await api(`/leads/${l.id}`, { method: 'PUT', body: { status: e.target.value } })); toast('הסטטוס עודכן'); }
+      catch (err) { toast(err.message, true); }
+    };
+    root.querySelectorAll('#lType button').forEach(b => b.onclick = async () => {
+      const v = l.customerType === b.dataset.v ? '' : b.dataset.v;
+      try { reopen(await api(`/leads/${l.id}`, { method: 'PUT', body: { customerType: v } })); }
+      catch (err) { toast(err.message, true); }
+    });
+    root.querySelector('#lFu').onclick = () => openFollowUp(l, true);
+    root.querySelector('#lInq').onchange = async e => {
+      if (!e.target.value) return;
+      try { reopen(await api(`/leads/${l.id}`, { method: 'PUT', body: { inquiryAt: new Date(e.target.value + 'T12:00').toISOString() } })); toast('תאריך הפנייה עודכן'); }
+      catch (err) { toast(err.message, true); }
+    };
+    root.querySelector('#mailForm').onsubmit = async e => {
+      e.preventDefault();
+      try { reopen(await api(`/leads/${l.id}`, { method: 'PUT', body: { email: root.querySelector('#lEmail').value } })); toast('האימייל נשמר'); }
+      catch (err) { toast(err.message, true); }
+    };
     root.querySelector('#noteForm').onsubmit = async e => {
       e.preventDefault();
       const text = root.querySelector('#nText').value.trim(); if (!text) return;
@@ -469,11 +525,7 @@ function openLead(l) {
         upsertLead(nl); openLead(nl); toast('נשמר');
       } catch (err) { toast(err.message, true); }
     };
-    root.querySelector('#eDel').onclick = async () => {
-      if (!confirm(`למחוק את הליד "${l.name}" וכל ההיסטוריה שלו?`)) return;
-      try { await api(`/leads/${l.id}`, { method: 'DELETE' }); S.leads = S.leads.filter(x => x.id !== l.id); renderLeads(); closeModal(); toast('הליד נמחק'); }
-      catch (err) { toast(err.message, true); }
-    };
+    root.querySelector('#eDel').onclick = () => deleteLead(l);
   });
 }
 
@@ -490,7 +542,10 @@ $('#newLeadBtn').onclick = () => {
       <label>שם מלא *<input class="inp" id="nlName" required/></label>
       <label>מספר טלפון *<input class="inp" id="nlPhone" inputmode="tel" placeholder="050-1234567" required/>
         <span class="hint" id="nlPhoneMsg"></span></label>
+      <label>תאריך פנייה<input class="inp" id="nlInq" type="date" value="${toInputDate(new Date())}" max="${toInputDate(new Date())}"/></label>
+      <label>אימייל<input class="inp ltr" style="text-align:right" id="nlEmail" type="email" inputmode="email" autocapitalize="off" placeholder="name@example.com"/></label>
       <label>במה התעניין<textarea class="inp" id="nlInt" rows="3" placeholder="למשל: אינטרקום לבניין 12 דירות"></textarea></label>
+      <label>סטטוס פנייה${statusSelect('new').replace('id="mStatus"', 'id="nlStatus"')}</label>
       ${S.user.role === 'admin' ? `<label>שיוך לאיש מכירות${repSelect('nlRep', '')}</label>` : '<p class="hint muted">הליד ישויך אליך</p>'}
       <div class="foot-btns"><button class="btn btn-red" type="submit" id="nlSave">שמור ליד</button></div>
     </form>`, root => {
@@ -522,7 +577,7 @@ $('#newLeadBtn').onclick = () => {
       try {
         const l = await api('/leads', { method: 'POST', body: {
           name: root.querySelector('#nlName').value, phone: ph.value,
-          interest: root.querySelector('#nlInt').value, assignedTo: (root.querySelector('#nlRep') || {}).value || '' } });
+          interest: root.querySelector('#nlInt').value, email: root.querySelector('#nlEmail').value, inquiryAt: root.querySelector('#nlInq').value ? new Date(root.querySelector('#nlInq').value + 'T12:00').toISOString() : '', status: root.querySelector('#nlStatus').value, assignedTo: (root.querySelector('#nlRep') || {}).value || '' } });
         upsertLead(l); closeModal(); toast('הליד נוסף');
       } catch (err) { toast(err.message, true); }
     };
