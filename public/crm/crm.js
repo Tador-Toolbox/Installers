@@ -89,7 +89,12 @@ function normPhone(raw) {
 }
 const prettyPhone = p => p.length === 10 ? `${p.slice(0, 3)}-${p.slice(3)}` : `${p.slice(0, 2)}-${p.slice(2)}`;
 const intl = p => '972' + p.slice(1);
-const waText = l => `היי ${l.name}, פניתי אליך בנוגע להתעניינות שלך ב${l.interest || 'פנייה שלך'}...`;
+// Example: interest "פנה דרך הפרסום של פייסבוק ," → "...להתעניינות שלך ב פנה דרך הפרסום של פייסבוק..."
+// (space after ב, trailing commas/dots trimmed)
+const waText = l => {
+  const it = String(l.interest || '').trim().replace(/[\s,.;:\-–]+$/, '');
+  return `היי ${l.name}, פניתי אליך בנוגע להתעניינות שלך ב ${it || 'פנייה שלך'}...`;
+};
 
 const ICON = {
   del: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>',
