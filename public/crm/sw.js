@@ -1,6 +1,6 @@
 // Tador Leads service worker — network-first, no offline cache.
 // Bump VERSION on every deploy so installed apps update themselves.
-const VERSION = 'leads-1.7.1';
+const VERSION = 'leads-1.8.0';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(
   caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k)))).then(() => self.clients.claim())
