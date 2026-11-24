@@ -91,6 +91,7 @@ const intl = p => '972' + p.slice(1);
 const waText = l => `היי ${l.name}, פניתי אליך בנוגע להתעניינות שלך ב${l.interest || 'פנייה שלך'}...`;
 
 const ICON = {
+  del: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>',
   tel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>',
   wa: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5.3-.5c.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.3 5.2 4.6 2.6 1 3.1.8 3.6.8.6-.1 1.8-.7 2-1.5.3-.7.3-1.3.2-1.5-.1-.1-.3-.2-.6-.3zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4a9.8 9.8 0 1 1 8.3 4.6zM12 0a12 12 0 0 0-10.3 18L0 24l6.2-1.6A12 12 0 1 0 12 0z"/></svg>'
 };
@@ -261,6 +262,7 @@ function leadRow(l) {
       <span class="r3-acts">
         <a class="a-ic tel" href="tel:${l.phone}" title="חיוג">${ICON.tel}</a>
         <button class="a-ic wa" data-act="wa" title="WhatsApp">${ICON.wa}</button>
+        ${isAdmin ? `<button class="a-ic del" data-act="del" title="מחק ליד">${ICON.del}</button>` : ''}
       </span>
     </div>
   </div>`;
@@ -299,6 +301,7 @@ $('#leadList').addEventListener('click', async e => {
   if (act === 'wa') return openWa(l);
   if (act === 'fu') return openFollowUp(l);
   if (act === 'open') return openLead(l);
+  if (act === 'del') return deleteLead(l);
 });
 $('#leadList').addEventListener('change', e => {
   if (e.target.dataset.act !== 'status') return;
@@ -310,6 +313,15 @@ async function save(id, body, msg) {
   catch (e) { toast(e.message, true); renderLeads(); }
 }
 
+// Admin: delete a lead for good (it disappears from everyone's list)
+async function deleteLead(l) {
+  if (!confirm(`למחוק את הליד "${l.name}"?\nהליד וכל ההיסטוריה שלו יימחקו לצמיתות.`)) return;
+  try {
+    await api(`/leads/${l.id}`, { method: 'DELETE' });
+    S.leads = S.leads.filter(x => x.id !== l.id); renderLeads(); closeModal(); toast('הליד נמחק');
+  } catch (e) { toast(e.message, true); }
+}
+
 // ══════════════ Modal ══════════════
 function modal(html, onOpen) {
   $('#modalBody').innerHTML = html;
@@ -318,6 +330,7 @@ function modal(html, onOpen) {
   if (onOpen) onOpen($('#modalBody'));
 }
 function closeModal() {
+  if ($('#modal').classList.contains('hidden')) return;
   $('#modal').classList.add('hidden'); document.body.style.overflow = '';
   if (closeModal.after) { const f = closeModal.after; closeModal.after = null; f(); }
 }
@@ -494,11 +507,7 @@ function openLead(l) {
         upsertLead(nl); openLead(nl); toast('נשמר');
       } catch (err) { toast(err.message, true); }
     };
-    root.querySelector('#eDel').onclick = async () => {
-      if (!confirm(`למחוק את הליד "${l.name}" וכל ההיסטוריה שלו?`)) return;
-      try { await api(`/leads/${l.id}`, { method: 'DELETE' }); S.leads = S.leads.filter(x => x.id !== l.id); renderLeads(); closeModal(); toast('הליד נמחק'); }
-      catch (err) { toast(err.message, true); }
-    };
+    root.querySelector('#eDel').onclick = () => deleteLead(l);
   });
 }
 

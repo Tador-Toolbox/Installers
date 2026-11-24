@@ -121,6 +121,8 @@ textarea.inp{resize:vertical;min-height:84px}
 .a-ic svg{width:17px;height:17px}
 .a-ic.wa{color:var(--wa);border-color:#BBF7D0}
 .a-ic.tel{color:var(--black)}
+.a-ic.del{color:#A1A1AA}
+.a-ic.del:hover{color:var(--red);border-color:#FECDD3}
 .tl.na::before{border-color:#A1A1AA;background:#E4E4E7}
 .page-head,.filters,.stats{max-width:980px;margin-left:auto;margin-right:auto}
 
