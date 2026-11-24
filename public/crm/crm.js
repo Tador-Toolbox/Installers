@@ -175,8 +175,8 @@ function matches(l) {
   if (F.status && F.status !== 'open' && l.status !== F.status) return false;
   // "not spoken X+ days": counts the last call, or the creation date if never called
   if (F.stale && daysSince(l.lastCallAt || inq(l)) < F.stale) return false;
-  if (F.rep === 'none' && l.assignedTo) return false;
-  if (F.rep && F.rep !== 'none' && String(l.assignedTo) !== F.rep) return false;
+  if (F.rep === 'none' && l.assignees.length) return false;
+  if (F.rep && F.rep !== 'none' && !l.assignees.includes(F.rep)) return false;
   if (S.quick && fuState(l) !== S.quick) return false;
   if (F.q) {
     const qd = F.q.replace(/\D/g, '');
@@ -244,7 +244,7 @@ function leadRow(l) {
       <div class="r1-name">
         <button class="open" data-act="open">${esc(l.name)}</button>
         <button class="tag type ${l.customerType || 'none'}" data-act="type" title="לחץ להחלפה: פרטי / מתקין">${typeLbl}</button>
-        ${isAdmin && l.assignedName ? `<span class="tag rep">${esc(l.assignedName)}</span>` : ''}
+        ${isAdmin ? `<button class="tag rep ${l.assigneeNames.length ? '' : 'none'}" data-act="assign" title="עריכת שיוך סוכנים">👤 ${l.assigneeNames.length ? esc(l.assigneeNames.join(', ')) : 'שייך סוכן'}</button>` : ''}
       </div>
       <label class="st-wrap"><span>סטטוס פנייה</span>
         <select class="st-sel st-${l.status}" data-act="status">
@@ -303,6 +303,7 @@ $('#leadList').addEventListener('click', async e => {
   if (act === 'fu') return openFollowUp(l);
   if (act === 'open') return openLead(l);
   if (act === 'del') return deleteLead(l);
+  if (act === 'assign') return assignModal(l);
 });
 $('#leadList').addEventListener('change', e => {
   if (e.target.dataset.act !== 'status') return;
@@ -453,7 +454,7 @@ function openLead(l) {
   const isAdmin = S.user.role === 'admin';
   const hist = [...l.history].reverse().map(entryHtml).join('');
   modal(`<h3>${esc(l.name)}</h3>
-    <p class="sub"><span class="ltr">${prettyPhone(l.phone)}</span>${l.assignedName ? ' · ' + esc(l.assignedName) : ''}</p>
+    <p class="sub"><span class="ltr">${prettyPhone(l.phone)}</span>${l.assigneeNames.length ? ' · 👤 ' + esc(l.assigneeNames.join(', ')) : ''}</p>
     <label class="inq-row">תאריך פנייה
       <input class="inp" id="lInq" type="date" value="${toInputDate(new Date(inq(l)))}" max="${toInputDate(new Date())}"/></label>
     <form class="mail-row" id="mailForm">
@@ -476,7 +477,7 @@ function openLead(l) {
       <div class="row"><label>שם מלא<input class="inp" id="eName" value="${esc(l.name)}" required/></label>
       <label>טלפון<input class="inp ltr" style="text-align:right" id="ePhone" value="${esc(l.phone)}" inputmode="tel" required/></label></div>
       <label>במה התעניין<textarea class="inp" id="eInt" rows="2">${esc(l.interest)}</textarea></label>
-      <label>שיוך לאיש מכירות${repSelect('eRep', l.assignedTo)}</label>
+      <label>שיוך סוכנים${repChecks('eReps', l.assignees)}</label>
       <div class="foot-btns"><button class="btn btn-dark" type="submit">שמור שינויים</button>
       <button class="btn btn-ghost" type="button" id="eDel" style="color:var(--red)">מחק ליד</button></div>
     </form></details>` : (l.interest ? `<p style="margin-bottom:10px">${esc(l.interest)}</p>` : '')}
@@ -521,7 +522,7 @@ function openLead(l) {
       try {
         const nl = await api(`/leads/${l.id}`, { method: 'PUT', body: {
           name: root.querySelector('#eName').value, phone: root.querySelector('#ePhone').value,
-          interest: root.querySelector('#eInt').value, assignedTo: root.querySelector('#eRep').value } });
+          interest: root.querySelector('#eInt').value, assignees: readChecks(root, 'eReps') } });
         upsertLead(nl); openLead(nl); toast('נשמר');
       } catch (err) { toast(err.message, true); }
     };
@@ -529,10 +530,25 @@ function openLead(l) {
   });
 }
 
-function repSelect(id, cur) {
-  const def = !cur && S.reps.length === 1 ? S.reps[0].id : cur;   // default: the only active rep
-  return `<select class="inp sel" id="${id}"><option value="">— לא משויך —</option>${S.reps.map(r =>
-    `<option value="${r.id}" ${String(r.id) === String(def) ? 'selected' : ''}>${esc(r.name)}</option>`).join('')}</select>`;
+// Checkbox list of active reps. `cur` = selected ids. A new lead with one rep → that rep is ticked.
+function repChecks(id, cur) {
+  const sel = cur && cur.length ? cur.map(String) : (S.reps.length === 1 ? [String(S.reps[0].id)] : []);
+  if (!S.reps.length) return `<div class="hint muted" id="${id}">אין אנשי מכירות פעילים</div>`;
+  return `<div class="rep-checks" id="${id}">${S.reps.map(r =>
+    `<label class="rc"><input type="checkbox" value="${r.id}" ${sel.includes(String(r.id)) ? 'checked' : ''}/> ${esc(r.name)}</label>`).join('')}</div>`;
+}
+const readChecks = (root, id) => [...root.querySelectorAll(`#${id} input:checked`)].map(i => i.value);
+
+// Admin: edit which reps are on a lead
+function assignModal(l) {
+  modal(`<h3>שיוך סוכנים · ${esc(l.name)}</h3><p class="sub">אפשר לבחור כמה סוכנים — כולם יראו את הליד</p>
+    <form class="form" id="asForm">${repChecks('asReps', l.assignees)}
+      <div class="foot-btns"><button class="btn btn-red" type="submit">שמור שיוך</button></div></form>`, root => {
+    root.querySelector('#asForm').onsubmit = async e => {
+      e.preventDefault();
+      await save(l.id, { assignees: readChecks(root, 'asReps') }, 'השיוך עודכן'); closeModal();
+    };
+  });
 }
 
 // ── New lead (admin) with live phone validation + duplicate alert ──
@@ -546,7 +562,7 @@ $('#newLeadBtn').onclick = () => {
       <label>אימייל<input class="inp ltr" style="text-align:right" id="nlEmail" type="email" inputmode="email" autocapitalize="off" placeholder="name@example.com"/></label>
       <label>במה התעניין<textarea class="inp" id="nlInt" rows="3" placeholder="למשל: אינטרקום לבניין 12 דירות"></textarea></label>
       <label>סטטוס פנייה${statusSelect('new').replace('id="mStatus"', 'id="nlStatus"')}</label>
-      ${S.user.role === 'admin' ? `<label>שיוך לאיש מכירות${repSelect('nlRep', '')}</label>` : '<p class="hint muted">הליד ישויך אליך</p>'}
+      ${S.user.role === 'admin' ? `<label>שיוך סוכנים${repChecks('nlReps', [])}</label>` : '<p class="hint muted">הליד ישויך אליך</p>'}
       <div class="foot-btns"><button class="btn btn-red" type="submit" id="nlSave">שמור ליד</button></div>
     </form>`, root => {
     const ph = root.querySelector('#nlPhone'), msg = root.querySelector('#nlPhoneMsg');
@@ -577,7 +593,7 @@ $('#newLeadBtn').onclick = () => {
       try {
         const l = await api('/leads', { method: 'POST', body: {
           name: root.querySelector('#nlName').value, phone: ph.value,
-          interest: root.querySelector('#nlInt').value, email: root.querySelector('#nlEmail').value, inquiryAt: root.querySelector('#nlInq').value ? new Date(root.querySelector('#nlInq').value + 'T12:00').toISOString() : '', status: root.querySelector('#nlStatus').value, assignedTo: (root.querySelector('#nlRep') || {}).value || '' } });
+          interest: root.querySelector('#nlInt').value, email: root.querySelector('#nlEmail').value, inquiryAt: root.querySelector('#nlInq').value ? new Date(root.querySelector('#nlInq').value + 'T12:00').toISOString() : '', status: root.querySelector('#nlStatus').value, assignees: readChecks(root, 'nlReps') } });
         upsertLead(l); closeModal(); toast('הליד נוסף');
       } catch (err) { toast(err.message, true); }
     };
@@ -607,6 +623,7 @@ function renderUsers() {
     <label class="switch"><input type="checkbox" data-f="isActive" ${u.isActive ? 'checked' : ''}/> פעיל</label>
     <button class="btn btn-ghost" data-act="creds">🔑 פרטי כניסה</button>
     <button class="btn btn-ghost" data-act="edit">עריכה</button>
+    <button class="btn btn-ghost u-del" data-act="udel" title="מחק איש מכירות">🗑</button>
   </div>`).join('');
 }
 $('#userList').addEventListener('change', async e => {
@@ -620,6 +637,7 @@ $('#userList').addEventListener('click', e => {
   const u = S.users.find(x => x.id === e.target.closest('.user').dataset.id);
   if (act === 'edit') return userModal(u);
   if (act === 'creds') return resendCreds(u);
+  if (act === 'udel') return deleteRep(u);
 });
 $('#newUserBtn').onclick = () => userModal(null);
 
@@ -685,6 +703,14 @@ function credsModal(name, username, password) {
     root.querySelector('#cCopy').onclick = async () => toast(await copyText(text) ? 'ההודעה הועתקה — הדבק ושלח' : 'לא הצליח להעתיק — סמן והעתק ידנית', false);
     root.querySelector('#cWa').onclick = () => window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
   });
+}
+async function deleteRep(u) {
+  const leadsTxt = u.leads ? `\nהוא משויך ל-${u.leads} לידים — הלידים יישארו, והוא יוסר מהם.` : '';
+  if (!confirm(`למחוק את ${u.fullName}?${leadsTxt}\nאי אפשר לבטל.\n\n(רוצה רק לחסום כניסה? כבה את "פעיל" במקום.)`)) return;
+  try {
+    await api(`/users/${u.id}`, { method: 'DELETE' });
+    toast(`${u.fullName} נמחק`); await loadUsers(); await loadAll();
+  } catch (e) { toast(e.message, true); }
 }
 async function resendCreds(u) {
   if (!confirm(`הסיסמה של ${u.fullName} שמורה מוצפנת ואי אפשר להציג אותה.\nליצור סיסמה חדשה ולהכין הודעה לשליחה?\n(הסיסמה הקודמת תפסיק לעבוד)`)) return;

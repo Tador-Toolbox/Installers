@@ -3,7 +3,7 @@
 // Admin logs in with the existing site Admin account; sales reps are CrmUser docs.
 const express = require('express');
 const { Admin } = require('../db');
-const { CrmUser, CrmLead, STATUSES, normalizePhone } = require('../lib/crm-models');
+const { CrmUser, CrmLead, STATUSES, normalizePhone, assigneeIds } = require('../lib/crm-models');
 
 const router = express.Router();
 // '' is allowed (no email). Example: ' Dana@Mail.co.il ' → 'dana@mail.co.il'; 'dana@' → null (invalid)
@@ -62,13 +62,13 @@ async function canAccess(req, lead) {
   const rep = await CrmUser.findById(u.id);
   if (!rep || !rep.isActive) return false;
   if (rep.seeAll) return true;
-  return String(lead.assignedTo || '') === String(u.id);
+  return assigneeIds(lead).includes(String(u.id));
 }
 
 function toClient(l, repNames) {
   return {
     id: l._id, name: l.name, phone: l.phone, interest: l.interest, email: l.email || '', inquiryAt: l.inquiryAt || l.createdAt,
-    assignedTo: l.assignedTo, assignedName: repNames[String(l.assignedTo)] || '',
+    assignees: assigneeIds(l), assigneeNames: assigneeIds(l).map(id => repNames[id]).filter(Boolean),
     customerType: l.customerType, status: l.status,
     lastCallAt: l.lastCallAt, followUpAt: l.followUpAt, followUpHasTime: l.followUpHasTime,
     history: (l.history || []).map(h => ({ id: h._id, type: h.type, text: h.text, at: h.at, byId: h.byId, byName: h.byName, answered: h.answered !== false })),
@@ -78,6 +78,15 @@ function toClient(l, repNames) {
 async function repNameMap() {
   const reps = await CrmUser.find({}, 'fullName');
   return Object.fromEntries(reps.map(r => [String(r._id), r.fullName]));
+}
+
+// Only ids of existing reps, no duplicates. Example: ['id1','id1','bad'] → ['id1']
+async function cleanAssignees(list) {
+  const ids = [...new Set((Array.isArray(list) ? list : []).map(String))];
+  if (!ids.length) return [];
+  const reps = await CrmUser.find({}, '_id');
+  const ok = new Set(reps.map(r => String(r._id)));
+  return ids.filter(id => ok.has(id));
 }
 
 // ═══ Auth ═══════════════════════════════════════════════════════════════════
@@ -123,8 +132,8 @@ router.get('/auth/me', wrap(async (req, res) => {
 // ═══ Users (admin) ══════════════════════════════════════════════════════════
 router.get('/users', requireAdmin, wrap(async (req, res) => {
   const users = await CrmUser.find({}, '-password').sort({ createdAt: 1 });
-  const counts = await CrmLead.aggregate([{ $group: { _id: '$assignedTo', n: { $sum: 1 } } }]);
-  const cm = Object.fromEntries(counts.map(c => [String(c._id), c.n]));
+  const cm = {};
+  for (const l of await CrmLead.find({}, 'assignedTo assignees')) for (const id of assigneeIds(l)) cm[id] = (cm[id] || 0) + 1;
   res.json(users.map(u => ({ id: u._id, username: u.username, fullName: u.fullName, seeAll: u.seeAll,
     isActive: u.isActive, lastLogin: u.lastLogin, leads: cm[String(u._id)] || 0 })));
 }));
@@ -161,6 +170,25 @@ router.put('/users/:id', requireAdmin, wrap(async (req, res) => {
   res.json({ ok: true });
 }));
 
+// Delete a rep: removed from every lead he was on; the leads stay (history keeps his name)
+router.delete('/users/:id', requireAdmin, wrap(async (req, res) => {
+  const u = await CrmUser.findById(req.params.id);
+  if (!u) return res.status(404).json({ error: 'משתמש לא נמצא' });
+  const id = String(u._id);
+  let touched = 0;
+  for (const l of await CrmLead.find({})) {
+    const a = assigneeIds(l);
+    if (!a.includes(id)) continue;
+    const rest = a.filter(x => x !== id);
+    l.assignees = rest; l.assignedTo = rest[0] || null;
+    l.history.push({ type: 'system', text: `${u.fullName} נמחק מהמערכת והוסר מהליד`, byId: me(req).id, byName: me(req).name });
+    await l.save(); touched++;
+  }
+  await CrmUser.findByIdAndDelete(id);
+  log('user_deleted', { username: u.username, leadsTouched: touched });
+  res.json({ ok: true, leadsTouched: touched });
+}));
+
 // Active reps — for the "assign to" dropdown
 router.get('/reps', requireUser, wrap(async (req, res) => {
   const reps = await CrmUser.find({ isActive: true }, 'fullName').sort({ createdAt: 1 });
@@ -170,13 +198,14 @@ router.get('/reps', requireUser, wrap(async (req, res) => {
 // ═══ Leads ══════════════════════════════════════════════════════════════════
 router.get('/leads', requireUser, wrap(async (req, res) => {
   const u = me(req);
-  let q = {};
+  let onlyMine = false;
   if (u.role === 'sales') {
     const rep = await CrmUser.findById(u.id);
     if (!rep || !rep.isActive) return res.status(401).json({ error: 'יש להתחבר מחדש' });
-    if (!rep.seeAll) q = { assignedTo: rep._id };
+    onlyMine = !rep.seeAll;
   }
-  const [leads, names] = await Promise.all([CrmLead.find(q).sort({ createdAt: -1 }), repNameMap()]);
+  let [leads, names] = await Promise.all([CrmLead.find({}).sort({ createdAt: -1 }), repNameMap()]);
+  if (onlyMine) leads = leads.filter(l => assigneeIds(l).includes(String(u.id)));
   res.json(leads.map(l => toClient(l, names)));
 }));
 
@@ -199,19 +228,20 @@ router.post('/leads', requireUser, wrap(async (req, res) => {
   if (inquiryAt === undefined) return res.status(400).json({ error: 'תאריך פנייה לא תקין' });
   const ex = await CrmLead.findOne({ phone }, 'name');
   if (ex) return res.status(409).json({ error: `המספר כבר קיים במערכת (${ex.name})`, existingId: ex._id });
-  let assignedTo = req.body.assignedTo || null;
-  if (me(req).role === 'sales') assignedTo = me(req).id;   // a rep's own lead is always his
-  else if (!assignedTo) {   // default: the only active rep
+  let assignees = await cleanAssignees(req.body.assignees);
+  if (me(req).role === 'sales') assignees = [me(req).id];   // a rep's own lead is always his
+  else if (!assignees.length) {   // default: the only active rep
     const reps = await CrmUser.find({ isActive: true }, '_id');
-    if (reps.length === 1) assignedTo = reps[0]._id;
+    if (reps.length === 1) assignees = [String(reps[0]._id)];
   }
+  const assignedTo = assignees[0] || null;
   const lead = await CrmLead.create({
-    name, phone, email, inquiryAt: inquiryAt || new Date(), interest: String(req.body.interest || '').trim(), assignedTo,
+    name, phone, email, inquiryAt: inquiryAt || new Date(), interest: String(req.body.interest || '').trim(), assignedTo, assignees,
     status: STATUSES.includes(req.body.status) ? req.body.status : 'new',
     createdByName: me(req).name,
     history: [{ type: 'system', text: 'הליד נוצר', byId: me(req).id, byName: me(req).name }]
   });
-  log('lead_created', { phone, assignedTo: String(assignedTo || '') });
+  log('lead_created', { phone, assignees });
   res.json(toClient(lead, await repNameMap()));
 }));
 
@@ -237,7 +267,12 @@ router.put('/leads/:id', requireUser, wrap(async (req, res) => {
       }
     }
     if (b.interest !== undefined) lead.interest = String(b.interest).trim();
-    if (b.assignedTo !== undefined) lead.assignedTo = b.assignedTo || null;
+    if (b.assignees !== undefined) {
+      const a = await cleanAssignees(b.assignees);
+      lead.assignees = a; lead.assignedTo = a[0] || null;
+      const names = await repNameMap();
+      lead.history.push({ type: 'system', text: 'שיוך: ' + (a.map(id => names[id]).join(', ') || 'ללא'), byId: u.id, byName: u.name });
+    }
   }
   if (b.inquiryAt !== undefined) {
     const d = cleanDate(b.inquiryAt);
