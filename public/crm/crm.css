@@ -104,7 +104,14 @@ textarea.inp{resize:vertical;min-height:84px}
 .tag.private{background:#DBEAFE;color:#1D4ED8}
 .tag.installer{background:var(--black);color:#fff}
 .tag.none{background:#fff;border:1.5px dashed #C4C4C8;color:var(--muted);font-weight:600}
-.tag.rep{background:var(--line2);color:var(--ink);font-weight:600}
+.tag.rep{background:var(--line2);color:var(--ink);font-weight:600;cursor:pointer}
+.tag.rep.none{background:#fff;border:1.5px dashed #C4C4C8;color:var(--muted)}
+.rep-checks{display:flex;flex-wrap:wrap;gap:6px}
+.rc,.form .rc{display:inline-flex;flex-direction:row;align-items:center;gap:6px;background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:7px 11px;font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer}
+.u-del{color:#A1A1AA;padding:10px 12px}
+.u-del:hover{color:var(--red);border-color:#FECDD3}
+.rc input{width:16px;height:16px;accent-color:var(--black)}
+.rc:has(input:checked){border-color:var(--black);background:#F4F4F5}
 .st-new{background:#DBEAFE;color:#1D4ED8}
 .st-no_answer{background:#F3F4F6;color:#4B5563}
 .st-in_progress{background:#EDE9FE;color:#6D28D9}
