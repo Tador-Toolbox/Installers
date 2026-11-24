@@ -170,6 +170,13 @@ textarea.inp{resize:vertical;min-height:84px}
 .lead-top .st-big{font-weight:800;font-size:15px;border:none;padding:11px 12px;padding-left:28px}
 .lead-top .seg button{flex:1}
 .lead-top .fu-btn{padding:8px 10px;text-align:right}
+.inq-row{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:8px}
+.inq-row .inp{width:auto;padding:7px 10px}
+.r2 .inq{color:var(--muted);font-size:12px}
+.mail-row{display:flex;gap:6px;margin-bottom:10px;align-items:center}
+.mail-row .inp{flex:1}
+.mail-row .a-ic{height:42px;width:44px;font-size:17px}
+.r2 .mail{color:var(--blue);text-decoration:none}
 .edit-box{background:var(--line2);border-radius:10px;padding:10px 12px;margin-bottom:4px}
 .edit-box summary{font-weight:700;cursor:pointer;font-size:13.5px}
 .edit-box .form{margin-top:10px}

@@ -56,6 +56,7 @@ function ago(iso) {
   if (d < 30) return `לפני ${d} ימים`;
   const mo = Math.floor(d / 30); return mo === 1 ? 'לפני חודש' : `לפני ${mo} חודשים`;
 }
+const inq = l => l.inquiryAt || l.createdAt;   // enquiry date (falls back to creation date)
 const daysSince = iso => iso ? (Date.now() - new Date(iso)) / 86400000 : Infinity;
 
 // Follow-up state: 'late' | 'today' | 'future' | ''
@@ -173,13 +174,13 @@ function matches(l) {
   if (F.status === 'open' && CLOSED.includes(l.status)) return false;
   if (F.status && F.status !== 'open' && l.status !== F.status) return false;
   // "not spoken X+ days": counts the last call, or the creation date if never called
-  if (F.stale && daysSince(l.lastCallAt || l.createdAt) < F.stale) return false;
+  if (F.stale && daysSince(l.lastCallAt || inq(l)) < F.stale) return false;
   if (F.rep === 'none' && l.assignedTo) return false;
   if (F.rep && F.rep !== 'none' && String(l.assignedTo) !== F.rep) return false;
   if (S.quick && fuState(l) !== S.quick) return false;
   if (F.q) {
     const qd = F.q.replace(/\D/g, '');
-    const hay = [l.name, l.interest, ...l.history.map(h => h.text)].join(' ').toLowerCase();
+    const hay = [l.name, l.interest, l.email, ...l.history.map(h => h.text)].join(' ').toLowerCase();
     const phoneHit = qd.length >= 3 && (l.phone.includes(qd) || intl(l.phone).includes(qd));
     if (!hay.includes(F.q) && !phoneHit) return false;
   }
@@ -189,8 +190,8 @@ function sorted(list) {
   const rank = l => ({ late: 0, today: 1 }[fuState(l)] ?? 2);   // overdue, then today, always on top
   const by = {
     follow: (a, b) => (a.followUpAt ? new Date(a.followUpAt) : Infinity) - (b.followUpAt ? new Date(b.followUpAt) : Infinity) || new Date(b.createdAt) - new Date(a.createdAt),
-    newest: (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-    stale: (a, b) => daysSince(b.lastCallAt || b.createdAt) - daysSince(a.lastCallAt || a.createdAt)
+    newest: (a, b) => new Date(inq(b)) - new Date(inq(a)),
+    stale: (a, b) => daysSince(b.lastCallAt || inq(b)) - daysSince(a.lastCallAt || inq(a))
   }[F.sort];
   return [...list].sort((a, b) => rank(a) - rank(b) || by(a, b));
 }
@@ -254,7 +255,7 @@ function leadRow(l) {
       <button class="ch-ok" data-act="answered">✓ ענה</button>
       <button class="ch-na" data-act="noanswer">✕ לא ענה</button>
     </div>
-    <div class="r2"><span class="ltr">${prettyPhone(l.phone)}</span>${l.interest ? ` · <span class="int">${esc(l.interest)}</span>` : ''}</div>
+    <div class="r2"><span class="inq">פנייה ${fmtDate(new Date(inq(l)))}</span> · <span class="ltr">${prettyPhone(l.phone)}</span>${l.email ? ` · <a class="mail ltr" href="mailto:${esc(l.email)}">${esc(l.email)}</a>` : ''}${l.interest ? ` · <span class="int">${esc(l.interest)}</span>` : ''}</div>
     ${ln ? `<div class="l-note"><b>${esc(ln.byName)}:</b> ${esc(ln.text)}</div>` : ''}
     <div class="r3">
       <span class="last ${l.lastCallAt ? (stale ? 'stale' : '') : 'never'}" title="${l.lastCallAt ? fmtDT(new Date(l.lastCallAt)) : ''}">📞 <b data-ago="${l.lastCallAt || ''}">${ago(l.lastCallAt)}</b>${l.lastCallAt ? ` <small>${fmtDT(new Date(l.lastCallAt))}</small>` : ''}</span>
@@ -453,6 +454,13 @@ function openLead(l) {
   const hist = [...l.history].reverse().map(entryHtml).join('');
   modal(`<h3>${esc(l.name)}</h3>
     <p class="sub"><span class="ltr">${prettyPhone(l.phone)}</span>${l.assignedName ? ' · ' + esc(l.assignedName) : ''}</p>
+    <label class="inq-row">תאריך פנייה
+      <input class="inp" id="lInq" type="date" value="${toInputDate(new Date(inq(l)))}" max="${toInputDate(new Date())}"/></label>
+    <form class="mail-row" id="mailForm">
+      <input class="inp ltr" style="text-align:right" id="lEmail" type="email" inputmode="email" autocapitalize="off" placeholder="אימייל של הלקוח" value="${esc(l.email || '')}"/>
+      ${l.email ? `<a class="a-ic" href="mailto:${esc(l.email)}" title="שלח מייל">✉</a>` : ''}
+      <button class="btn btn-dark" type="submit">שמור</button>
+    </form>
     <div class="lead-top">
       <label class="lt-lbl">סטטוס פנייה
         <select class="inp sel st-big st-${l.status}" id="lStatus">${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${k === l.status ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
@@ -491,6 +499,16 @@ function openLead(l) {
       catch (err) { toast(err.message, true); }
     });
     root.querySelector('#lFu').onclick = () => openFollowUp(l, true);
+    root.querySelector('#lInq').onchange = async e => {
+      if (!e.target.value) return;
+      try { reopen(await api(`/leads/${l.id}`, { method: 'PUT', body: { inquiryAt: new Date(e.target.value + 'T12:00').toISOString() } })); toast('תאריך הפנייה עודכן'); }
+      catch (err) { toast(err.message, true); }
+    };
+    root.querySelector('#mailForm').onsubmit = async e => {
+      e.preventDefault();
+      try { reopen(await api(`/leads/${l.id}`, { method: 'PUT', body: { email: root.querySelector('#lEmail').value } })); toast('האימייל נשמר'); }
+      catch (err) { toast(err.message, true); }
+    };
     root.querySelector('#noteForm').onsubmit = async e => {
       e.preventDefault();
       const text = root.querySelector('#nText').value.trim(); if (!text) return;
@@ -524,6 +542,8 @@ $('#newLeadBtn').onclick = () => {
       <label>שם מלא *<input class="inp" id="nlName" required/></label>
       <label>מספר טלפון *<input class="inp" id="nlPhone" inputmode="tel" placeholder="050-1234567" required/>
         <span class="hint" id="nlPhoneMsg"></span></label>
+      <label>תאריך פנייה<input class="inp" id="nlInq" type="date" value="${toInputDate(new Date())}" max="${toInputDate(new Date())}"/></label>
+      <label>אימייל<input class="inp ltr" style="text-align:right" id="nlEmail" type="email" inputmode="email" autocapitalize="off" placeholder="name@example.com"/></label>
       <label>במה התעניין<textarea class="inp" id="nlInt" rows="3" placeholder="למשל: אינטרקום לבניין 12 דירות"></textarea></label>
       <label>סטטוס פנייה${statusSelect('new').replace('id="mStatus"', 'id="nlStatus"')}</label>
       ${S.user.role === 'admin' ? `<label>שיוך לאיש מכירות${repSelect('nlRep', '')}</label>` : '<p class="hint muted">הליד ישויך אליך</p>'}
@@ -557,7 +577,7 @@ $('#newLeadBtn').onclick = () => {
       try {
         const l = await api('/leads', { method: 'POST', body: {
           name: root.querySelector('#nlName').value, phone: ph.value,
-          interest: root.querySelector('#nlInt').value, status: root.querySelector('#nlStatus').value, assignedTo: (root.querySelector('#nlRep') || {}).value || '' } });
+          interest: root.querySelector('#nlInt').value, email: root.querySelector('#nlEmail').value, inquiryAt: root.querySelector('#nlInq').value ? new Date(root.querySelector('#nlInq').value + 'T12:00').toISOString() : '', status: root.querySelector('#nlStatus').value, assignedTo: (root.querySelector('#nlRep') || {}).value || '' } });
         upsertLead(l); closeModal(); toast('הליד נוסף');
       } catch (err) { toast(err.message, true); }
     };
