@@ -5,7 +5,7 @@
 const API = '/crm/api';
 const STATUS = {
   new: 'חדש', no_answer: 'לא ענה', in_progress: 'בטיפול',
-  quote_sent: 'נשלחה הצעת מחיר', closed_won: 'נסגרה עסקה', not_relevant: 'לא רלוונטי'
+  quote_sent: 'נשלחה הצעת מחיר', referred_installer: 'הופנה למתקין', closed_won: 'נסגרה עסקה', not_relevant: 'לא רלוונטי'
 };
 const CLOSED = ['closed_won', 'not_relevant'];
 const TYPE = { private: 'לקוח פרטי', installer: 'מתקין' };
@@ -422,14 +422,43 @@ async function logCall(l) {
 function openFollowUp(l, back) {
   modal(`<h3>תזכורת חזרה · ${esc(l.name)}</h3><p class="sub">הליד יקפוץ לראש הרשימה כשיגיע המועד</p>
     <form class="form" id="fuForm">${fuFields(l)}
-      <div class="foot-btns"><button class="btn btn-red" type="submit">שמור</button></div></form>`, root => {
+      <div class="foot-btns"><button class="btn btn-red" type="submit">שמור</button></div>
+      <button class="btn btn-dark btn-block" type="button" id="fuCal">📅 שלח תזכורת ליומן בטלפון</button>
+      <span class="hint muted">שומר את התזכורת ופותח את היומן — רק לאשר "הוסף"</span></form>`, root => {
     wireFu(root);
     root.querySelector('#fuForm').onsubmit = async e => {
       e.preventDefault(); await save(l.id, readFu(root), 'התזכורת נשמרה');
       const nl = S.leads.find(x => x.id === l.id);
       if (back && nl) openLead(nl); else closeModal();
     };
+    root.querySelector('#fuCal').onclick = async () => {
+      const fu = readFu(root);
+      if (!fu.followUpAt) { toast('בחר תאריך חזרה קודם', true); return; }
+      // iPhone needs the navigation started in the tap itself → open the window first, fill it after saving
+      const ios = isIOS();
+      const win = ios ? null : window.open('', '_blank');
+      await save(l.id, fu);
+      const nl = S.leads.find(x => x.id === l.id) || l;
+      if (ios) { location.href = `${API}/leads/${l.id}/ics`; }
+      else if (win) { win.location.href = googleCalUrl(nl); }
+      else { location.href = googleCalUrl(nl); }
+      closeModal(); toast('נפתח היומן — אשר את ההוספה');
+    };
   });
+}
+
+// ── Calendar helpers ──
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+// Example: follow-up 25/11 10:00 → dates=20261125T080000Z/20261125T083000Z ; date only → dates=20261125/20261126
+function googleCalUrl(l) {
+  const f = new Date(l.followUpAt);
+  const z = d => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const ymd = d => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+  const dates = l.followUpHasTime ? `${z(f)}/${z(new Date(f.getTime() + 30 * 60000))}`
+    : `${ymd(f)}/${ymd(new Date(f.getFullYear(), f.getMonth(), f.getDate() + 1))}`;
+  const details = [`טלפון: ${prettyPhone(l.phone)}`, l.interest && `במה התעניין: ${l.interest}`, l.email && `מייל: ${l.email}`, location.origin + '/crm/'].filter(Boolean).join('\n');
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+    `&text=${encodeURIComponent('חזרה ללקוח: ' + l.name)}&dates=${dates}&details=${encodeURIComponent(details)}`;
 }
 
 // ── WhatsApp with an editable message ──

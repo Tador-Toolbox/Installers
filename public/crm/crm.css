@@ -116,6 +116,7 @@ textarea.inp{resize:vertical;min-height:84px}
 .st-no_answer{background:#F3F4F6;color:#4B5563}
 .st-in_progress{background:#EDE9FE;color:#6D28D9}
 .st-quote_sent{background:#FEF3C7;color:#92400E}
+.st-referred_installer{background:#CCFBF1;color:#0F766E}
 .st-closed_won{background:#DCFCE7;color:#15803D}
 .st-not_relevant{background:#F4F4F5;color:#9CA3AF}
 .fu-btn{background:#fff;border:1.5px dashed var(--line);border-radius:8px;padding:4px 9px;font-size:12px;font-weight:600;color:var(--muted)}

@@ -358,6 +358,46 @@ router.delete('/leads/:id', requireAdmin, wrap(async (req, res) => {
   res.json({ ok: true });
 }));
 
+// Follow-up as a calendar event. Example: follow-up 25/11 10:00 → event 10:00–10:30 + alert 15 min before;
+// date only → all-day event on that Israel date + alert at 09:00.
+router.get('/leads/:id/ics', requireUser, wrap(async (req, res) => {
+  const lead = await CrmLead.findById(req.params.id);
+  if (!lead) return res.status(404).send('ליד לא נמצא');
+  if (!(await canAccess(req, lead))) return res.status(403).send('אין הרשאה');
+  if (!lead.followUpAt) return res.status(400).send('לא נקבעה תזכורת');
+  const z = d => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const ilDate = d => d.toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' }).replace(/-/g, '');
+  const icsEsc = s => String(s || '').replace(/\\/g, '\\\\').replace(/[,;]/g, m => '\\' + m).replace(/\r?\n/g, '\\n');
+  const f = new Date(lead.followUpAt);
+  const pretty = lead.phone.length === 10 ? lead.phone.slice(0, 3) + '-' + lead.phone.slice(3) : lead.phone;
+  const url = `https://${req.get('host')}/crm/`;
+  const desc = [`טלפון: ${pretty}`, lead.interest && `במה התעניין: ${lead.interest}`, lead.email && `מייל: ${lead.email}`, url].filter(Boolean).join('\n');
+  let when;
+  if (lead.followUpHasTime) {
+    when = [`DTSTART:${z(f)}`, `DTEND:${z(new Date(f.getTime() + 30 * 60000))}`];
+  } else {
+    const d0 = ilDate(f), d1 = ilDate(new Date(f.getTime() + 86400000));
+    when = [`DTSTART;VALUE=DATE:${d0}`, `DTEND;VALUE=DATE:${d1}`];
+  }
+  const ics = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Tador//Leads//HE', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:lead-${lead._id}-${f.getTime()}@tador-leads`,
+    `DTSTAMP:${z(new Date())}`,
+    ...when,
+    `SUMMARY:${icsEsc('חזרה ללקוח: ' + lead.name)}`,
+    `DESCRIPTION:${icsEsc(desc)}`,
+    `URL:${url}`,
+    'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc('לחזור ל' + lead.name)}`,
+    lead.followUpHasTime ? 'TRIGGER:-PT15M' : 'TRIGGER:PT9H', 'END:VALARM',
+    'END:VEVENT', 'END:VCALENDAR'
+  ].join('\r\n');
+  log('ics', { id: String(lead._id), by: me(req).name });
+  res.set('Content-Type', 'text/calendar; charset=utf-8');
+  res.set('Content-Disposition', `inline; filename="followup-${lead.phone}.ics"`);
+  res.send(ics);
+}));
+
 // ═══ Debug (admin, read-only) ═══════════════════════════════════════════════
 router.get('/debug', requireAdmin, (req, res) => res.json({ count: debugLog.length, log: debugLog }));
 
